@@ -61,7 +61,7 @@ Return null rather than guess. If the text does not state a field, use null (or 
 Fields:
 - clinic: the clinic's name as written, or null.
 - area: a short neighbourhood or intersection as written, or null.
-- fsa: the closest Toronto postal area from the allowed list, only when the text gives a location you can place. null if it is outside Toronto or you cannot place it.
+- fsa: the first three characters of an Ontario postal code explicitly stated in the text, from the allowed list. Ontario postal districts start K, L, M, N or P. Return null when the code is missing, outside Ontario, or unsupported; do not guess a postal area from a city or street.
 - provider_type: "family_doctor", "nurse_practitioner", or "unknown".
 - languages: English names of the languages care is offered in, exactly those the text states. Empty list if none are stated.
 - date: YYYY-MM-DD. The date the announcement was posted, or the date it says new patients are accepted from. Work out relative dates ("next month") only when the text itself carries a date to anchor them. Today's date is for reference only; do not assume the announcement was written today. null if the text alone does not settle it.
@@ -84,22 +84,23 @@ export function normalize(raw: unknown): Extraction {
   const conf = (v: unknown): Confidence => (v === "high" || v === "medium" ? v : "low");
   const c = (x.confidence && typeof x.confidence === "object" ? x.confidence : {}) as Record<string, unknown>;
   const fsa = str(x.fsa)?.toUpperCase() ?? null;
+  const validFsa = fsa && FSA_CODES.includes(fsa) ? fsa : null;
   const date = str(x.date);
-  const validDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(date)) ? date : null;
+  const validDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(date)) && new Date(date).toISOString().slice(0,10) === date ? date : null;
   const languages = Array.isArray(x.languages) ? x.languages.map(str).filter((s): s is string => !!s) : [];
   const pt = x.provider_type === "family_doctor" || x.provider_type === "nurse_practitioner" ? x.provider_type : "unknown";
   const accepting = x.accepting === "yes" || x.accepting === true ? "yes" : x.accepting === "no" || x.accepting === false ? "no" : "unclear";
   return {
     clinic: str(x.clinic),
     area: str(x.area),
-    fsa: fsa && FSA_CODES.includes(fsa) ? fsa : null,
+    fsa: validFsa,
     provider_type: pt,
     languages,
     date: validDate,
     accepting,
     phone: str(x.phone),
     confidence: {
-      location: fsa ? conf(c.location) : "low",
+      location: validFsa ? conf(c.location) : "low",
       provider_type: pt === "unknown" ? "low" : conf(c.provider_type),
       languages: languages.length ? conf(c.languages) : "low",
       date: validDate ? conf(c.date) : "low",
@@ -115,9 +116,9 @@ export function needsReview(x: Extraction): boolean {
 
 export class ExtractionError extends Error {}
 
-export async function extractListing(text: string, opts: { today?: string } = {}): Promise<Extraction> {
+export async function extractListing(text: string, opts: { today?: string; offline?: boolean } = {}): Promise<Extraction> {
   const today = opts.today ?? new Date().toISOString().slice(0, 10);
-  const provider = (process.env.LLM_PROVIDER || "anthropic").toLowerCase();
+  const provider = opts.offline ? "mock" : (process.env.LLM_PROVIDER || "anthropic").toLowerCase();
   const prompt = buildPrompt(text, today);
   if (provider === "mock") return normalize(mockExtract(text));
   const apiKey = process.env.LLM_API_KEY;
@@ -187,6 +188,8 @@ const AREA_HINTS: [RegExp, string, string][] = [
 ];
 function mockExtract(text: string): unknown {
   const clinic = text.match(/(?:at|joining|join)\s+((?:[A-Z][\w'.-]*\s+){1,4}(?:Practice|Clinic|Health|Medical|Doctors|Medicine|Care|Centre|Center))/)?.[1]?.trim() ?? null;
+  const explicitFsa = text.match(/\b([KLMNP][0-9][ABCEGHJKLMNPRSTVWXYZ])(?:\s*[0-9][ABCEGHJKLMNPRSTVWXYZ][0-9])?\b/i)?.[1]?.toUpperCase() ?? null;
+  const explicitArea = text.match(/\bin\s+([A-Z][A-Za-z .-]{1,60}?)\s+[KLMNP][0-9][ABCEGHJKLMNPRSTVWXYZ]\b/)?.[1]?.trim() ?? null;
   const hint = AREA_HINTS.find(([re]) => re.test(text));
   const np = /nurse practitioner|\bNP\b/i.test(text), fd = /family (doctor|physician|practice|medicine)|\bDr\.?\s/i.test(text);
   const languages = KNOWN_LANGS.filter((l) => new RegExp(`\\b${l}\\b`, "i").test(text));
@@ -194,11 +197,11 @@ function mockExtract(text: string): unknown {
   const no = /not (accepting|taking)|no longer (accepting|taking)|wait ?list (is )?(closed|full)/i.test(text);
   const yes = /(accepting|taking|welcoming) new patients/i.test(text);
   return {
-    clinic, area: hint?.[2] ?? null, fsa: hint?.[1] ?? null,
+    clinic, area: explicitArea ?? hint?.[2] ?? null, fsa: explicitFsa ?? null,
     provider_type: np && !fd ? "nurse_practitioner" : fd && !np ? "family_doctor" : np && fd ? "family_doctor" : "unknown",
     languages, date, accepting: no ? "no" : yes ? "yes" : "unclear",
     phone: text.match(/\b\d{3}[-. ]\d{3}[-. ]\d{4}\b/)?.[0] ?? null,
-    confidence: { location: hint ? "medium" : "low", provider_type: np !== fd ? "high" : "low", languages: languages.length ? "high" : "low", date: date ? "high" : "low" },
+    confidence: { location: explicitFsa ? "high" : "low", provider_type: np !== fd ? "high" : "low", languages: languages.length ? "high" : "low", date: date ? "high" : "low" },
     notes: "Read by the offline keyword reader, not an AI model.",
   };
 }

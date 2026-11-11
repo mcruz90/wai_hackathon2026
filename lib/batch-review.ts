@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
-import { batchEligibility, clinicSourceHosts, MAX_REVIEW_BATCH, REVIEW_POLICY, reviewSnapshot, reviewVersion } from "./review-policy";
+import { batchEligibility, MAX_REVIEW_BATCH, REVIEW_POLICY, reviewSnapshot, reviewVersion } from "./review-policy";
+import { reviewedClinicHosts } from "./source-trust";
 import { config, DAY_MS } from "./config";
 
 export class ReviewError extends Error {}
@@ -27,7 +28,7 @@ export async function publishReviewBatch(db: PrismaClient, selection: ReviewSele
       const now = new Date();
       const listings = await tx.listing.findMany({ include: reviewInclude });
       const fsas = await tx.fsaCentroid.findMany({ select: { fsa: true } });
-      const hosts = clinicSourceHosts();
+      const hosts = await reviewedClinicHosts(tx);
       const ctx = { listings, fsas: fsas.map((f) => f.fsa), hosts, now };
       const items: Prisma.InputJsonObject[] = [];
       for (const selected of selection) {

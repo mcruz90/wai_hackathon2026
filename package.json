@@ -18,7 +18,9 @@
     "job:expire": "tsx scripts/expire.ts",
     "job:waitlist": "tsx scripts/waitlist-checkin.ts",
     "job:freshness": "tsx scripts/freshness.ts",
-    "db:seed:review-demo": "tsx scripts/seed-review-demo.ts"
+    "db:seed:review-demo": "tsx scripts/seed-review-demo.ts",
+    "job:discover": "tsx scripts/discover.ts",
+    "db:seed:discovery": "tsx scripts/seed-discovery.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
@@ -26,11 +28,14 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "cheerio": "^1.2.0",
     "next": "^15.5.29",
     "prisma": "^6.19.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "robots-parser": "^3.0.1",
     "tsx": "^4.23.15",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "undici": "^7.30.2"
   }
 }

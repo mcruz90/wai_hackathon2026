@@ -16,7 +16,7 @@ export type Strings = {
   speaks: string; km: string; source: string; call: string; hint: string;
   phone: string; after: string; open: string; full: string; thOpen: string; thFull: string;
   hcc: string; what: string; need: string; online: string; callnum: string; noohip: string;
-  disc: string; back: string; none: string; unk: string;
+  disc: string; back: string; none: string; unk: string; radius: string;
   src: Record<string, string>;
   /** Call script lines 1 to 4 in this language. Empty for English, where the line itself is the script. */
   s: [string, string, string, string];
@@ -38,7 +38,7 @@ export const T: Record<Lang, Strings> = {
     sub: "See which family doctors and nurse practitioners near you are taking new patients, and when each listing was last confirmed.",
     lang: "Your language", postal: "First 3 characters of your postal code", type: "Who do you want to see?", any: "Either", fd: "Family doctor", np: "Nurse practitioner",
     search: "Show open listings", privacy: "We do not ask for your name, health card or health information. Nothing you type is saved.",
-    sample: "Sample data. These clinics are not real.", results: "Open near {fsa}", count: "{n} listings, best match first",
+    sample: "Sample data. These clinics are not real.", results: "Open near {fsa}", count: "Listings found: {n}, best match first",
     today: "Confirmed today", day1: "Confirmed yesterday", days: "Confirmed {n} days ago", expires: "Expires in {n} days", exp1: "Expires tomorrow",
     speaks: "Speaks {lang}", km: "{n} km away", source: "Source", call: "Prepare your call", hint: "These are lines you can say on the phone.",
     phone: "Clinic phone", after: "After you call, tell us what you heard", open: "Still taking patients", full: "They are full",
@@ -49,7 +49,8 @@ export const T: Record<Lang, Strings> = {
     noohip: "No health card yet? Apply in person at a ServiceOntario centre first.",
     disc: "This tool helps you find and contact clinics. It does not choose a doctor for you and does not give medical advice.",
     back: "Back", none: "No open listings match. Try 'Either' or another postal code.",
-    unk: "We do not know that postal code yet, so distances are measured from downtown Toronto.",
+    unk: "We do not have location data for that Ontario postal area. Try a nearby postal area; we will not substitute another location.",
+    radius: "Within about {n} km of your postal area. Distances are approximate.",
     src: { web: "Clinic website", post: "Community post", list: "Regional list", news: "Clinic newsletter", rev: "Reviewed announcement" },
     s: ["", "", "", ""],
     toPlan: "My plan", tooMany: "Too many reports for now. Please try again later.", err: "That did not work. Please try again.",
@@ -96,7 +97,8 @@ export const T: Record<Lang, Strings> = {
     noohip: "Pas encore de carte Santé ? Faites d'abord la demande en personne dans un centre ServiceOntario.",
     disc: "Cet outil vous aide à trouver et à joindre des cliniques. Il ne choisit pas de médecin à votre place et ne donne pas de conseils médicaux.",
     back: "Retour", none: "Aucune place ouverte ne correspond. Essayez « L'un ou l'autre » ou un autre code postal.",
-    unk: "Nous ne connaissons pas encore ce code postal. Les distances sont calculées à partir du centre-ville de Toronto.",
+    unk: "Nous ne disposons pas de données de localisation pour ce secteur postal ontarien. Essayez un secteur voisin; nous ne remplacerons pas votre position.",
+    radius: "À environ {n} km de votre secteur postal. Les distances sont approximatives.",
     src: { web: "Site de la clinique", post: "Publication communautaire", list: "Liste régionale", news: "Infolettre de la clinique", rev: "Annonce vérifiée" },
     s: ["Bonjour. Je cherche un médecin de famille.", "J'ai vu que votre clinique prend de nouveaux patients. Est-ce toujours le cas ?", "Je parle français. Y a-t-il quelqu'un qui parle français, ou un interprète ?", "Que dois-je apporter pour m'inscrire ?"],
     toPlan: "Mon plan", tooMany: "Trop de signalements pour le moment. Réessayez plus tard.", err: "Cela n'a pas fonctionné. Veuillez réessayer.",
@@ -143,7 +145,8 @@ export const T: Record<Lang, Strings> = {
     noohip: "还没有健康卡？请先亲自到 ServiceOntario 服务中心申请。",
     disc: "本工具帮助您查找和联系诊所。它不会替您选择医生，也不提供医疗建议。",
     back: "返回", none: "没有符合条件的信息。请选择“都可以”或换一个邮政编码。",
-    unk: "我们暂时不认识这个邮政编码，距离按多伦多市中心计算。",
+    unk: "我们尚无该安大略省邮区的位置数据。请尝试附近邮区；系统不会替换成其他位置。",
+    radius: "在您邮区约 {n} 公里范围内。距离为估算值。",
     src: { web: "诊所网站", post: "社区帖子", list: "地区名单", news: "诊所通讯", rev: "已审核的公告" },
     s: ["您好。我在找家庭医生。", "我看到你们诊所正在接收新病人。现在还接收吗？", "我说普通话。诊所有人会说普通话吗？或者有翻译吗？", "登记时我需要带什么？"],
     toPlan: "我的计划", tooMany: "目前反馈次数过多，请稍后再试。", err: "操作没有成功，请再试一次。",
@@ -190,7 +193,8 @@ export const T: Record<Lang, Strings> = {
     noohip: "¿Aún no tiene tarjeta de salud? Primero solicítela en persona en un centro de ServiceOntario.",
     disc: "Esta herramienta le ayuda a encontrar clínicas y a comunicarse con ellas. No elige un médico por usted ni da consejos médicos.",
     back: "Atrás", none: "Ningún aviso coincide. Pruebe «Cualquiera» u otro código postal.",
-    unk: "Todavía no conocemos ese código postal. Las distancias se miden desde el centro de Toronto.",
+    unk: "No tenemos datos de ubicación para esa zona postal de Ontario. Prueba una zona cercana; no sustituiremos tu ubicación.",
+    radius: "A unos {n} km de tu zona postal. Las distancias son aproximadas.",
     src: { web: "Sitio web de la clínica", post: "Publicación comunitaria", list: "Lista regional", news: "Boletín de la clínica", rev: "Anuncio revisado" },
     s: ["Hola. Busco un médico de familia.", "Vi que su clínica acepta pacientes nuevos. ¿Sigue siendo así?", "Hablo español. ¿Hay alguien que hable español, o un intérprete?", "¿Qué debo llevar para inscribirme?"],
     toPlan: "Mi plan", tooMany: "Demasiados avisos por ahora. Inténtelo más tarde.", err: "No funcionó. Inténtelo de nuevo.",
@@ -237,7 +241,8 @@ export const T: Record<Lang, Strings> = {
     noohip: "Wala ka pang health card? Mag-apply muna nang personal sa isang ServiceOntario centre.",
     disc: "Tinutulungan ka ng tool na ito na humanap at tumawag sa mga klinika. Hindi ito pumipili ng doktor para sa iyo at hindi ito nagbibigay ng payong medikal.",
     back: "Bumalik", none: "Walang tumutugmang listahan. Subukan ang 'Kahit alin' o ibang postal code.",
-    unk: "Hindi pa namin kilala ang postal code na iyan, kaya sinusukat ang layo mula sa downtown Toronto.",
+    unk: "Wala pa kaming lokasyon para sa postal area na iyan sa Ontario. Subukan ang kalapit na postal area; hindi namin papalitan ang iyong lokasyon.",
+    radius: "Sa loob ng humigit-kumulang {n} km mula sa iyong postal area. Tantiya ang mga distansya.",
     src: { web: "Website ng klinika", post: "Post sa komunidad", list: "Listahan ng rehiyon", news: "Newsletter ng klinika", rev: "Nasuring anunsyo" },
     s: ["Hello po. Naghahanap ako ng family doctor.", "Nakita ko na tumatanggap ang klinika ninyo ng bagong pasyente. Totoo pa ba iyon?", "Tagalog ang salita ko. May nagsasalita ba ng Tagalog diyan, o may interpreter?", "Ano ang kailangan kong dalhin para makapagparehistro?"],
     toPlan: "Ang plano ko", tooMany: "Masyadong maraming ulat sa ngayon. Subukan ulit mamaya.", err: "Hindi ito gumana. Pakisubukan ulit.",

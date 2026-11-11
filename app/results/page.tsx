@@ -1,3 +1,4 @@
+import { config } from "@/lib/config";
 import { redirect } from "next/navigation";
 import { HtmlLang, ListingCard, SampleBanner, Steps } from "@/components/bits";
 import Track from "@/components/Track";
@@ -22,6 +23,7 @@ export default async function Results({ searchParams }: { searchParams: Promise<
         <div>
           <h1 style={{ fontSize: "1.3rem" }}>{fill(w.results, { fsa: s.fsa })}</h1>
           <p className="muted small">{fill(w.count, { n: listings.length })}</p>
+          {known ? <p className="muted small">{fill(w.radius, { n: config.searchRadiusKm })}</p> : null}
         </div>
         {known ? null : <p className="note">{w.unk}</p>}
         {listings.length ? listings.map((l) => <ListingCard key={l.id} l={l} lang={s.lang} href={`/listing/${l.id}?${q}`} />) : <p className="note">{w.none}</p>}
