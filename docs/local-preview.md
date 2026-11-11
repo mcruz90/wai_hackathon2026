@@ -5,7 +5,7 @@ Use Node 22 and Docker Desktop (or Docker Engine with Compose). This runs a deve
 ```bash
 git clone https://github.com/mcruz90/wai_hackathon2026.git
 cd wai_hackathon2026
-git switch codex/batch-listing-review
+git switch codex/ontario-discovery  # use main after this change is merged
 cp .env.example .env
 ```
 
@@ -45,7 +45,8 @@ Prisma downloads its official database engines during installation and migration
 7. In individual review, verify the undated listing requires a date before it can be published. You can still reject it without filling the form.
 8. In clinic confirmation, record the sample outcome or dismiss the task. No clinic is contacted automatically.
 9. Paste an announcement into intake to exercise the mock reader and individual-review path. The mock reader is deliberately cautious, so it will usually produce an exception rather than a batch candidate.
-10. Try a narrow browser window or your browser's mobile device mode.
+10. Visit `/admin/discovery` and use the [offline Ontario discovery walkthrough](ontario-discovery.md#offline-ontario-walkthrough). It adds a sample Ottawa source, asks for source approval, and prepares a pending Ontario listing without network or LLM calls. You can publish it individually and search `K1S`.
+11. Try a narrow browser window or your browser's mobile device mode.
 
 All seeded clinics, numbers, patients and announcements are invented. No messages are sent. The app's real expiry and publication logic still runs against this local database.
 

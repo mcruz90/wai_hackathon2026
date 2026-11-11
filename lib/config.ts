@@ -4,6 +4,7 @@ const num = (name: string, fallback: number) => {
 };
 
 export const config = {
+  get searchRadiusKm() { return num("SEARCH_RADIUS_KM", 75); },
   get expiryDays() { return num("EXPIRY_DAYS", 30); },
   get waitlistRadiusKm() { return num("WAITLIST_RADIUS_KM", 8); },
   get offerBatchSize() { return Math.round(num("OFFER_BATCH_SIZE", 3)); },

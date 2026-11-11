@@ -1,6 +1,6 @@
 # New to Ontario Doctor Finder
 
-A working prototype that helps a newcomer in Toronto find a family doctor or nurse practitioner who is taking new patients, and leave with a plan for who to call.
+A working prototype that helps a newcomer in Ontario find a family doctor or nurse practitioner who is taking new patients, and leave with a plan for who to call.
 
 **WAI Hackathon Canada 2026, Team 14.** Theme 4: Social Impact (Health), under Agentic AI for Good. UN Sustainable Development Goals 3 (Good Health and Well-being) and 10 (Reduced Inequalities).
 
@@ -76,7 +76,7 @@ These screenshots show the running application with invented review fixtures fro
 - **People authorize publication.** The agents' tools can read the directory and write proposals, nothing else. Reviewers explicitly authorize selected batches of eligible new listings and review exceptions individually. Re-confirming and marking a listing full remain individual decisions. Automatic expiry and report-based hiding still apply. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
 - **Every agent step is visible.** Each proposal shows the tools the agent called, what it passed, and what came back.
 - **Announcements are treated as data, not instructions.** The prompt tells the model to ignore anything in a post that reads like an instruction, and the app re-checks every field it returns.
-- **No personal or health information.** There are no accounts. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language. Counts under 5 are hidden in the partner view.
+- **No patient accounts or health information requested.** Patient search needs no account. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language. Counts under 5 are hidden in the partner view.
 - **Navigation only.** The tool does not choose a doctor for anyone and gives no medical advice.
 - **Honest about what is real.** Sample data is labelled on every screen that shows it. The extraction eval uses real public announcements and reports every mistake.
 - **Translations need review.** The patient screens were translated without a native speaker, and every new string is listed in `docs/translations-to-review.md` for review before a pilot.
@@ -97,7 +97,7 @@ Planned: Cohere's open Aya models for translating listings and call scripts into
 - **Sample listings.** The clinics in the app are invented. A pilot would start from real public announcements, entered through the review queue.
 - **A small eval.** The extraction eval has 15 real public announcements; the target is 20.
 - **Draft translations.** They need native-speaker review before a pilot.
-- **Toronto only.** Postal areas cover 25 Toronto areas.
+- **Ontario coverage.** Search supports 527 Ontario postal areas from a credited GeoNames snapshot. Representative points and straight-line distances are approximate; newer areas need a data update.
 - **Next step: a pilot** with a settlement agency and a regional partner.
 
 ---
@@ -163,11 +163,31 @@ Proposals are stored in the `agent_proposals` table. The only code that acts on 
 
 The rules that need no judgement stay plain code: the expiry job hides listings past their date, and two separate "full" reports hide a listing straight away.
 
+## Proactive discovery across Ontario
+
+Listings can now originate from scheduled monitoring rather than waiting for someone to submit an announcement. `/admin/discovery` manages web-search leads, source approval, monitoring and collected evidence. English/French searches rotate across Ontario regions; approved clinic pages feed changed announcements into the existing intake agent. Directories discover links only, and social posts remain leads to a clinic's public site. Unchanged content creates no duplicate proposal and never refreshes availability.
+
+Use **Add Ontario starter sources** to queue ten unverified starting URLs, or **Run offline Ontario demo** to try an invented Ottawa announcement without any network or LLM calls. Human approval is required before monitoring a new source and before publishing a listing. Monitoring permission and clinic-host verification for batch review are separate decisions.
+
+See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Brave Search configuration, hourly monitoring, the shared daily search budget, source review, network controls and the offline walkthrough. Live search is disabled until configured; monitoring can also run without a search API. Patient results use the configured nearby radius rather than mixing clinics from across the province. Postal-area data and starter URLs are credited in [data/SOURCES.md](data/SOURCES.md).
+
+**Discovery workspace.** Search configuration, source leads and monitoring controls are shown separately from listing publication.
+
+![Ontario discovery workspace showing starter source leads awaiting review and an offline demo](docs/screenshots/13-ontario-discovery.png)
+
+**Collected evidence.** The source excerpt, retrieval time and declared publication date stay attached to the proposal. This screenshot uses the invented Ottawa demo rather than claiming a live search result.
+
+![Collected sample Ottawa evidence with separate retrieval and publication dates and a link to its proposal](docs/screenshots/14-collected-evidence.png)
+
+**Ontario patient search.** After a human publishes the sample Ottawa listing, it appears near `K1S`; Toronto listings fall outside the local search radius.
+
+![Patient results near Ottawa K1S showing a clearly labelled sample clinic and approximate 75 kilometre search radius](docs/screenshots/15-ontario-results.png)
+
 ## Human review at scale
 
 `/admin` separates **Ready for batch review**, **Needs investigation**, and **Needs clinic confirmation**. The batch workflow publishes new pending listings only. Existing-listing updates, re-confirmations, full recommendations and freshness checks remain individual decisions. The agents still have no publication tool.
 
-A pilot administrator must review the clinic websites and configure exact hostnames in `CLINIC_SOURCE_HOSTS`, for example `clinic-one.example,clinic-two.example`. Empty is the default: no listing qualifies for batch publication. Subdomains must be configured separately. A source type or model confidence label never creates trust. Intake is still paste-only: the app does not fetch the link or independently verify that the pasted text came from it. Reviewers must check supporting sources.
+A pilot administrator must verify a dedicated clinic host in Discovery or configure exact hostnames in `CLINIC_SOURCE_HOSTS`, for example `clinic-one.example,clinic-two.example`. Both start unconfigured: no host is implicitly trusted for batch publication. Subdomains must be configured separately. A source type or model confidence label never creates trust. Manual intake does not fetch its pasted link. The optional discovery collector records fetched source evidence separately. Reviewers must still check supporting sources.
 
 A batch candidate must have all of the following:
 
@@ -210,7 +230,7 @@ npm run eval
 
 This reads `eval/announcements.jsonl`, runs each announcement through `lib/extract.ts` with whatever provider your environment points at, scores location, provider type, languages and date, and writes `eval/results.md` with accuracy per field and every mistake.
 
-The file has **15 real public announcements** from Toronto clinic websites, a community news article, and three family health teams outside Toronto (for the "not in Toronto" case). Each text is an exact excerpt of the page, with the `source` URL and the date it was retrieved. Some excerpts join lines from different parts of the same page, such as the notice and the address in the footer. `label_note` explains any label a reviewer might question. Check the labels before you publish results; a few are judgement calls (for example, staff languages versus doctors' languages, or an address whose postal area is not in the app's list of 25).
+The file has **15 real public announcements** from Toronto clinic websites, a community news article, and family health teams elsewhere in Ontario. Each text is an exact excerpt of the page, with the `source` URL and the date it was retrieved. Some excerpts join lines from different parts of the same page, such as the notice and the address in the footer. `label_note` explains any label a reviewer might question. The location labels now follow Ontario coverage and the explicit-postal-code extraction rule: no neighbouring FSA is substituted and missing codes stay null. Source text is unchanged. Check labels before publishing results; staff languages versus doctors' languages remains a judgement call.
 
 The 3 original invented examples are in `eval/synthetic.jsonl`. Run them with `npm run eval -- eval/synthetic.jsonl`, which writes `eval/synthetic-results.md`.
 
@@ -240,7 +260,7 @@ All three also have a "run now" button on the admin screens. Patients never see 
 - The patient's plan (which clinics they opened and what they reported) lives in `sessionStorage` in their browser and is never sent to the server.
 - The only patient-side data stored is `daily_counts`: counters by date, postal area and language.
 - A full report stores a hash of (secret, date, network address) that changes daily and cannot be reversed. The address itself is never stored or logged. A listing is hidden after 2 separate reports, and the endpoint is limited to 10 reports an hour per token.
-- Intake is paste-only. Nothing is scraped.
+- Staff can paste announcements. Optional discovery collects approved public HTML pages under robots.txt and network limits; source content and retrieval times are retained as evidence. No private groups or login-only content is collected.
 
 ## Tests
 
@@ -251,7 +271,7 @@ npm run typecheck
 
 ## Deploying to DigitalOcean App Platform
 
-The spec is `.do/app.yaml`: one web service, a managed PostgreSQL database, a `PRE_DEPLOY` job that runs migrations and the seed, and three `SCHEDULED` jobs (nightly expiry at 03:15, the freshness agent at 03:30 and waitlist check-ins at 03:45 Toronto time), in the Toronto region, with deploy on push.
+The spec is `.do/app.yaml`: one web service, a managed PostgreSQL database, a `PRE_DEPLOY` job that runs migrations and the seed, and four `SCHEDULED` jobs (nightly expiry at 03:15, freshness at 03:30, waitlist check-ins at 03:45, and optional discovery hourly at ten past, Toronto time), in the Toronto region, with deploy on push.
 
 **Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`), the database `cluster_name`, and the three `SCHEDULED` job blocks. With `LLM_PROVIDER=anthropic`, the nightly freshness agent makes a few API calls each night. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
@@ -283,7 +303,7 @@ doctl apps create --spec .do/app.yaml
 - The eval set has 15 of 20 real announcements, and has not been run against a real model yet.
 - Translations for the new screens are drafts. See `docs/translations-to-review.md`.
 - The rate limiter is in memory, which is fine for one web instance and not for several.
-- Postal areas cover the 25 Toronto areas from the demo. Other codes fall back to downtown with a notice.
+- Postal-area coordinates are a snapshot, not an authoritative address directory. Unknown areas show a notice and do not fall back to Toronto.
 - The waitlist concept has no reply simulation for the 30-day check-in (keep waiting, switch area, leave); the message is shown in the outbox only.
 
 `reference/demo.html` is the original single-file clickable demo the screens and wording were ported from.

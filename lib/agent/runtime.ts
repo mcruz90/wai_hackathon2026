@@ -42,6 +42,7 @@ export async function runAgent<Ctx>(opts: {
   tools: AgentTool<Ctx>[];
   ctx: Ctx;
   planner: Planner<Ctx>;
+  offline?: boolean;
 }): Promise<AgentResult> {
   const steps: Step[] = [];
   let finished = false;
@@ -69,7 +70,7 @@ export async function runAgent<Ctx>(opts: {
     }
   }
 
-  if (!usesClaudePlanner()) {
+  if (opts.offline || !usesClaudePlanner()) {
     await opts.planner(async (name, input) => {
       const r = await call(name, input);
       if (r.isError) throw new AgentError(r.content);

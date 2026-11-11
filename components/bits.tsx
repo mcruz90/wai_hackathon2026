@@ -49,7 +49,7 @@ export function ListingCard({ l, lang, href }: { l: PublicListing; lang: Lang; h
       </div>
       <div className="why">
         {l.lm && lang !== "en" ? <span className="pill match">{fill(w.speaks, { lang: w.own })}</span> : null}
-        <span className="pill">{fill(w.km, { n: l.d.toFixed(1) })}</span>
+        {l.d === null ? null : <span className="pill">{fill(w.km, { n: l.d.toFixed(1) })}</span>}
         <span className="pill">{w.source}: {w.src[l.sourceType] ?? w.src.rev}</span>
       </div>
       <FreshLine l={l} lang={lang} />

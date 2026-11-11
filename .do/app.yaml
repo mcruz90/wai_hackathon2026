@@ -20,6 +20,12 @@ envs:
   - key: DATABASE_URL
     scope: RUN_AND_BUILD_TIME
     value: ${db.DATABASE_URL}
+  - key: DISCOVERY_ENABLED
+    value: "false"
+  - key: DISCOVERY_SEARCH_PROVIDER
+    value: "off"
+  - key: SEARCH_RADIUS_KM
+    value: "75"
   - key: EXPIRY_DAYS
     value: "30"
   - key: WAITLIST_RADIUS_KM
@@ -112,5 +118,20 @@ jobs:
     environment_slug: node-js
     build_command: npx prisma generate
     run_command: npm run job:freshness
+    instance_count: 1
+    instance_size_slug: basic-xxs
+
+  - name: ontario-discovery
+    kind: SCHEDULED
+    schedule:
+      cron: "10 * * * *"
+      time_zone: America/Toronto
+    github:
+      repo: mcruz90/wai_hackathon2026
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npx prisma generate
+    run_command: npm run job:discover
     instance_count: 1
     instance_size_slug: basic-xxs

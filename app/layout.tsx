@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "New to Ontario Doctor Finder",
-  description: "Find a family doctor or nurse practitioner in Toronto who is taking new patients.",
+  description: "Find a family doctor or nurse practitioner in Ontario who is taking new patients.",
   robots: { index: false },
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };

@@ -1,7 +1,7 @@
 import type { Listing } from "@prisma/client";
 import { prisma } from "./db";
 import { config, DAY_MS, NEARBY_KM } from "./config";
-import { cleanFsa, DOWNTOWN } from "./fsa";
+import { cleanFsa, isOntarioFsa } from "./fsa";
 import { score } from "./ranking";
 import { LANGS, type Lang } from "./i18n";
 
@@ -9,7 +9,7 @@ export type PublicListing = {
   id: string; clinic: string; area: string; providerType: "family_doctor" | "nurse_practitioner";
   languages: string[]; phone: string | null; sourceType: string; sourceUrl: string | null;
   confirmedAt: string; age: number; daysLeft: number; isSample: boolean;
-  d: number; lm: boolean; fr: number; score: number;
+  d: number | null; lm: boolean; fr: number; score: number;
 };
 
 export type Search = { fsa: string; lang: Lang; type: "any" | "fd" | "np" };
@@ -18,22 +18,23 @@ export function parseSearch(sp: Record<string, string | string[] | undefined>): 
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || "";
   const lang = one(sp.lang) as Lang;
   const type = one(sp.type);
-  return { fsa: cleanFsa(one(sp.fsa)), lang: LANGS.includes(lang) ? lang : "en", type: type === "fd" || type === "np" ? type : "any" };
+  const fsa = cleanFsa(one(sp.fsa));
+  return { fsa: isOntarioFsa(fsa) ? fsa : "", lang: LANGS.includes(lang) ? lang : "en", type: type === "fd" || type === "np" ? type : "any" };
 }
 
 export function searchQuery(s: Search): string {
   return new URLSearchParams({ lang: s.lang, fsa: s.fsa, type: s.type }).toString();
 }
 
-export async function originFor(fsa: string): Promise<{ at: [number, number]; known: boolean }> {
+export async function originFor(fsa: string): Promise<{ at: [number, number] | null; known: boolean }> {
   const row = fsa ? await prisma.fsaCentroid.findUnique({ where: { fsa } }) : null;
-  return row ? { at: [row.lat, row.lng], known: true } : { at: DOWNTOWN, known: false };
+  return row ? { at: [row.lat, row.lng], known: true } : { at: null, known: false };
 }
 
 /** Patients only ever see listings that are live and not past their expiry date. */
 export const liveWhere = () => ({ status: "live" as const, expiresAt: { gt: new Date() }, lastConfirmedAt: { not: null } });
 
-export function toPublic(l: Listing, origin: [number, number], matchLangs: string[]): PublicListing {
+export function toPublic(l: Listing, origin: [number, number] | null, matchLangs: string[]): PublicListing {
   const now = new Date();
   const s = score({ lat: l.lat, lng: l.lng, languages: l.languages, lastConfirmedAt: l.lastConfirmedAt! }, origin, matchLangs, config.expiryDays, now);
   return {
@@ -46,16 +47,19 @@ export function toPublic(l: Listing, origin: [number, number], matchLangs: strin
 
 export async function rankedListings(s: Search, matchLangs: string[]): Promise<{ listings: PublicListing[]; known: boolean }> {
   const { at, known } = await originFor(s.fsa);
+  if (!at) return { listings: [], known: false };
+  const latDelta = config.searchRadiusKm / 110.6;
+  const lngDelta = config.searchRadiusKm / (111.3 * Math.cos(at[0]*Math.PI/180));
   const rows = await prisma.listing.findMany({
-    where: { ...liveWhere(), ...(s.type === "any" ? {} : { providerType: s.type === "np" ? "nurse_practitioner" : "family_doctor" }) },
+    where: { ...liveWhere(), lat: { gte: at[0]-latDelta, lte: at[0]+latDelta }, lng: { gte: at[1]-lngDelta, lte: at[1]+lngDelta }, ...(s.type === "any" ? {} : { providerType: s.type === "np" ? "nurse_practitioner" : "family_doctor" }) },
   });
-  const listings = rows.map((l) => toPublic(l, at, matchLangs)).sort((a, b) => b.score - a.score);
+  const listings = rows.map((l) => toPublic(l, at, matchLangs)).filter((l) => l.d !== null && l.d <= config.searchRadiusKm).sort((a, b) => b.score - a.score);
   return { listings, known };
 }
 
 /** True when no live listing within the nearby radius offers the language. */
 export function noLanguageMatchNearby(listings: PublicListing[]): boolean {
-  return !listings.some((l) => l.lm && l.d <= NEARBY_KM);
+  return !listings.some((l) => l.lm && l.d !== null && l.d <= NEARBY_KM);
 }
 
 export function expiryFrom(confirmed: Date): Date {

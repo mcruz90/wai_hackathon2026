@@ -27,7 +27,7 @@ export default function Start({ initial }: { initial: { lang: Lang; fsa: string;
         </div>
         <div>
           <label className="lbl" htmlFor="postal">{w.postal}</label>
-          <input type="text" id="postal" name="fsa" maxLength={3} autoComplete="off" required pattern="[A-Za-z][0-9][A-Za-z]"
+          <input type="text" id="postal" name="fsa" maxLength={3} autoComplete="off" required pattern="[KLMNPklmnp][0-9][ABCEGHJKLMNPRSTVWXYZabceghjklmnprstvwxyz]"
             placeholder="M1P" value={fsa} onChange={(e) => setFsa(e.target.value.trim())} />
         </div>
         <div>

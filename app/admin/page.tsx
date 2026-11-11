@@ -1,5 +1,6 @@
+import { reviewedClinicHosts } from "@/lib/source-trust";
 import BatchReview from "@/components/BatchReview";
-import { batchEligibility, clinicSourceHosts, MAX_REVIEW_BATCH, reviewVersion } from "@/lib/review-policy";
+import { batchEligibility, MAX_REVIEW_BATCH, reviewVersion } from "@/lib/review-policy";
 import { reviewInclude } from "@/lib/batch-review";
 import AdminNav from "@/components/AdminNav";
 import { requireAdmin } from "@/lib/auth";
@@ -31,7 +32,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   const rest = listings.filter((l) => l.status !== "pending");
   const now = new Date(), today = day(now);
   const provider = process.env.LLM_PROVIDER || "anthropic";
-  const hosts = clinicSourceHosts();
+  const hosts = await reviewedClinicHosts(prisma);
   const ctx = { listings, fsas: centroids.map((f) => f.fsa), now, hosts };
   const checks = new Map(pending.map((l) => [l.id, batchEligibility(l, ctx)]));
   const ready = pending.filter((l) => checks.get(l.id)!.eligible);
@@ -67,7 +68,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
 
       <section className="stack" id="batch">
         <h2>Ready for batch review ({ready.length})</h2>
-        {!hosts.length ? <p className="note">No clinic source hosts have been configured. Listings remain available for individual review. A pilot administrator can configure approved clinic websites before using batch publication.</p> : null}
+        {!hosts.length ? <p className="note">No clinic source hosts have been configured or verified in Discovery. Listings remain available for individual review. A pilot administrator can configure approved clinic websites before using batch publication.</p> : null}
         {ready.length > MAX_REVIEW_BATCH ? <p className="note">Showing the first {MAX_REVIEW_BATCH} eligible listings. Remaining listings will be available in the next batch.</p> : null}
         {ready.length ? <BatchReview key={ready.slice(0, MAX_REVIEW_BATCH).map(reviewVersion).join(":")} action={approveBatch} rows={ready.slice(0, MAX_REVIEW_BATCH).map((l) => ({
           id: l.id, version: reviewVersion(l), clinic: l.clinic, area: l.area, fsa: l.fsa!, providerType: l.providerType,
@@ -97,6 +98,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                   {notAccepting ? `The announcement does not clearly say the clinic is taking new patients (the AI read: ${String(c.accepting ?? "unclear")}). ` : ""}
                   {reasons.length ? `Why: ${reasons.join("; ")}.` : notAccepting ? "" : "Check each field against the text, then approve."}
                 </span>
+                {c.discovery && typeof c.discovery === "object" && typeof (c.discovery as Record<string, unknown>).check_id === "string" ? <a className="small" href={`/admin/discovery?check=${(c.discovery as Record<string, unknown>).check_id}#evidence-${(c.discovery as Record<string, unknown>).check_id}`}>View collected source evidence and retrieval time</a> : null}
                 {c.notes ? <span className="small muted">AI note: {String(c.notes)}</span> : null}
                 {c.agent_rationale ? <span className="small muted">Agent: {String(c.agent_rationale)}</span> : null}
               </div>

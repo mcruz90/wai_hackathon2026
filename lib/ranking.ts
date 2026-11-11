@@ -10,11 +10,11 @@ export function ageDays(lastConfirmedAt: Date, now = new Date()): number {
   return Math.max(0, Math.floor((now.getTime() - lastConfirmedAt.getTime()) / DAY_MS));
 }
 
-export function score(l: Rankable, origin: [number, number], matchLangs: string[], expiryDays: number, now = new Date()) {
-  const d = km(origin, [l.lat, l.lng]);
+export function score(l: Rankable, origin: [number, number] | null, matchLangs: string[], expiryDays: number, now = new Date()) {
+  const d = origin ? km(origin, [l.lat, l.lng]) : null;
   const lm = l.languages.some((x) => matchLangs.includes(x));
   const age = ageDays(l.lastConfirmedAt, now);
   const fr = Math.max(0, 1 - age / expiryDays);
-  const total = WEIGHTS.language * (lm ? 1 : 0) + WEIGHTS.freshness * fr + WEIGHTS.distance * Math.max(0, 1 - d / NEARBY_KM);
+  const total = WEIGHTS.language * (lm ? 1 : 0) + WEIGHTS.freshness * fr + WEIGHTS.distance * (d === null ? 0 : Math.max(0, 1 - d / NEARBY_KM));
   return { d, lm, age, fr, score: total };
 }

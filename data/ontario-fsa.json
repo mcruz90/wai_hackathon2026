@@ -1,0 +1,2637 @@
+{
+  "K0A": [
+    45.2557,
+    -76.2754,
+    "National Capital Region (Almonte)"
+  ],
+  "K0B": [
+    45.5029,
+    -74.7479,
+    "Prescott and Russell United Counties (Alfred)"
+  ],
+  "K0C": [
+    45.1686,
+    -74.8966,
+    "Stormont, Dundas and Glengarry United Counties (Alexandria)"
+  ],
+  "K0E": [
+    44.8734,
+    -75.4416,
+    "South Leeds and Grenville United Counties (Prescott)"
+  ],
+  "K0G": [
+    45.0466,
+    -76.4757,
+    "Rideau Lakes area (Kemptville)"
+  ],
+  "K0H": [
+    44.7208,
+    -76.8334,
+    "Frontenac County, Addington County, Loyalist Shores and Southwest Leeds (Inverary)"
+  ],
+  "K0J": [
+    45.6606,
+    -77.5886,
+    "Renfrew County and Lanark Highlands Township (Deep River)"
+  ],
+  "K0K": [
+    44.3261,
+    -77.4318,
+    "Quinte Shores, East Northumberland County & Prince Edward County (Picton)"
+  ],
+  "K0L": [
+    44.7767,
+    -77.9687,
+    "Peterborough County and North Hastings County (Lakefield)"
+  ],
+  "K0M": [
+    44.8645,
+    -78.6553,
+    "Kawartha lakes and Haliburton County (Bobcaygeon)"
+  ],
+  "K1A": [
+    45.4207,
+    -75.7023,
+    "Government of Canada Ottawa and Gatineau offices"
+  ],
+  "K1B": [
+    45.4284,
+    -75.5875,
+    "Gloucester (Blackburn Hamlet / Pine View)"
+  ],
+  "K1C": [
+    45.4677,
+    -75.5399,
+    "Gloucester (West Orleans)"
+  ],
+  "K1E": [
+    45.4771,
+    -75.5046,
+    "Orleans (Queenswood)"
+  ],
+  "K1G": [
+    45.3548,
+    -75.5773,
+    "Ottawa (Riverview / Hawthorne)"
+  ],
+  "K1H": [
+    45.3876,
+    -75.6593,
+    "Ottawa (Alta Vista)"
+  ],
+  "K1J": [
+    45.4519,
+    -75.6036,
+    "Gloucester (Beacon Hill / Cyrville)"
+  ],
+  "K1K": [
+    45.4448,
+    -75.6431,
+    "Ottawa (Overbrook)"
+  ],
+  "K1L": [
+    45.44,
+    -75.663,
+    "Ottawa (Vanier)"
+  ],
+  "K1M": [
+    45.4491,
+    -75.6818,
+    "Ottawa (Rockcliffe Park / New Edinburgh)"
+  ],
+  "K1N": [
+    45.4289,
+    -75.6844,
+    "Ottawa (Lower Town / Sandy Hill / University of Ottawa)"
+  ],
+  "K1P": [
+    45.4225,
+    -75.7026,
+    "Ottawa (Parliament Hill)"
+  ],
+  "K1R": [
+    45.4123,
+    -75.7108,
+    "Ottawa (West Downtown area)"
+  ],
+  "K1S": [
+    45.399,
+    -75.6871,
+    "Ottawa (The Glebe / Ottawa South / Ottawa East)"
+  ],
+  "K1T": [
+    45.3295,
+    -75.6156,
+    "Gloucester (Blossom Park / Hunt Club East / Leitrim)"
+  ],
+  "K1V": [
+    45.3281,
+    -75.6719,
+    "Ottawa (Riverside Park / Hunt Club West / Riverside South / YOW)"
+  ],
+  "K1W": [
+    45.4365,
+    -75.5158,
+    "Gloucester (South Orleans)"
+  ],
+  "K1X": [
+    45.2756,
+    -75.6283,
+    "Gloucester South"
+  ],
+  "K1Y": [
+    45.4023,
+    -75.7329,
+    "Ottawa West"
+  ],
+  "K1Z": [
+    45.3867,
+    -75.7405,
+    "Ottawa (Westboro)"
+  ],
+  "K2A": [
+    45.3805,
+    -75.7636,
+    "Ottawa (Highland Park / Carlingwood)"
+  ],
+  "K2B": [
+    45.3645,
+    -75.7934,
+    "Ottawa (Britannia / Pinecrest)"
+  ],
+  "K2C": [
+    45.3679,
+    -75.7381,
+    "Ottawa (Queensway / Copeland / Carlington / Carleton Heights)"
+  ],
+  "K2E": [
+    45.3438,
+    -75.7157,
+    "Nepean East"
+  ],
+  "K2G": [
+    45.3211,
+    -75.7391,
+    "Nepean (Davidson Heights)"
+  ],
+  "K2H": [
+    45.3433,
+    -75.8265,
+    "Nepean (Bells Corners)"
+  ],
+  "K2J": [
+    45.2691,
+    -75.7518,
+    "Nepean (Barrhaven)"
+  ],
+  "K2K": [
+    45.3704,
+    -75.9198,
+    "Kanata (Beaverbrook / South March)"
+  ],
+  "K2L": [
+    45.3001,
+    -75.9244,
+    "Kanata (Katimavik-Hazeldean / Glen Cairn)"
+  ],
+  "K2M": [
+    45.2861,
+    -75.8562,
+    "Kanata (Bridlewood)"
+  ],
+  "K2P": [
+    45.4166,
+    -75.6904,
+    "Ottawa (Centre Town)"
+  ],
+  "K2R": [
+    45.2899,
+    -75.8126,
+    "Nepean (Fallowfield Village / Cedarhill Estates / Orchard Estates)"
+  ],
+  "K2S": [
+    45.2501,
+    -75.9161,
+    "Stittsville"
+  ],
+  "K2T": [
+    45.317,
+    -75.9367,
+    "Kanata (Marchwood)"
+  ],
+  "K2V": [
+    45.2854,
+    -75.8928,
+    "Kanata (Terry Fox / Palladium)"
+  ],
+  "K2W": [
+    45.3699,
+    -75.9887,
+    "Kanata (North March)"
+  ],
+  "K4A": [
+    45.4697,
+    -75.4715,
+    "Orleans (Fallingbrook)"
+  ],
+  "K4B": [
+    45.4101,
+    -75.3638,
+    "Cumberland Township"
+  ],
+  "K4C": [
+    45.498,
+    -75.3916,
+    "Cumberland"
+  ],
+  "K4K": [
+    45.5501,
+    -75.291,
+    "Rockland"
+  ],
+  "K4M": [
+    45.2154,
+    -75.6528,
+    "Manotick"
+  ],
+  "K4P": [
+    45.2434,
+    -75.5674,
+    "Greely"
+  ],
+  "K4R": [
+    45.2388,
+    -75.3527,
+    "Russell"
+  ],
+  "K6A": [
+    45.6001,
+    -74.616,
+    "Hawkesbury"
+  ],
+  "K6H": [
+    45.0565,
+    -74.6852,
+    "Cornwall East"
+  ],
+  "K6J": [
+    45.0223,
+    -74.7569,
+    "Cornwall West"
+  ],
+  "K6K": [
+    45.061,
+    -74.7774,
+    "Cornwall North"
+  ],
+  "K6T": [
+    44.6301,
+    -75.7448,
+    "Elizabethtown"
+  ],
+  "K6V": [
+    44.6573,
+    -75.7146,
+    "Brockville"
+  ],
+  "K7A": [
+    44.9001,
+    -76.0161,
+    "Smiths Falls"
+  ],
+  "K7C": [
+    45.1334,
+    -76.1494,
+    "Carleton Place"
+  ],
+  "K7G": [
+    44.3334,
+    -76.1661,
+    "Gananoque"
+  ],
+  "K7H": [
+    44.9001,
+    -76.2494,
+    "Perth"
+  ],
+  "K7K": [
+    44.2569,
+    -76.4717,
+    "Kingston (SW Pittsburgh Township)"
+  ],
+  "K7L": [
+    44.2955,
+    -76.428,
+    "Kingston (Downtown)"
+  ],
+  "K7M": [
+    44.2411,
+    -76.5788,
+    "Kingston (Reddendale / Cataraqui / Collins Bay)"
+  ],
+  "K7N": [
+    44.2224,
+    -76.65,
+    "Amherstview"
+  ],
+  "K7P": [
+    44.2814,
+    -76.6111,
+    "Kingston (Westbrook / Cataraqui Woods / Cedarwood)"
+  ],
+  "K7R": [
+    44.2501,
+    -76.9494,
+    "Napanee"
+  ],
+  "K7S": [
+    45.4334,
+    -76.3494,
+    "Arnprior"
+  ],
+  "K7V": [
+    45.4668,
+    -76.6827,
+    "Renfrew"
+  ],
+  "K8A": [
+    45.7466,
+    -77.2047,
+    "Pembroke Central and northern subdivisions"
+  ],
+  "K8B": [
+    45.808,
+    -77.0806,
+    "Pembroke (Pleasant View / Fairview)"
+  ],
+  "K8H": [
+    45.8945,
+    -77.2801,
+    "Petawawa"
+  ],
+  "K8N": [
+    44.1735,
+    -77.3684,
+    "Belleville East"
+  ],
+  "K8P": [
+    44.1665,
+    -77.4037,
+    "Belleville West"
+  ],
+  "K8R": [
+    44.1399,
+    -77.4683,
+    "Belleville (SE Sidney Township / Avondale)"
+  ],
+  "K8V": [
+    44.0992,
+    -77.5776,
+    "Trenton"
+  ],
+  "K9A": [
+    43.9598,
+    -78.1651,
+    "Cobourg"
+  ],
+  "K9H": [
+    44.3245,
+    -78.3184,
+    "Peterborough North"
+  ],
+  "K9J": [
+    44.3104,
+    -78.2396,
+    "Peterborough South"
+  ],
+  "K9K": [
+    44.3138,
+    -78.3606,
+    "Peterborough (Fairbairn Meadows / Jackson Heights)"
+  ],
+  "K9L": [
+    44.3552,
+    -78.3199,
+    "Peterborough (Terra View Heights / Woodland Acres / Donwood)"
+  ],
+  "K9V": [
+    44.3501,
+    -78.7329,
+    "Lindsay"
+  ],
+  "L0A": [
+    44.1263,
+    -78.5193,
+    "West Northumberland County (Millbrook)"
+  ],
+  "L0B": [
+    44.0773,
+    -78.7465,
+    "East Durham Regional Municipality (Orono)"
+  ],
+  "L0C": [
+    44.2094,
+    -79.0725,
+    "West Durham Regional Municipality (Sunderland)"
+  ],
+  "L0E": [
+    44.3199,
+    -79.2778,
+    "Lake Simcoe Southeast Shore (Sutton West)"
+  ],
+  "L0G": [
+    44.0586,
+    -79.6235,
+    "Ontario Centre (Queensville)"
+  ],
+  "L0H": [
+    43.9023,
+    -79.1554,
+    "Whitby Region (Gormley)"
+  ],
+  "L0J": [
+    43.8566,
+    -79.6485,
+    "North Peel Regional Municipality (Kleinburg)"
+  ],
+  "L0K": [
+    44.6233,
+    -79.1235,
+    "Lake Simcoe North Shore (Coldwater)"
+  ],
+  "L0L": [
+    44.4548,
+    -79.7352,
+    "Lake Simcoe West Shore (Oro)"
+  ],
+  "L0M": [
+    44.3269,
+    -80.0333,
+    "Georgian Bay South Shore (Angus)"
+  ],
+  "L0N": [
+    44.0317,
+    -80.2068,
+    "Dufferin County (Shelburne)"
+  ],
+  "L0P": [
+    43.4906,
+    -79.9998,
+    "Halton Regional Municipality (Campbellville)"
+  ],
+  "L0R": [
+    43.1607,
+    -79.7463,
+    "East Haldimand County (Waterdown)"
+  ],
+  "L0S": [
+    42.9071,
+    -79.0832,
+    "Niagara Regional Municipality (Fonthill)"
+  ],
+  "L1A": [
+    44.0168,
+    -78.3995,
+    "Port Hope"
+  ],
+  "L1B": [
+    43.9235,
+    -78.5457,
+    "Bowmanville East"
+  ],
+  "L1C": [
+    43.9714,
+    -78.7095,
+    "Bowmanville West"
+  ],
+  "L1E": [
+    43.8969,
+    -78.7683,
+    "Courtice"
+  ],
+  "L1G": [
+    43.9233,
+    -78.8684,
+    "Oshawa Central"
+  ],
+  "L1H": [
+    43.9721,
+    -78.8837,
+    "Oshawa Southeast"
+  ],
+  "L1J": [
+    43.8852,
+    -78.8771,
+    "Oshawa Southwest"
+  ],
+  "L1K": [
+    43.9251,
+    -78.8287,
+    "Oshawa East"
+  ],
+  "L1L": [
+    43.9581,
+    -78.8972,
+    "Oshawa North"
+  ],
+  "L1M": [
+    43.9566,
+    -78.9779,
+    "Whitby North"
+  ],
+  "L1N": [
+    43.8721,
+    -78.9273,
+    "Whitby Southeast"
+  ],
+  "L1P": [
+    43.8866,
+    -78.975,
+    "Whitby Southwest"
+  ],
+  "L1R": [
+    43.9215,
+    -78.9412,
+    "Whitby Central"
+  ],
+  "L1S": [
+    43.8404,
+    -79.0251,
+    "Ajax Southwest"
+  ],
+  "L1T": [
+    43.8843,
+    -79.0534,
+    "Ajax Northwest"
+  ],
+  "L1V": [
+    43.8605,
+    -79.1618,
+    "Pickering Southwest"
+  ],
+  "L1W": [
+    43.8197,
+    -79.0803,
+    "Pickering South"
+  ],
+  "L1X": [
+    43.8558,
+    -79.0972,
+    "Pickering Central"
+  ],
+  "L1Y": [
+    43.9555,
+    -79.1194,
+    "Pickering North"
+  ],
+  "L1Z": [
+    43.8773,
+    -79.0055,
+    "Ajax East"
+  ],
+  "L2A": [
+    42.9001,
+    -78.9329,
+    "Fort Erie"
+  ],
+  "L2E": [
+    43.0537,
+    -79.1018,
+    "Niagara Falls Central"
+  ],
+  "L2G": [
+    43.0696,
+    -79.0818,
+    "Niagara Falls Southeast"
+  ],
+  "L2H": [
+    43.1009,
+    -79.1379,
+    "Niagara Falls West"
+  ],
+  "L2J": [
+    43.1296,
+    -79.1034,
+    "Niagara Falls North"
+  ],
+  "L2M": [
+    43.196,
+    -79.2161,
+    "St. Catharines Northeast"
+  ],
+  "L2N": [
+    43.1923,
+    -79.2559,
+    "St. Catharines Northwest"
+  ],
+  "L2P": [
+    43.1527,
+    -79.2091,
+    "St. Catharines East"
+  ],
+  "L2R": [
+    43.1419,
+    -79.2966,
+    "St. Catharines Central"
+  ],
+  "L2S": [
+    43.1447,
+    -79.2634,
+    "St. Catharines Southwest"
+  ],
+  "L2T": [
+    43.1313,
+    -79.2317,
+    "St. Catharines South"
+  ],
+  "L2V": [
+    43.1142,
+    -79.2035,
+    "St. Catharines Southeast"
+  ],
+  "L2W": [
+    43.1688,
+    -79.2794,
+    "St. Catharines West"
+  ],
+  "L3B": [
+    42.9878,
+    -79.2219,
+    "Welland East"
+  ],
+  "L3C": [
+    42.9998,
+    -79.2656,
+    "Welland West"
+  ],
+  "L3K": [
+    42.9001,
+    -79.2329,
+    "Port Colborne"
+  ],
+  "L3M": [
+    43.2001,
+    -79.5663,
+    "Grimsby"
+  ],
+  "L3P": [
+    43.8769,
+    -79.2686,
+    "Markham Central"
+  ],
+  "L3R": [
+    43.8479,
+    -79.3288,
+    "Markham Outer Southwest"
+  ],
+  "L3S": [
+    43.8486,
+    -79.2617,
+    "Markham Southeast"
+  ],
+  "L3T": [
+    43.8227,
+    -79.3946,
+    "Thornhill East"
+  ],
+  "L3V": [
+    44.6087,
+    -79.4207,
+    "Orillia"
+  ],
+  "L3X": [
+    44.0433,
+    -79.4912,
+    "Newmarket Southwest"
+  ],
+  "L3Y": [
+    44.0565,
+    -79.4555,
+    "Newmarket Northeast"
+  ],
+  "L3Z": [
+    44.1168,
+    -79.5663,
+    "Bradford"
+  ],
+  "L4A": [
+    43.9668,
+    -79.2496,
+    "Stouffville"
+  ],
+  "L4B": [
+    43.8582,
+    -79.3985,
+    "Richmond Hill Southeast"
+  ],
+  "L4C": [
+    43.8669,
+    -79.4414,
+    "Richmond Hill Southwest"
+  ],
+  "L4E": [
+    43.9394,
+    -79.4349,
+    "Richmond Hill North"
+  ],
+  "L4G": [
+    44.0001,
+    -79.4663,
+    "Aurora"
+  ],
+  "L4H": [
+    43.8432,
+    -79.5644,
+    "Woodbridge North"
+  ],
+  "L4J": [
+    43.8156,
+    -79.4534,
+    "Thornhill West"
+  ],
+  "L4K": [
+    43.8001,
+    -79.4829,
+    "Concord"
+  ],
+  "L4L": [
+    43.8064,
+    -79.5995,
+    "Woodbridge South"
+  ],
+  "L4M": [
+    44.4001,
+    -79.6663,
+    "Barrie North"
+  ],
+  "L4N": [
+    44.3572,
+    -79.6929,
+    "Barrie South"
+  ],
+  "L4P": [
+    44.2501,
+    -79.4663,
+    "Keswick"
+  ],
+  "L4R": [
+    44.7501,
+    -79.883,
+    "Midland"
+  ],
+  "L4S": [
+    43.8985,
+    -79.4143,
+    "Richmond Hill Central"
+  ],
+  "L4T": [
+    43.7139,
+    -79.6434,
+    "Mississauga (Malton)"
+  ],
+  "L4V": [
+    43.6935,
+    -79.6069,
+    "Mississauga (Wildwood)"
+  ],
+  "L4W": [
+    43.6413,
+    -79.6296,
+    "Mississauga (Matheson / East Rathwood)"
+  ],
+  "L4X": [
+    43.6178,
+    -79.5786,
+    "Mississauga (East Applewood / East Dixie / NE Lakeview)"
+  ],
+  "L4Y": [
+    43.6028,
+    -79.5929,
+    "Mississauga (West Applewood / West Dixie / NW Lakeview)"
+  ],
+  "L4Z": [
+    43.6192,
+    -79.6538,
+    "Mississauga (West Rathwood / East Hurontario / SE Gateway)"
+  ],
+  "L5A": [
+    43.5883,
+    -79.6091,
+    "Mississauga (Mississauga Valleys / East Cooksville)"
+  ],
+  "L5B": [
+    43.5771,
+    -79.6306,
+    "Mississauga (West Cooksville / Fairview / City Centre / East Creditview)"
+  ],
+  "L5C": [
+    43.5624,
+    -79.6504,
+    "Mississauga (West Creditview / Mavis / Erindale)"
+  ],
+  "L5E": [
+    43.5836,
+    -79.561,
+    "Mississauga (Central Lakeview)"
+  ],
+  "L5G": [
+    43.5647,
+    -79.5852,
+    "Mississauga (SW Lakeview / Mineola / East Port Credit)"
+  ],
+  "L5H": [
+    43.5419,
+    -79.6164,
+    "Mississauga (West Port Credit / Lorne Park / East Sheridan)"
+  ],
+  "L5J": [
+    43.5102,
+    -79.6296,
+    "Mississauga (Clarkson / Southdown)"
+  ],
+  "L5K": [
+    43.5272,
+    -79.6617,
+    "Mississauga (West Sheridan)"
+  ],
+  "L5L": [
+    43.5373,
+    -79.6903,
+    "Mississauga (Erin Mills / Western Business Park)"
+  ],
+  "L5M": [
+    43.5637,
+    -79.7202,
+    "Mississauga (Churchill Meadows / Central Erin Mills / South Streetsville)"
+  ],
+  "L5N": [
+    43.5924,
+    -79.7611,
+    "Mississauga (Lisgar / Meadowvale)"
+  ],
+  "L5P": [
+    43.6904,
+    -79.6238,
+    "Mississauga (YYZ)"
+  ],
+  "L5R": [
+    43.606,
+    -79.6708,
+    "Mississauga (West Hurontario / SW Gateway)"
+  ],
+  "L5S": [
+    43.6801,
+    -79.6783,
+    "Mississauga (Cardiff / NE Gateway)"
+  ],
+  "L5T": [
+    43.6683,
+    -79.6182,
+    "Mississauga (Courtney Park / East Gateway)"
+  ],
+  "L5V": [
+    43.5972,
+    -79.6931,
+    "Mississauga (East Credit)"
+  ],
+  "L5W": [
+    43.6313,
+    -79.7148,
+    "Mississauga (Meadowvale Village / West Gateway)"
+  ],
+  "L6A": [
+    43.8501,
+    -79.5163,
+    "Maple"
+  ],
+  "L6B": [
+    43.9007,
+    -79.2175,
+    "Markham East"
+  ],
+  "L6C": [
+    43.9045,
+    -79.3392,
+    "Markham Northwest"
+  ],
+  "L6E": [
+    43.9002,
+    -79.2676,
+    "Markham Northeast"
+  ],
+  "L6G": [
+    43.8485,
+    -79.3346,
+    "Markham Inner Southwest"
+  ],
+  "L6H": [
+    43.4881,
+    -79.7098,
+    "Oakville North"
+  ],
+  "L6J": [
+    43.4757,
+    -79.6591,
+    "Oakville Northeast"
+  ],
+  "L6K": [
+    43.4396,
+    -79.6878,
+    "Oakville East"
+  ],
+  "L6L": [
+    43.4032,
+    -79.7186,
+    "Oakville South"
+  ],
+  "L6M": [
+    43.4464,
+    -79.7593,
+    "Oakville West"
+  ],
+  "L6P": [
+    43.7942,
+    -79.7021,
+    "Brampton North"
+  ],
+  "L6R": [
+    43.7592,
+    -79.7605,
+    "Brampton Northwest"
+  ],
+  "L6S": [
+    43.7379,
+    -79.726,
+    "Brampton North Central"
+  ],
+  "L6T": [
+    43.7196,
+    -79.6854,
+    "Brampton East"
+  ],
+  "L6V": [
+    43.7059,
+    -79.7626,
+    "Brampton Central"
+  ],
+  "L6W": [
+    43.68,
+    -79.7273,
+    "Brampton Southeast"
+  ],
+  "L6X": [
+    43.6665,
+    -79.8054,
+    "Brampton Southwest"
+  ],
+  "L6Y": [
+    43.6249,
+    -79.7876,
+    "Brampton South"
+  ],
+  "L6Z": [
+    43.7328,
+    -79.7953,
+    "Brampton West Central"
+  ],
+  "L7A": [
+    43.6909,
+    -79.8377,
+    "Brampton West"
+  ],
+  "L7B": [
+    43.9286,
+    -79.5269,
+    "King City"
+  ],
+  "L7C": [
+    43.8753,
+    -79.8558,
+    "Caledon"
+  ],
+  "L7E": [
+    43.8795,
+    -79.7379,
+    "Bolton"
+  ],
+  "L7G": [
+    43.6501,
+    -79.9163,
+    "Georgetown"
+  ],
+  "L7J": [
+    43.6297,
+    -80.0415,
+    "Acton"
+  ],
+  "L7K": [
+    43.8602,
+    -79.996,
+    "Caledon Village"
+  ],
+  "L7L": [
+    43.3799,
+    -79.7668,
+    "Burlington Northeast"
+  ],
+  "L7M": [
+    43.4342,
+    -79.8701,
+    "Burlington North"
+  ],
+  "L7N": [
+    43.3512,
+    -79.784,
+    "Burlington East"
+  ],
+  "L7P": [
+    43.3806,
+    -79.886,
+    "Burlington West"
+  ],
+  "L7R": [
+    43.375,
+    -79.8434,
+    "Burlington Southeast"
+  ],
+  "L7S": [
+    43.323,
+    -79.8092,
+    "Burlington South"
+  ],
+  "L7T": [
+    43.3081,
+    -79.8507,
+    "Burlington Southwest"
+  ],
+  "L8B": [
+    43.3334,
+    -79.8829,
+    "Waterdown"
+  ],
+  "L8E": [
+    43.2245,
+    -79.6988,
+    "Hamilton (Confederation Park / Nashdale / East Kentley / Riverdale / Lakely / Grayside / North Stoney Creek)"
+  ],
+  "L8G": [
+    43.2164,
+    -79.7423,
+    "Hamilton (Greenford / North Gershome / West Stoney Creek)"
+  ],
+  "L8H": [
+    43.2596,
+    -79.7925,
+    "Hamilton (West Kentley / McQuesten / Parkview / Hamilton Beach / East Industrial Sector / Normanhurst / Homeside / East Crown Point)"
+  ],
+  "L8J": [
+    43.1836,
+    -79.721,
+    "Hamilton (East Albion Falls / South Stoney Creek)"
+  ],
+  "L8K": [
+    43.2211,
+    -79.7994,
+    "Hamilton (East Delta / Bartonville / Glenview / Rosedale / Lower King's Forest / Red Hill / Corman / Vincent / South Gershome)"
+  ],
+  "L8L": [
+    43.2783,
+    -79.8344,
+    "Hamilton (West Industrial Sector / West Crown Point / North Stipley / North Gibson / Landsdale / Keith / North End / Beasley)"
+  ],
+  "L8M": [
+    43.2441,
+    -79.8359,
+    "Hamilton (West Delta / Blakeley / South Stipley / South Gibson / St. Clair)"
+  ],
+  "L8N": [
+    43.4017,
+    -80.017,
+    "Hamilton (Stinson / Corktown)"
+  ],
+  "L8P": [
+    43.2514,
+    -79.8925,
+    "Hamilton (Durand / Kirkendall / Chedoke Park)"
+  ],
+  "L8R": [
+    43.2726,
+    -79.8792,
+    "Hamilton (Central / Strathcona / South Dundurn)"
+  ],
+  "L8S": [
+    43.2606,
+    -79.9161,
+    "Hamilton (Westdale / Cootes Paradise / Ainslie Wood)"
+  ],
+  "L8T": [
+    43.2199,
+    -79.8286,
+    "Hamilton (Sherwood / Huntington / Upper King's Forest / Lisgar / Berrisfield / Hampton Heights / Sunninghill)"
+  ],
+  "L8V": [
+    43.2266,
+    -79.8499,
+    "Hamilton (Raleigh / Macassa / Lawfield / Thorner / Burkholme / Eastmount)"
+  ],
+  "L8W": [
+    43.1958,
+    -79.8458,
+    "Hamilton (West Albion Falls / Hannon / Rymal / Trenholme / Quinndale / Templemead / Broughton / Eleanor / Randall / Rushdale / Butler / East Chappel)"
+  ],
+  "L9A": [
+    43.2271,
+    -79.871,
+    "Hamilton (Crerar / Bruleville / Hill Park / Inch Park / Centremount / Balfour / Greeningdon / Jerome)"
+  ],
+  "L9B": [
+    43.2055,
+    -79.9004,
+    "Hamilton (Barnstown / West Chappel / Allison / Ryckmans / Mewburn / Sheldon / Falkirk / Carpenter / Kennedy / Southwest Outskirts)"
+  ],
+  "L9C": [
+    43.2313,
+    -79.9049,
+    "Hamilton (Southam / Bonnington / Yeoville / Kernighan / Gourley / Rolston / Buchanan / Mohawk / Westcliffe / Gilbert / Gilkson / Gurnett / Fessenden / Mountview)"
+  ],
+  "L9E": [
+    43.5168,
+    -79.8829,
+    "Milton"
+  ],
+  "L9G": [
+    43.1836,
+    -79.9902,
+    "Ancaster West"
+  ],
+  "L9H": [
+    43.2638,
+    -79.9524,
+    "Dundas"
+  ],
+  "L9J": [
+    44.3186,
+    -79.6761,
+    "Barrie"
+  ],
+  "L9K": [
+    43.225,
+    -79.9427,
+    "Ancaster East"
+  ],
+  "L9L": [
+    44.1068,
+    -78.9444,
+    "Port Perry"
+  ],
+  "L9M": [
+    44.7834,
+    -79.9164,
+    "Penetanguishene"
+  ],
+  "L9N": [
+    44.1149,
+    -79.5014,
+    "Holland Landing"
+  ],
+  "L9P": [
+    44.1001,
+    -79.1163,
+    "Uxbridge"
+  ],
+  "L9R": [
+    44.1501,
+    -79.8663,
+    "Alliston"
+  ],
+  "L9S": [
+    44.3001,
+    -79.6496,
+    "Innisfil"
+  ],
+  "L9T": [
+    43.5148,
+    -79.884,
+    "Milton"
+  ],
+  "L9V": [
+    43.9597,
+    -80.1079,
+    "Orangeville North"
+  ],
+  "L9W": [
+    43.9702,
+    -80.016,
+    "Orangeville South"
+  ],
+  "L9X": [
+    44.443175,
+    -79.77035,
+    "Midhurst; Minesing; Springwater; Barrie"
+  ],
+  "L9Y": [
+    44.4834,
+    -80.2164,
+    "Collingwood"
+  ],
+  "L9Z": [
+    44.5168,
+    -80.0164,
+    "Wasaga Beach"
+  ],
+  "M1B": [
+    43.8113,
+    -79.193,
+    "Scarborough (Malvern / Rouge River)"
+  ],
+  "M1C": [
+    43.7878,
+    -79.1564,
+    "Scarborough (Rouge Hill / Port Union / Highland Creek)"
+  ],
+  "M1E": [
+    43.7678,
+    -79.1866,
+    "Scarborough (Guildwood / Morningside / Ellesmere)"
+  ],
+  "M1G": [
+    43.7712,
+    -79.2144,
+    "Scarborough (Woburn)"
+  ],
+  "M1H": [
+    43.7686,
+    -79.2389,
+    "Scarborough (Cedarbrae)"
+  ],
+  "M1J": [
+    43.7464,
+    -79.2323,
+    "Scarborough (Eglinton)"
+  ],
+  "M1K": [
+    43.7298,
+    -79.2639,
+    "Scarborough (Kennedy Park / Ionview / East Birchmount Park)"
+  ],
+  "M1L": [
+    43.7122,
+    -79.2843,
+    "Scarborough (The Golden Mile / Clairlea / Oakridge / Birchmount Park East)"
+  ],
+  "M1M": [
+    43.7247,
+    -79.2312,
+    "Scarborough (Cliffside / Cliffcrest / Scarborough Village West)"
+  ],
+  "M1N": [
+    43.6952,
+    -79.2646,
+    "Scarborough (Birch Cliff / Cliffside West)"
+  ],
+  "M1P": [
+    43.7612,
+    -79.2707,
+    "Scarborough (Dorset Park / Wexford Heights / Scarborough Town Centre)"
+  ],
+  "M1R": [
+    43.7507,
+    -79.3003,
+    "Scarborough (Wexford / Maryvale)"
+  ],
+  "M1S": [
+    43.7946,
+    -79.2644,
+    "Scarborough (Agincourt)"
+  ],
+  "M1T": [
+    43.7812,
+    -79.3036,
+    "Scarborough (Clarks Corners / Tam O'Shanter / Sullivan)"
+  ],
+  "M1V": [
+    43.8177,
+    -79.2819,
+    "Scarborough (Milliken / Agincourt North / Steeles East / L'Amoreaux East)"
+  ],
+  "M1W": [
+    43.8016,
+    -79.3216,
+    "Scarborough (Steeles West / L'Amoreaux West)"
+  ],
+  "M1X": [
+    43.834,
+    -79.2069,
+    "Scarborough (Upper Rouge)"
+  ],
+  "M2H": [
+    43.8015,
+    -79.3577,
+    "North York (Hillcrest Village)"
+  ],
+  "M2J": [
+    43.7801,
+    -79.3479,
+    "North York (Fairview / Henry Farm / Oriole)"
+  ],
+  "M2K": [
+    43.7797,
+    -79.3813,
+    "North York (Bayview Village)"
+  ],
+  "M2L": [
+    43.7547,
+    -79.3764,
+    "North York (York Mills / Silver Hills)"
+  ],
+  "M2M": [
+    43.7915,
+    -79.4103,
+    "Willowdale East (Newtonbrook)"
+  ],
+  "M2N": [
+    43.7673,
+    -79.4111,
+    "Willowdale South"
+  ],
+  "M2P": [
+    43.75,
+    -79.3978,
+    "North York (York Mills West)"
+  ],
+  "M2R": [
+    43.7786,
+    -79.445,
+    "Willowdale West"
+  ],
+  "M3A": [
+    43.7545,
+    -79.33,
+    "North York (York Heights / Victoria Village / Parkway East)"
+  ],
+  "M3B": [
+    43.745,
+    -79.359,
+    "Don Mills North"
+  ],
+  "M3C": [
+    43.7334,
+    -79.3329,
+    "Don Mills South (Flemingdon Park)"
+  ],
+  "M3H": [
+    43.7535,
+    -79.4472,
+    "North York (Armour Heights / Wilson Heights / Downsview North)"
+  ],
+  "M3J": [
+    43.7694,
+    -79.4921,
+    "North York (Northwood Park / York University)"
+  ],
+  "M3K": [
+    43.739,
+    -79.4692,
+    "Downsview East (CFB Toronto)"
+  ],
+  "M3L": [
+    43.7334,
+    -79.5116,
+    "Downsview West"
+  ],
+  "M3M": [
+    43.7319,
+    -79.4928,
+    "Downsview Central"
+  ],
+  "M3N": [
+    43.7568,
+    -79.521,
+    "North York (Jane and Finch)"
+  ],
+  "M4A": [
+    43.7276,
+    -79.3148,
+    "North York (Sweeney Park / Wigmore Park)"
+  ],
+  "M4B": [
+    43.7063,
+    -79.3094,
+    "East York (Parkview Hill / Woodbine Gardens)"
+  ],
+  "M4C": [
+    43.6913,
+    -79.3116,
+    "East York (Woodbine Heights)"
+  ],
+  "M4E": [
+    43.6784,
+    -79.2941,
+    "East Toronto (The Beaches)"
+  ],
+  "M4G": [
+    43.7124,
+    -79.3644,
+    "East York (Leaside)"
+  ],
+  "M4H": [
+    43.7059,
+    -79.3464,
+    "East York (Thorncliffe Park)"
+  ],
+  "M4J": [
+    43.6872,
+    -79.3368,
+    "East Toronto (The Danforth East)"
+  ],
+  "M4K": [
+    43.6803,
+    -79.3538,
+    "East Toronto (The Danforth West / Riverdale)"
+  ],
+  "M4L": [
+    43.6693,
+    -79.3155,
+    "East Toronto (India Bazaar / The Beaches West)"
+  ],
+  "M4M": [
+    43.6561,
+    -79.3406,
+    "East Toronto (Studio District)"
+  ],
+  "M4N": [
+    43.7301,
+    -79.3935,
+    "Central Toronto (Lawrence Park East)"
+  ],
+  "M4P": [
+    43.7135,
+    -79.3887,
+    "Central Toronto (Davisville North)"
+  ],
+  "M4R": [
+    43.7143,
+    -79.4065,
+    "Central Toronto (North Toronto West)"
+  ],
+  "M4S": [
+    43.702,
+    -79.3853,
+    "Central Toronto (Davisville)"
+  ],
+  "M4T": [
+    43.6899,
+    -79.3853,
+    "Central Toronto (Moore Park / Summerhill East)"
+  ],
+  "M4V": [
+    43.6861,
+    -79.4025,
+    "Central Toronto (Summerhill West / Rathnelly / South Hill / Forest Hill SE / Deer Park)"
+  ],
+  "M4W": [
+    43.6827,
+    -79.373,
+    "Downtown Toronto (Rosedale)"
+  ],
+  "M4X": [
+    43.6684,
+    -79.3689,
+    "Downtown Toronto (St. James Town / Cabbagetown)"
+  ],
+  "M4Y": [
+    43.6656,
+    -79.383,
+    "Downtown Toronto (Church and Wellesley)"
+  ],
+  "M5A": [
+    43.6555,
+    -79.3626,
+    "Downtown Toronto (Regent Park / Port of Toronto)"
+  ],
+  "M5B": [
+    43.6572,
+    -79.3783,
+    "Downtown Toronto (Ryerson)"
+  ],
+  "M5C": [
+    43.6513,
+    -79.3756,
+    "Downtown Toronto (St. James Park)"
+  ],
+  "M5E": [
+    43.6456,
+    -79.3754,
+    "Downtown Toronto (Berczy Park)"
+  ],
+  "M5G": [
+    43.6564,
+    -79.386,
+    "Downtown Toronto (Central Bay Street)"
+  ],
+  "M5H": [
+    43.6496,
+    -79.3833,
+    "Downtown Toronto (Richmond / Adelaide / King)"
+  ],
+  "M5J": [
+    43.623,
+    -79.3936,
+    "Downtown Toronto (Harbourfront East / Union Station / Toronto Island)"
+  ],
+  "M5K": [
+    43.6469,
+    -79.3823,
+    "Downtown Toronto (Toronto Dominion Centre / Design Exchange)"
+  ],
+  "M5L": [
+    43.6492,
+    -79.3823,
+    "Downtown Toronto (Commerce Court / Victoria Hotel)"
+  ],
+  "M5M": [
+    43.7335,
+    -79.4177,
+    "North York (Bedford Park / Lawrence Park West / Lawrence Manor East)"
+  ],
+  "M5N": [
+    43.7113,
+    -79.4195,
+    "Central Toronto (Roselawn)"
+  ],
+  "M5P": [
+    43.6966,
+    -79.412,
+    "Central Toronto (Forest Hill North & West)"
+  ],
+  "M5R": [
+    43.6736,
+    -79.4035,
+    "Central Toronto (The Annex / North Midtown / Yorkville)"
+  ],
+  "M5S": [
+    43.6629,
+    -79.3987,
+    "Downtown Toronto (University of Toronto / Harbord)"
+  ],
+  "M5T": [
+    43.6541,
+    -79.3978,
+    "Downtown Toronto (Kensington Market / Chinatown / Grange Park)"
+  ],
+  "M5V": [
+    43.6404,
+    -79.3995,
+    "Downtown Toronto (CN Tower / King and Spadina / Railway Lands / Harbourfront West / Bathurst Quay / South Niagara / YTZ)"
+  ],
+  "M5W": [
+    43.6437,
+    -79.3787,
+    "Downtown Toronto Stn A PO Boxes 25 The Esplanade (Enclave of M5E)"
+  ],
+  "M5X": [
+    43.6492,
+    -79.3823,
+    "Downtown Toronto (Underground city)"
+  ],
+  "M6A": [
+    43.7223,
+    -79.4504,
+    "North York (Lawrence Manor / Lawrence Heights)"
+  ],
+  "M6B": [
+    43.7081,
+    -79.4479,
+    "North York (Glencairn)"
+  ],
+  "M6C": [
+    43.6915,
+    -79.4307,
+    "York (Cedarvale)"
+  ],
+  "M6E": [
+    43.6889,
+    -79.4507,
+    "York (Fairbank / Oakwood)"
+  ],
+  "M6G": [
+    43.6683,
+    -79.4205,
+    "Downtown Toronto (Christie)"
+  ],
+  "M6H": [
+    43.6655,
+    -79.4378,
+    "West Toronto (Dufferin / Dovercourt Village)"
+  ],
+  "M6J": [
+    43.648,
+    -79.4177,
+    "West Toronto (Rua Aþores / Trinity)"
+  ],
+  "M6K": [
+    43.6383,
+    -79.4301,
+    "West Toronto (Brockton / Parkdale Village / Exhibition Place)"
+  ],
+  "M6L": [
+    43.7137,
+    -79.4869,
+    "North York (North Park / Maple Leaf Park / Upwood Park)"
+  ],
+  "M6M": [
+    43.6934,
+    -79.4857,
+    "York (Del Ray / Keelsdale / Mount Dennis / Silverthorne)"
+  ],
+  "M6N": [
+    43.6748,
+    -79.4839,
+    "York (Runnymede / The Junction North)"
+  ],
+  "M6P": [
+    43.6605,
+    -79.4633,
+    "West Toronto (High Park / The Junction South)"
+  ],
+  "M6R": [
+    43.6469,
+    -79.4521,
+    "West Toronto (Parkdale / Roncesvalles Village)"
+  ],
+  "M6S": [
+    43.6512,
+    -79.4828,
+    "West Toronto (Bloor West Village / Swansea)"
+  ],
+  "M7A": [
+    43.6641,
+    -79.3889,
+    "Queen's Park Ontario Provincial Government"
+  ],
+  "M7Y": [
+    43.7804,
+    -79.2505,
+    "East Toronto Business Reply Mail Processing Centre 969 Eastern (Enclave of M4L)"
+  ],
+  "M8V": [
+    43.6075,
+    -79.5013,
+    "Etobicoke (New Toronto / Mimico South / Humber Bay Shores)"
+  ],
+  "M8W": [
+    43.6021,
+    -79.5402,
+    "Etobicoke (Alderwood / Long Branch)"
+  ],
+  "M8X": [
+    43.6518,
+    -79.5076,
+    "Etobicoke (The Kingsway / Montgomery Road / Old Mill North)"
+  ],
+  "M8Y": [
+    43.6325,
+    -79.4939,
+    "Etobicoke (Old Mill South / King's Mill Park / Sunnylea / Humber Bay / Mimico NE / The Queensway East / Royal York South East / Kingsway Park South East)"
+  ],
+  "M8Z": [
+    43.6256,
+    -79.5231,
+    "Etobicoke (Mimico NW / The Queensway West / South of Bloor / Kingsway Park South West / Royal York South West)"
+  ],
+  "M9A": [
+    43.6662,
+    -79.5282,
+    "Etobicoke (Islington Avenue)"
+  ],
+  "M9B": [
+    43.6505,
+    -79.5517,
+    "Etobicoke (West Deane Park / Princess Gardens / Martin Grove / Islington / Cloverdale)"
+  ],
+  "M9C": [
+    43.6437,
+    -79.5767,
+    "Etobicoke (Eringate / Bloordale Gardens / Old Burnhamthorpe / Markland Woods)"
+  ],
+  "M9L": [
+    43.7598,
+    -79.5565,
+    "North York (Humber Summit)"
+  ],
+  "M9M": [
+    43.7366,
+    -79.5401,
+    "North York (Humberlea / Emery)"
+  ],
+  "M9N": [
+    43.7068,
+    -79.517,
+    "Weston"
+  ],
+  "M9P": [
+    43.6949,
+    -79.5323,
+    "Etobicoke (Westmount)"
+  ],
+  "M9R": [
+    43.6898,
+    -79.5582,
+    "Etobicoke (Kingsview Village / St. Phillips / Martin Grove Gardens / Richview Gardens)"
+  ],
+  "M9V": [
+    43.7432,
+    -79.5876,
+    "Etobicoke (South Steeles / Silverstone / Humbergate / Jamestown / Mount Olive / Beaumond Heights / Thistletown / Albion Gardens)"
+  ],
+  "M9W": [
+    43.7144,
+    -79.5909,
+    "Etobicoke Northwest (Clairville / Humberwood / Woodbine Downs / West Humber / Kipling Heights / Rexdale / Elms / Tandridge / Old Rexdale)"
+  ],
+  "N0A": [
+    42.9403,
+    -79.945,
+    "West Haldimand (Port Dover)"
+  ],
+  "N0B": [
+    43.5569,
+    -80.4414,
+    "Wellington (Elora)"
+  ],
+  "N0C": [
+    44.2561,
+    -80.5029,
+    "Georgian Bay Southwest Shore (Dundalk)"
+  ],
+  "N0E": [
+    42.6618,
+    -80.5572,
+    "Brant and Norfolk (Waterford)"
+  ],
+  "N0G": [
+    44.0024,
+    -81.0676,
+    "Huron (Wingham)"
+  ],
+  "N0H": [
+    44.6941,
+    -81.0962,
+    "Bruce Peninsula (Wiarton)"
+  ],
+  "N0J": [
+    42.9775,
+    -80.7057,
+    "Oxford (Norwich)"
+  ],
+  "N0K": [
+    43.5067,
+    -81.1582,
+    "Perth (Mitchell)"
+  ],
+  "N0L": [
+    42.7557,
+    -81.4533,
+    "Elgin (Dorchester)"
+  ],
+  "N0M": [
+    43.2788,
+    -81.5442,
+    "Middlesex (Clinton)"
+  ],
+  "N0N": [
+    42.9062,
+    -82.11,
+    "Lambton (Forest)"
+  ],
+  "N0P": [
+    42.4045,
+    -81.9107,
+    "Kent (Blenheim)"
+  ],
+  "N0R": [
+    42.1783,
+    -82.7715,
+    "Essex (Belle River)"
+  ],
+  "N1A": [
+    42.9001,
+    -79.6163,
+    "Dunnville"
+  ],
+  "N1C": [
+    43.4921,
+    -80.2267,
+    "Guelph South"
+  ],
+  "N1E": [
+    43.5677,
+    -80.2418,
+    "Guelph North"
+  ],
+  "N1G": [
+    43.5184,
+    -80.2257,
+    "Guelph Central"
+  ],
+  "N1H": [
+    43.5588,
+    -80.3004,
+    "Guelph Northwest"
+  ],
+  "N1K": [
+    43.526,
+    -80.3051,
+    "Guelph West"
+  ],
+  "N1L": [
+    43.516,
+    -80.19,
+    "Guelph East"
+  ],
+  "N1M": [
+    43.7001,
+    -80.3664,
+    "Fergus"
+  ],
+  "N1P": [
+    43.3398,
+    -80.2955,
+    "Cambridge South"
+  ],
+  "N1R": [
+    43.3666,
+    -80.2239,
+    "Cambridge Central"
+  ],
+  "N1S": [
+    43.3592,
+    -80.3347,
+    "Cambridge Southwest"
+  ],
+  "N1T": [
+    43.3849,
+    -80.2833,
+    "Cambridge East"
+  ],
+  "N2A": [
+    43.4413,
+    -80.4246,
+    "Kitchener East"
+  ],
+  "N2B": [
+    43.4646,
+    -80.4467,
+    "Kitchener Northeast"
+  ],
+  "N2C": [
+    43.4182,
+    -80.4451,
+    "Kitchener South Central"
+  ],
+  "N2E": [
+    43.4106,
+    -80.5011,
+    "Kitchener Southwest"
+  ],
+  "N2G": [
+    43.4443,
+    -80.4891,
+    "Kitchener Central"
+  ],
+  "N2H": [
+    43.4581,
+    -80.4818,
+    "Kitchener North Central"
+  ],
+  "N2J": [
+    43.504,
+    -80.5366,
+    "Waterloo Southeast"
+  ],
+  "N2K": [
+    43.4961,
+    -80.4936,
+    "Kitchener North"
+  ],
+  "N2L": [
+    43.4715,
+    -80.5454,
+    "Waterloo South"
+  ],
+  "N2M": [
+    43.4363,
+    -80.5093,
+    "Kitchener Northwest"
+  ],
+  "N2N": [
+    43.426,
+    -80.5438,
+    "Kitchener West"
+  ],
+  "N2P": [
+    43.3878,
+    -80.4296,
+    "Kitchener Southeast"
+  ],
+  "N2R": [
+    43.3849,
+    -80.487,
+    "Kitchener South"
+  ],
+  "N2T": [
+    43.453,
+    -80.5692,
+    "Waterloo Southwest"
+  ],
+  "N2V": [
+    43.4764,
+    -80.5842,
+    "Waterloo Northwest"
+  ],
+  "N2Z": [
+    44.1664,
+    -81.601,
+    "Kincardine"
+  ],
+  "N3A": [
+    43.4001,
+    -80.6497,
+    "Baden"
+  ],
+  "N3B": [
+    43.6001,
+    -80.5497,
+    "Elmira"
+  ],
+  "N3C": [
+    43.4389,
+    -80.2649,
+    "Cambridge Northeast"
+  ],
+  "N3E": [
+    43.4193,
+    -80.3505,
+    "Cambridge Northwest"
+  ],
+  "N3H": [
+    43.4267,
+    -80.3699,
+    "Cambridge West"
+  ],
+  "N3L": [
+    43.2,
+    -80.3833,
+    "Paris"
+  ],
+  "N3P": [
+    43.1818,
+    -80.2367,
+    "Brantford Northeast"
+  ],
+  "N3R": [
+    43.1692,
+    -80.2684,
+    "Brantford Central"
+  ],
+  "N3S": [
+    43.1394,
+    -80.2357,
+    "Brantford Southeast"
+  ],
+  "N3T": [
+    43.131,
+    -80.3254,
+    "Brantford Southwest"
+  ],
+  "N3V": [
+    43.1734,
+    -80.298,
+    "Brantford Northwest"
+  ],
+  "N3W": [
+    43.0668,
+    -79.9329,
+    "Caledonia"
+  ],
+  "N3Y": [
+    42.8334,
+    -80.2997,
+    "Simcoe"
+  ],
+  "N4B": [
+    42.8501,
+    -80.4997,
+    "Delhi"
+  ],
+  "N4G": [
+    42.8599,
+    -80.7262,
+    "Tillsonburg"
+  ],
+  "N4K": [
+    44.5672,
+    -80.9435,
+    "Owen Sound"
+  ],
+  "N4L": [
+    44.6001,
+    -80.583,
+    "Meaford"
+  ],
+  "N4N": [
+    44.1501,
+    -81.033,
+    "Hanover"
+  ],
+  "N4S": [
+    43.1432,
+    -80.7338,
+    "Woodstock Central"
+  ],
+  "N4T": [
+    43.1485,
+    -80.7319,
+    "Woodstock North"
+  ],
+  "N4V": [
+    43.115,
+    -80.743,
+    "Woodstock South"
+  ],
+  "N4W": [
+    43.7334,
+    -80.9497,
+    "Listowel"
+  ],
+  "N4X": [
+    43.2655,
+    -81.1687,
+    "St. Mary's"
+  ],
+  "N4Z": [
+    43.3634,
+    -81.0069,
+    "Stratford South"
+  ],
+  "N5A": [
+    43.3668,
+    -80.9497,
+    "Stratford North"
+  ],
+  "N5C": [
+    43.0334,
+    -80.883,
+    "Ingersoll"
+  ],
+  "N5H": [
+    42.7668,
+    -80.983,
+    "Aylmer"
+  ],
+  "N5L": [
+    42.6668,
+    -81.2164,
+    "Port Stanley"
+  ],
+  "N5P": [
+    42.7779,
+    -81.1769,
+    "St. Thomas North"
+  ],
+  "N5R": [
+    42.7597,
+    -81.1762,
+    "St. Thomas South"
+  ],
+  "N5V": [
+    43.0233,
+    -81.1643,
+    "London (YXU / North and East Argyle / East Huron Heights)"
+  ],
+  "N5W": [
+    42.9856,
+    -81.1821,
+    "London East (SW Argyle / Hamilton Road)"
+  ],
+  "N5X": [
+    43.0443,
+    -81.2391,
+    "London (Fanshawe / Stoneybrook / Stoney Creek / Uplands / East Masonville)"
+  ],
+  "N5Y": [
+    43.0123,
+    -81.2307,
+    "London (West Huron Heights / Carling)"
+  ],
+  "N5Z": [
+    42.966,
+    -81.2053,
+    "London (Glen Cairn)"
+  ],
+  "N6A": [
+    42.9976,
+    -81.2563,
+    "London North (UWO)"
+  ],
+  "N6B": [
+    42.9835,
+    -81.2386,
+    "London Central"
+  ],
+  "N6C": [
+    42.9582,
+    -81.238,
+    "London South (East Highland / North White Oaks / North Westminster)"
+  ],
+  "N6E": [
+    42.9185,
+    -81.2244,
+    "London (South White Oaks / Central Westminster / East Longwoods / West Brockley)"
+  ],
+  "N6G": [
+    43.0147,
+    -81.3049,
+    "London (Sunningdale / West Masonville / Medway / NE Hyde Park / East Fox Hollow)"
+  ],
+  "N6H": [
+    42.9915,
+    -81.3402,
+    "London West (Central Hyde Park / Oakridge)"
+  ],
+  "N6J": [
+    42.9546,
+    -81.2735,
+    "London (Southcrest / East Westmount / West Highland)"
+  ],
+  "N6K": [
+    42.9536,
+    -81.3418,
+    "London (Riverbend / Woodhull / North Sharon Creek / Byron / West Westmount)"
+  ],
+  "N6L": [
+    42.8719,
+    -81.2472,
+    "London (East Tempo)"
+  ],
+  "N6M": [
+    42.9632,
+    -81.1392,
+    "London (Jackson / Old Victoria / Bradley / North Highbury)"
+  ],
+  "N6N": [
+    42.8997,
+    -81.1592,
+    "London (South Highbury / Glanworth / East Brockley / SE Westminster)"
+  ],
+  "N6P": [
+    42.8909,
+    -81.3236,
+    "London (Talbot / Lambeth / West Tempo / South Sharon Creek)"
+  ],
+  "N7A": [
+    43.7501,
+    -81.7165,
+    "Goderich"
+  ],
+  "N7G": [
+    42.9551,
+    -81.6223,
+    "Strathroy"
+  ],
+  "N7L": [
+    42.4209,
+    -82.1993,
+    "Chatham Northwest"
+  ],
+  "N7M": [
+    42.4238,
+    -82.1183,
+    "Chatham Southeast"
+  ],
+  "N7S": [
+    42.9888,
+    -82.3592,
+    "Sarnia Central"
+  ],
+  "N7T": [
+    42.9578,
+    -82.2777,
+    "Sarnia Southwest"
+  ],
+  "N7V": [
+    42.9998,
+    -82.3926,
+    "Sarnia Northwest"
+  ],
+  "N7W": [
+    42.9644,
+    -82.3259,
+    "Sarnia Southeast"
+  ],
+  "N7X": [
+    43.0214,
+    -82.3212,
+    "Sarnia Northeast"
+  ],
+  "N8A": [
+    42.593,
+    -82.3885,
+    "Wallaceburg"
+  ],
+  "N8H": [
+    42.0549,
+    -82.6062,
+    "Leamington"
+  ],
+  "N8M": [
+    42.1751,
+    -82.8248,
+    "Essex"
+  ],
+  "N8N": [
+    42.2946,
+    -82.8667,
+    "Tecumseh Outskirts"
+  ],
+  "N8P": [
+    42.3276,
+    -82.9104,
+    "Windsor (East Riverside)"
+  ],
+  "N8R": [
+    42.3067,
+    -82.915,
+    "Windsor (East Forest Glade)"
+  ],
+  "N8S": [
+    42.3283,
+    -82.9472,
+    "Windsor (Riverside)"
+  ],
+  "N8T": [
+    42.3037,
+    -82.9459,
+    "Windsor (West Forest Glade / East Fontainbleu)"
+  ],
+  "N8V": [
+    42.2773,
+    -82.9447,
+    "Tecumseh (YQG)"
+  ],
+  "N8W": [
+    42.2836,
+    -82.9771,
+    "Windsor (South Walkerville / West Fontainbleu / Walker Farm / Devonshire)"
+  ],
+  "N8X": [
+    42.2926,
+    -83.0186,
+    "Windsor South Central (West Walkerville / Remington Park)"
+  ],
+  "N8Y": [
+    42.3176,
+    -82.9929,
+    "Windsor East (East Walkerville)"
+  ],
+  "N9A": [
+    42.2007,
+    -83.0276,
+    "Windsor (City Centre / NW Walkerville)"
+  ],
+  "N9B": [
+    42.2949,
+    -83.052,
+    "Windsor (University / South Cameron)"
+  ],
+  "N9C": [
+    42.2767,
+    -83.0793,
+    "Windsor (Sandwich / Ojibway / West Malden)"
+  ],
+  "N9E": [
+    42.2652,
+    -83.0314,
+    "Windsor South (East Malden)"
+  ],
+  "N9G": [
+    42.2481,
+    -82.9952,
+    "Windsor (Roseland)"
+  ],
+  "N9H": [
+    42.2318,
+    -83.0281,
+    "La Salle East"
+  ],
+  "N9J": [
+    42.2187,
+    -83.0801,
+    "La Salle West"
+  ],
+  "N9K": [
+    42.2978,
+    -82.8701,
+    "Tecumseh Central"
+  ],
+  "N9V": [
+    42.1168,
+    -83.0498,
+    "Amherstburg"
+  ],
+  "N9Y": [
+    42.0502,
+    -82.7598,
+    "Kingsville"
+  ],
+  "P0A": [
+    45.5881,
+    -79.3546,
+    "Nipissing Central (Burk's Falls)"
+  ],
+  "P0B": [
+    45.1863,
+    -79.4115,
+    "Nipissing South (Utterson)"
+  ],
+  "P0C": [
+    45.1275,
+    -79.786,
+    "Parry Sound Mid-Shore (Bala)"
+  ],
+  "P0E": [
+    44.8608,
+    -79.5069,
+    "Parry Sound South Shore (Kilworthy)"
+  ],
+  "P0G": [
+    45.6718,
+    -80.3688,
+    "Parry Sound North Shore (Nobel)"
+  ],
+  "P0H": [
+    46.3109,
+    -79.3617,
+    "Nipissing North (Callander)"
+  ],
+  "P0J": [
+    47.5776,
+    -80.2036,
+    "Timiskaming South (Temiskaming Shores)"
+  ],
+  "P0K": [
+    48.5234,
+    -80.3081,
+    "Timiskaming North (Iroquois Falls A)"
+  ],
+  "P0L": [
+    51.97,
+    -83.5369,
+    "Cochrane Region (Hearst)"
+  ],
+  "P0M": [
+    47.6526,
+    -82.4753,
+    "Algoma, Sudbury District and Greater Sudbury (Chelmsford)"
+  ],
+  "P0N": [
+    48.6027,
+    -81.0115,
+    "Timmins Region (South Porcupine)"
+  ],
+  "P0P": [
+    45.7565,
+    -82.2151,
+    "Manitoulin (Little Current)"
+  ],
+  "P0R": [
+    46.5984,
+    -83.0385,
+    "Algoma Southwest (Blind River)"
+  ],
+  "P0S": [
+    48.048,
+    -84.6727,
+    "Lake Superior East Shore (Wawa)"
+  ],
+  "P0T": [
+    49.2924,
+    -88.756,
+    "Lake Superior North Shore (Marathon)"
+  ],
+  "P0V": [
+    52.9648,
+    -90.1505,
+    "Northwestern Ontario (Red Lake)"
+  ],
+  "P0W": [
+    48.875,
+    -93.7522,
+    "Rainy River Region (Emo)"
+  ],
+  "P0X": [
+    50.9293,
+    -93.3095,
+    "Kenora Region (Keewatin)"
+  ],
+  "P0Y": [
+    49.7603,
+    -95.1003,
+    "Lake of the Woods East Shore (Ingolf)"
+  ],
+  "P1A": [
+    46.2801,
+    -79.4502,
+    "North Bay South"
+  ],
+  "P1B": [
+    46.3364,
+    -79.583,
+    "North Bay Central"
+  ],
+  "P1C": [
+    46.3397,
+    -79.4223,
+    "North Bay North"
+  ],
+  "P1H": [
+    45.3334,
+    -79.2163,
+    "Huntsville"
+  ],
+  "P1L": [
+    45.0334,
+    -79.3163,
+    "Bracebridge"
+  ],
+  "P1P": [
+    44.9168,
+    -79.3663,
+    "Gravenhurst"
+  ],
+  "P2A": [
+    45.3501,
+    -80.033,
+    "Parry Sound"
+  ],
+  "P2B": [
+    46.3668,
+    -79.9164,
+    "Sturgeon Falls"
+  ],
+  "P2N": [
+    48.1446,
+    -80.0377,
+    "Kirkland Lake"
+  ],
+  "P3A": [
+    46.5187,
+    -80.934,
+    "Greater Sudbury (New Sudbury)"
+  ],
+  "P3B": [
+    46.4847,
+    -80.9304,
+    "Greater Sudbury (Downtown / Minnow Lake)"
+  ],
+  "P3C": [
+    46.5133,
+    -81.0225,
+    "Greater Sudbury (Gatchell / West End / Little Britain)"
+  ],
+  "P3E": [
+    46.2676,
+    -80.9063,
+    "Greater Sudbury (Robinson / Lockerby)"
+  ],
+  "P3G": [
+    46.4031,
+    -80.9745,
+    "Greater Sudbury (Lo-Ellen / McFarlane Lake)"
+  ],
+  "P3L": [
+    46.5942,
+    -80.85,
+    "Greater Sudbury (Garson)"
+  ],
+  "P3N": [
+    46.5845,
+    -81.0029,
+    "Greater Sudbury (Val Caron)"
+  ],
+  "P3P": [
+    46.7259,
+    -81.0166,
+    "Greater Sudbury (Hanmer)"
+  ],
+  "P3Y": [
+    46.4431,
+    -81.127,
+    "Greater Sudbury (Lively)"
+  ],
+  "P4N": [
+    48.4669,
+    -81.3331,
+    "Timmins Southeast"
+  ],
+  "P4P": [
+    48.4985,
+    -81.3448,
+    "Timmins North"
+  ],
+  "P4R": [
+    48.4702,
+    -81.3997,
+    "Timmins West"
+  ],
+  "P5A": [
+    46.3834,
+    -82.6332,
+    "Elliot Lake"
+  ],
+  "P5E": [
+    46.2584,
+    -81.7665,
+    "Espanola"
+  ],
+  "P5N": [
+    49.4169,
+    -82.4331,
+    "Kapuskasing"
+  ],
+  "P6A": [
+    46.5168,
+    -84.3333,
+    "Sault Ste. Marie East"
+  ],
+  "P6B": [
+    46.5307,
+    -84.3046,
+    "Sault Ste. Marie Central"
+  ],
+  "P6C": [
+    46.5353,
+    -84.3732,
+    "Sault Ste. Marie North"
+  ],
+  "P7A": [
+    48.4601,
+    -89.2035,
+    "Thunder Bay Northeast"
+  ],
+  "P7B": [
+    48.9475,
+    -89.4063,
+    "Thunder Bay North Central"
+  ],
+  "P7C": [
+    48.352,
+    -89.4649,
+    "Thunder Bay Central"
+  ],
+  "P7E": [
+    48.3684,
+    -89.284,
+    "Thunder Bay South Central"
+  ],
+  "P7G": [
+    48.4001,
+    -89.3168,
+    "Thunder Bay North"
+  ],
+  "P7J": [
+    48.2834,
+    -89.3668,
+    "Thunder Bay South"
+  ],
+  "P7K": [
+    48.3728,
+    -89.3484,
+    "Thunder Bay West"
+  ],
+  "P7L": [
+    48.1668,
+    -89.4168,
+    "Neebing"
+  ],
+  "P8N": [
+    49.7833,
+    -92.7503,
+    "Dryden"
+  ],
+  "P8T": [
+    50.0668,
+    -91.9836,
+    "Sioux Lookout"
+  ],
+  "P9A": [
+    48.6393,
+    -93.4469,
+    "Fort Frances"
+  ],
+  "P9N": [
+    49.7573,
+    -94.3427,
+    "Kenora"
+  ]
+}

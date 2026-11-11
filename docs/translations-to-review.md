@@ -70,3 +70,7 @@ The strings ported from `reference/demo.html` were already marked draft there. T
 - **Health Care Connect** is called "Accès Soins" in French and left in English elsewhere.
 - **Language names on the listing screen** (the pills such as "Farsi", "Tamil") are shown in English in every language.
 - **Not translated:** the staff screens (`/admin`, `/partner`, `/admin/waitlist`) and the labels around each outbox message are English only.
+
+## Ontario search changes
+
+Review the updated `unk` notice and new `radius` string in all five languages in `lib/i18n.ts`. Unknown locations no longer imply downtown Toronto. Results now explain their approximate postal-area distance and configured radius. French, Mandarin, Spanish and Tagalog wording is a draft awaiting native-speaker review.

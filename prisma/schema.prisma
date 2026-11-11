@@ -186,3 +186,60 @@ model ReviewDecision {
   @@index([createdAt])
   @@map("review_decisions")
 }
+
+/// A discovered public page. Review is required before the crawler fetches it.
+model DiscoverySource {
+  id            String   @id @default(cuid())
+  url           String   @unique
+  host          String
+  title         String   @default("")
+  kind          String   @default("unknown")
+  status        String   @default("pending")
+  trustedClinic Boolean  @default(false) @map("trusted_clinic")
+  foundBy       String   @default("manual") @map("found_by")
+  query         String?
+  isSample      Boolean  @default(false) @map("is_sample")
+  lastCheckedAt DateTime? @map("last_checked_at")
+  nextCheckAt   DateTime @default(now()) @map("next_check_at")
+  lastHash      String?  @map("last_hash")
+  lastError     String?  @map("last_error")
+  leaseUntil    DateTime? @map("lease_until")
+  reviewedAt    DateTime? @map("reviewed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  checks        DiscoveryCheck[]
+
+  @@index([status, nextCheckAt])
+  @@map("discovery_sources")
+}
+
+/// Immutable source evidence; retrieval time is never an availability confirmation.
+model DiscoveryCheck {
+  id            String   @id @default(cuid())
+  sourceId      String   @map("source_id")
+  contentHash   String   @map("content_hash")
+  sourceUrl     String   @map("source_url")
+  title         String
+  excerpt       String
+  publishedDate String?  @map("published_date")
+  retrievedAt   DateTime @default(now()) @map("retrieved_at")
+  status        String   @default("queued")
+  outcomeKind   String?  @map("outcome_kind")
+  outcomeId     String?  @map("outcome_id")
+  error         String?
+  source        DiscoverySource @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+
+  @@unique([sourceId, contentHash])
+  @@index([retrievedAt])
+  @@map("discovery_checks")
+}
+
+/// Daily search budget shared by scheduled jobs and manual runs.
+model DiscoverySearchState {
+  id             String    @id
+  lastSearchedAt DateTime?  @map("last_searched_at")
+  nextSearchAt   DateTime   @default(now()) @map("next_search_at")
+  leaseUntil     DateTime?  @map("lease_until")
+  lastError      String?    @map("last_error")
+
+  @@map("discovery_search_state")
+}
