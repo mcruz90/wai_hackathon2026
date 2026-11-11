@@ -1,4 +1,7 @@
 "use server";
+import { Prisma } from "@prisma/client";
+import { parseReviewSelection, publishReviewBatch, ReviewError, reviewInclude } from "@/lib/batch-review";
+import { evidenceDate, reviewSnapshot, reviewVersion } from "@/lib/review-policy";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -48,6 +51,23 @@ export async function intake(form: FormData) {
     : "The intake agent made a proposal about an existing listing or about not listing this. Check it under Agent proposals below.");
 }
 
+/** The reviewer authorizes exactly the selected versions; no agent can call this action. */
+export async function approveBatch(form: FormData): Promise<void> {
+  await requireAdmin();
+  if (str(form, "authorize") !== "yes") go("/admin", "error", "Authorize the selected batch before publishing.");
+  let count = 0;
+  try {
+    const selection = parseReviewSelection(form.getAll("selection"));
+    await publishReviewBatch(prisma, selection);
+    count = selection.length;
+  } catch (error) {
+    if (error instanceof ReviewError) return go("/admin", "error", error.message);
+    throw error;
+  }
+  revalidatePath("/admin");
+  go("/admin", "msg", `Published ${count} selected listings. Their evidence dates were preserved and the batch decision was recorded.`);
+}
+
 /** Re-confirm a listing as of a date: it goes live again with a fresh expiry, and old "full" reports are cleared. */
 async function reconfirm(listingId: string, date: string | null) {
   const today = new Date().toISOString().slice(0, 10);
@@ -77,7 +97,9 @@ async function decideProposal(form: FormData, decision: string) {
   if (decision === "reject") { await done("rejected"); msg = "Proposal rejected. Nothing changed."; }
   else if ((p.action === "reconfirm_listing" && decision === "approve") || (p.action === "recheck_listing" && decision === "still_open")) {
     if (!p.listingId) return go("/admin", "error", "That proposal has no listing.");
-    const r = await reconfirm(p.listingId, p.action === "reconfirm_listing" ? str(form, "date") || null : null);
+    const date = p.action === "reconfirm_listing" ? str(form, "date") : new Date().toISOString().slice(0, 10);
+    if (!evidenceDate(date, new Date())) return go("/admin", "error", "Enter a valid evidence or clinic confirmation date. Approval alone does not confirm availability today.");
+    const r = await reconfirm(p.listingId, date);
     await done("approved");
     msg = r.live ? `Re-confirmed ${name} as of ${r.d}. It shows to patients with a fresh expiry date.` : `Saved ${name} as confirmed on ${r.d}, but that is past the expiry window, so patients will not see it.`;
   } else if ((p.action === "mark_full" && decision === "approve") || (p.action === "recheck_listing" && decision === "full")) {
@@ -123,7 +145,7 @@ export async function runFreshness() {
   go("/admin", "msg", `Freshness agent ran. ${r.summary}`);
 }
 
-/** A reviewer confirms every field and the date. This is the only way a listing becomes live. */
+/** Individual publication remains available for exceptions and corrections. */
 export async function approve(form: FormData) {
   await requireAdmin();
   const id = str(form, "id");
@@ -135,7 +157,7 @@ export async function approve(form: FormData) {
   const problems = [
     !clinic && "clinic name", !area && "area", !centroid && "postal area",
     providerType !== "family_doctor" && providerType !== "nurse_practitioner" && "provider type",
-    !languages.length && "languages", !/^\d{4}-\d{2}-\d{2}$/.test(date) && "confirmed date",
+    !languages.length && "languages", !evidenceDate(date, new Date()) && "valid evidence date",
   ].filter(Boolean);
   if (problems.length) go("/admin", "error", `Not published. Fill in: ${problems.join(", ")}.`);
   const today = new Date().toISOString().slice(0, 10);
@@ -144,22 +166,38 @@ export async function approve(form: FormData) {
   // Noon Toronto time on the confirmed date, or now if that is later than now.
   const confirmed = new Date(Math.min(Date.now(), new Date(`${date}T17:00:00Z`).getTime()));
   const expiresAt = expiryFrom(confirmed);
-  const pending = await prisma.listing.updateMany({
-    where: { id, status: "pending" },
-    data: {
-      clinic, area, fsa, lat: centroid!.lat, lng: centroid!.lng, providerType: providerType as "family_doctor" | "nurse_practitioner",
-      languages, phone: str(form, "phone") || null, sourceType: SOURCE_TYPES.includes(str(form, "sourceType")) ? str(form, "sourceType") : "rev",
-      sourceUrl: sourceUrl || null, status: expiresAt > new Date() ? "live" : "expired", lastConfirmedAt: confirmed, expiresAt,
-    },
-  });
+  let count = 0;
+  try {
+    count = await prisma.$transaction(async (tx) => {
+      const listing = await tx.listing.findUnique({ where: { id }, include: reviewInclude });
+      if (!listing || listing.status !== "pending" || reviewVersion(listing) !== str(form, "version")) throw new ReviewError("That listing changed. Reload and review it again before publishing.");
+      const data = {
+        clinic, area, fsa, lat: centroid!.lat, lng: centroid!.lng, providerType: providerType as "family_doctor" | "nurse_practitioner",
+        languages, phone: str(form, "phone") || null, sourceType: SOURCE_TYPES.includes(str(form, "sourceType")) ? str(form, "sourceType") : "rev",
+        sourceUrl: sourceUrl || null, status: expiresAt > new Date() ? "live" as const : "expired" as const, lastConfirmedAt: confirmed, expiresAt,
+      };
+      const result = await tx.listing.updateMany({ where: { id, status: "pending" }, data });
+      if (result.count !== 1) throw new ReviewError("That listing is no longer waiting for review.");
+      await tx.reviewDecision.create({ data: { mode: "individual", action: "publish", policy: "individual-review-v1",
+        items: { listings: [{ listingId: id, version: reviewVersion(listing), before: reviewSnapshot(listing),
+          after: { ...data, lastConfirmedAt: confirmed.toISOString(), expiresAt: expiresAt.toISOString() } }] } as Prisma.InputJsonObject } });
+      return result.count;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  } catch (error) {
+    if (error instanceof ReviewError) return go("/admin", "error", error.message);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return go("/admin", "error", "The queue changed. Reload and review again before publishing.");
+    throw error;
+  }
   revalidatePath("/admin");
-  if (!pending.count) go("/admin", "error", "That listing is no longer waiting for review.");
+  if (!count) go("/admin", "error", "That listing is no longer waiting for review.");
   go("/admin", "msg", expiresAt > new Date() ? `Published ${clinic}. It now shows in patient results near ${fsa}.` : `Saved ${clinic}, but the confirmed date is already past the expiry window, so patients will not see it.`);
 }
 
 export async function reject(form: FormData) {
   await requireAdmin();
-  await prisma.listing.deleteMany({ where: { id: str(form, "id"), status: "pending" } });
+  const listing = await prisma.listing.findUnique({ where: { id: str(form, "id") }, include: reviewInclude });
+  if (!listing || listing.status !== "pending" || reviewVersion(listing) !== str(form, "version")) return go("/admin", "error", "That listing changed. Reload and review it again.");
+  await prisma.listing.deleteMany({ where: { id: listing.id, status: "pending" } });
   revalidatePath("/admin");
   go("/admin", "msg", "Rejected and deleted.");
 }

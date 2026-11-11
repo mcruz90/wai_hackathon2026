@@ -1,3 +1,6 @@
+import BatchReview from "@/components/BatchReview";
+import { batchEligibility, clinicSourceHosts, MAX_REVIEW_BATCH, reviewVersion } from "@/lib/review-policy";
+import { reviewInclude } from "@/lib/batch-review";
 import AdminNav from "@/components/AdminNav";
 import { requireAdmin } from "@/lib/auth";
 import { config } from "@/lib/config";
@@ -5,7 +8,7 @@ import { prisma } from "@/lib/db";
 import { FSA_CODES } from "@/lib/fsa";
 import { ageDays } from "@/lib/ranking";
 import AgentTrace from "@/components/AgentTrace";
-import { approve, intake, proposalApprove, proposalFull, proposalReject, proposalReviewAsNew, proposalStillOpen, reject, runExpiry, runFreshness } from "./actions";
+import { approve, approveBatch, intake, proposalApprove, proposalFull, proposalReject, proposalReviewAsNew, proposalStillOpen, reject, runExpiry, runFreshness } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +21,22 @@ const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "");
 export default async function Admin({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
   await requireAdmin();
   const sp = await searchParams;
-  const pending = await prisma.listing.findMany({ where: { status: "pending" }, orderBy: { createdAt: "desc" } });
-  const rest = await prisma.listing.findMany({ where: { status: { not: "pending" } }, orderBy: { lastConfirmedAt: "desc" }, include: { _count: { select: { fullReports: true } } } });
+  const [listings, centroids, decisions, proposals] = await Promise.all([
+    prisma.listing.findMany({ include: reviewInclude, orderBy: { createdAt: "desc" } }),
+    prisma.fsaCentroid.findMany({ select: { fsa: true } }),
+    prisma.reviewDecision.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
+    prisma.agentProposal.findMany({ where: { status: "pending" }, orderBy: [{ priority: "asc" }, { createdAt: "desc" }], include: { listing: { include: { _count: { select: { fullReports: true } } } } } }),
+  ]);
+  const pending = listings.filter((l) => l.status === "pending");
+  const rest = listings.filter((l) => l.status !== "pending");
   const now = new Date(), today = day(now);
   const provider = process.env.LLM_PROVIDER || "anthropic";
-  const proposals = await prisma.agentProposal.findMany({ where: { status: "pending" }, orderBy: [{ priority: "asc" }, { createdAt: "desc" }], include: { listing: { include: { _count: { select: { fullReports: true } } } } } });
+  const hosts = clinicSourceHosts();
+  const ctx = { listings, fsas: centroids.map((f) => f.fsa), now, hosts };
+  const checks = new Map(pending.map((l) => [l.id, batchEligibility(l, ctx)]));
+  const ready = pending.filter((l) => checks.get(l.id)!.eligible);
+  const rechecks = proposals.filter((p) => p.action === "recheck_listing");
+  const updates = proposals.filter((p) => p.action !== "recheck_listing");
   const ACTION: Record<string, string> = { reconfirm_listing: "Re-confirm an existing listing", mark_full: "Mark an existing listing full", recheck_listing: "Phone the clinic to re-check", no_listing: "Do not list this announcement" };
   return (
     <div className="wrap wide">
@@ -30,8 +44,17 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       {sp.msg ? <p className="note ok" role="status">{sp.msg}</p> : null}
       {sp.error ? <p className="note err" role="alert">{sp.error}</p> : null}
 
+      <section className="card">
+        <h1>Human review</h1>
+        <p>Agents prepare the evidence. You authorize publication in batches and investigate exceptions individually.</p>
+        <nav className="row" aria-label="Review queues">
+          <a href="#batch">Ready for batch review ({ready.length})</a>
+          <a href="#review">Needs investigation ({pending.length - ready.length + updates.length})</a>
+          <a href="#clinic-checks">Needs clinic confirmation ({rechecks.length})</a>
+        </nav>
+      </section>
       <form className="card" action={intake}>
-        <h1>Intake</h1>
+        <h2>Intake</h2>
         <p className="muted small">Paste one public announcement and its link. The intake agent reads it into fields, checks whether the clinic is already listed, and proposes a new listing, an update, or not listing it. Nothing is published until a reviewer approves it below. The demo text is invented.</p>
         {provider === "mock" ? <p className="banner">LLM_PROVIDER is "mock": an offline keyword reader stands in for the AI, and a scripted planner runs the agent's steps. Set a real provider and key for real reads.</p> : provider !== "anthropic" ? <p className="banner">The agent's steps are scripted with this provider. Claude chooses the steps when LLM_PROVIDER is anthropic.</p> : null}
         <div><label className="lbl" htmlFor="text">Announcement text</label><textarea id="text" name="text" rows={6} required maxLength={6000} defaultValue={SAMPLE_ANN} /></div>
@@ -42,20 +65,32 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
         <button className="btn" type="submit">Read announcement</button>
       </form>
 
+      <section className="stack" id="batch">
+        <h2>Ready for batch review ({ready.length})</h2>
+        {!hosts.length ? <p className="note">No clinic source hosts have been configured. Listings remain available for individual review. A pilot administrator can configure approved clinic websites before using batch publication.</p> : null}
+        {ready.length > MAX_REVIEW_BATCH ? <p className="note">Showing the first {MAX_REVIEW_BATCH} eligible listings. Remaining listings will be available in the next batch.</p> : null}
+        {ready.length ? <BatchReview key={ready.slice(0, MAX_REVIEW_BATCH).map(reviewVersion).join(":")} action={approveBatch} rows={ready.slice(0, MAX_REVIEW_BATCH).map((l) => ({
+          id: l.id, version: reviewVersion(l), clinic: l.clinic, area: l.area, fsa: l.fsa!, providerType: l.providerType,
+          languages: l.languages, phone: l.phone!, sourceUrl: l.sourceUrl!, rawText: l.rawText!,
+          date: checks.get(l.id)!.confirmed!.toISOString().slice(0, 10), isSample: l.isSample,
+        }))} /> : <p className="muted">No listings currently pass every batch check.</p>}
+      </section>
+
       <section className="stack" id="review">
-        <h2>Review queue ({pending.length})</h2>
+        <h2>Individual listing review ({pending.length})</h2>
+        <p className="small muted">Exceptions need investigation. Batch candidates can also be edited or rejected here.</p>
         {pending.length ? null : <p className="muted">Nothing is waiting for review.</p>}
         {pending.map((l) => {
           const c = (l.confidence ?? {}) as Conf;
           const unclearProvider = c.provider_type_read === "unknown";
-          const reasons = [
-            !c.date_read && "no date found", c.location === "low" && "location is low confidence", (c.provider_type === "low" || unclearProvider) && "provider type is low confidence",
-            c.languages === "low" && "languages are low confidence", c.date_read && c.date === "low" && "date is low confidence",
-          ].filter(Boolean) as string[];
+          const reasons = checks.get(l.id)!.reasons;
           const notAccepting = c.accepting !== "yes";
           return (
-            <form className="card" key={l.id} action={approve}>
+            <details className="card" key={l.id} id={`individual-${l.id}`} open={!checks.get(l.id)!.eligible}>
+              <summary><b>{l.clinic || "Unnamed clinic"}</b> · {checks.get(l.id)!.eligible ? "Batch candidate" : "Needs investigation"}</summary>
+            <form className="stack" action={approve}>
               <input type="hidden" name="id" value={l.id} />
+              <input type="hidden" name="version" value={reviewVersion(l)} />
               <div className="review">
                 <b>{notAccepting ? "Do not publish unless you have checked" : reasons.length ? "Held for human review" : "Read with confidence. Still needs your approval"}</b>
                 <span className="small">
@@ -87,18 +122,20 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                 <button className="btn bad" type="submit" formAction={reject} formNoValidate>Reject</button>
               </div>
             </form>
+            </details>
           );
         })}
       </section>
 
-      <section className="stack" id="proposals">
-        <h2>Agent proposals ({proposals.length})</h2>
-        <div className="card">
+      {[{ id: "proposals", title: "Proposals needing investigation", rows: updates }, { id: "clinic-checks", title: "Needs clinic confirmation", rows: rechecks }].map((queue) => (
+      <section className="stack" id={queue.id} key={queue.id}>
+        <h2>{queue.title} ({queue.rows.length})</h2>
+        {queue.id === "clinic-checks" ? <div className="card">
           <p className="small muted">The freshness agent runs every night. It looks for live listings that expire within 10 days or that a patient reported full, and asks you to phone the clinic. It never changes a listing itself.</p>
           <form action={runFreshness}><button className="btn ghost" type="submit">Run freshness agent now</button></form>
-        </div>
-        {proposals.length ? null : <p className="muted">No proposals are waiting.</p>}
-        {proposals.map((p) => {
+        </div> : null}
+        {queue.rows.length ? null : <p className="muted">No proposals are waiting.</p>}
+        {queue.rows.map((p) => {
           const pl = (p.payload ?? {}) as { confirmed_date?: string | null; call_script?: string };
           const l = p.listing;
           return (
@@ -115,25 +152,35 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
               {pl.call_script ? <div><span className="lbl">Call script</span><pre className="raw">{pl.call_script}</pre></div> : null}
               {p.rawText ? <details><summary className="small muted">Announcement as pasted</summary><pre className="raw">{p.rawText}</pre></details> : null}
               {p.action === "reconfirm_listing" ? (
-                <div><label className="lbl">Date you confirm<input type="date" name="date" defaultValue={pl.confirmed_date ?? today} max={today} /></label></div>
+                <div><label className="lbl">Date you confirm<input type="date" name="date" defaultValue={pl.confirmed_date ?? ""} required max={today} /></label></div>
               ) : null}
               <AgentTrace trace={p.trace} />
               <div className="row">
                 {p.action === "recheck_listing" ? (<>
                   <button className="btn" type="submit" formAction={proposalStillOpen}>They are still taking patients</button>
                   <button className="btn bad" type="submit" formAction={proposalFull}>They are full</button>
-                  <button className="btn ghost" type="submit" formAction={proposalReject}>Dismiss</button>
+                  <button className="btn ghost" type="submit" formAction={proposalReject} formNoValidate>Dismiss</button>
                 </>) : p.action === "no_listing" ? (<>
                   <button className="btn" type="submit" formAction={proposalApprove}>Agree: do not list</button>
                   <button className="btn ghost" type="submit" formAction={proposalReviewAsNew}>Review it as a new listing</button>
                 </>) : (<>
                   <button className="btn" type="submit" formAction={proposalApprove}>{p.action === "mark_full" ? "Approve: mark full" : "Approve: re-confirm"}</button>
-                  <button className="btn bad" type="submit" formAction={proposalReject}>Reject</button>
+                  <button className="btn bad" type="submit" formAction={proposalReject} formNoValidate>Reject</button>
                 </>)}
               </div>
             </form>
           );
         })}
+      </section>
+      ))}
+
+      <section className="card">
+        <h2>Recent publication decisions</h2>
+        <p className="small muted">Decisions retain the approved listing snapshots. The shared admin login does not identify an individual reviewer.</p>
+        {decisions.length ? decisions.map((d) => <details key={d.id}>
+          <summary>{d.mode} · {d.action} · {d.createdAt.toISOString()} · {d.id}</summary>
+          <pre className="raw">{JSON.stringify({ actor: d.actor, policy: d.policy, items: d.items }, null, 2)}</pre>
+        </details>) : <p className="muted">No publication decisions recorded yet.</p>}
       </section>
 
       <section className="card">

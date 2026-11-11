@@ -16,11 +16,11 @@ New to Ontario Doctor Finder brings those notices together in one place and puts
 
 1. **Patients search in their own language.** They pick one of five languages and enter the first three characters of their postal code. Results rank clinics by whether the doctor speaks their language, how recently the listing was confirmed, and how close it is.
 2. **Each listing shows how fresh it is.** It says when it was last confirmed and when it expires. After calling, patients can report "still taking patients" or "they are full", which keeps the list current for the next person.
-3. **Agents do the legwork, and a person approves every change.** Two agents keep the directory current:
+3. **Agents do the legwork, and people authorize publication.** Two agents keep the directory current:
    - The **intake agent** reads a pasted public announcement into structured fields, each with a confidence level. It checks whether the clinic is already listed, then proposes a new listing, a re-confirmation of an existing one, marking one full, or not listing it at all.
    - The **freshness agent** runs every night. It finds listings that are about to expire or that a patient reported full, and asks a reviewer to phone the clinic, with a call script ready.
 
-   Neither agent can publish or change a listing. Everything they propose waits for a person to approve it.
+   Neither agent can publish or change a listing. Reviewers can explicitly publish eligible new listings as a selected batch; uncertain listings, updates and clinic checks stay in individual review.
 4. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers.
 
 It asks for no accounts, names or health information. It does not replace Health Care Connect: the patient's plan tells them, in their language, to register there as well.
@@ -63,7 +63,7 @@ It asks for no accounts, names or health information. It does not replace Health
 
 ## Responsible AI
 
-- **A person approves every change.** The agents' tools can read the directory and write proposals, nothing else. Publishing, re-confirming and marking a listing full happen only when a reviewer clicks approve. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
+- **People authorize publication.** The agents' tools can read the directory and write proposals, nothing else. Reviewers explicitly authorize selected batches of eligible new listings and review exceptions individually. Re-confirming and marking a listing full remain individual decisions. Automatic expiry and report-based hiding still apply. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
 - **Every agent step is visible.** Each proposal shows the tools the agent called, what it passed, and what came back.
 - **Announcements are treated as data, not instructions.** The prompt tells the model to ignore anything in a post that reads like an instruction, and the app re-checks every field it returns.
 - **No personal or health information.** There are no accounts. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language. Counts under 5 are hidden in the partner view.
@@ -97,7 +97,7 @@ Planned: Cohere's open Aya models for translating listings and call scripts into
 | Who | Where | What |
 | --- | --- | --- |
 | Patient | `/` → `/results` → `/listing/[id]` → `/plan` | Pick a language and postal area, see listings ranked by language (45%), freshness (30%) and distance (25%), get a call script, report "still taking patients" or "they are full", and leave with a call plan. Five languages: English, French, Mandarin, Spanish, Tagalog. |
-| Reviewer | `/admin` | Paste an announcement and its link. The intake agent reads it and proposes a new listing, an update to an existing one, or not listing it. The freshness agent proposes re-checks. Nothing changes without a reviewer's approval. |
+| Reviewer | `/admin` | Paste an announcement and its link. The intake agent reads it and proposes a new listing, an update to an existing one, or not listing it. The freshness agent proposes re-checks. New listings can be explicitly approved individually or in eligible batches. Proposals remain individually reviewed. |
 | Partner | `/partner` | Searches, searches with no listing in that language, listing opens and full reports by postal area and language, plus an unmet-demand list. Counts under 5 are hidden. |
 | Concept | `/admin/waitlist`, `/waitlist/status`, `/waitlist/rule`, `/waitlist/outbox` | A simulation of how a partner's waitlist could offer open spots fairly. Sample patients only. No message is ever sent. |
 
@@ -148,6 +148,39 @@ The agents are in `lib/agent/`:
 Proposals are stored in the `agent_proposals` table. The only code that acts on them is `decideProposal` in `app/admin/actions.ts`, behind the reviewer's buttons.
 
 The rules that need no judgement stay plain code: the expiry job hides listings past their date, and two separate "full" reports hide a listing straight away.
+
+## Human review at scale
+
+`/admin` separates **Ready for batch review**, **Needs investigation**, and **Needs clinic confirmation**. The batch workflow publishes new pending listings only. Existing-listing updates, re-confirmations, full recommendations and freshness checks remain individual decisions. The agents still have no publication tool.
+
+A pilot administrator must review the clinic websites and configure exact hostnames in `CLINIC_SOURCE_HOSTS`, for example `clinic-one.example,clinic-two.example`. Empty is the default: no listing qualifies for batch publication. Subdomains must be configured separately. A source type or model confidence label never creates trust. Intake is still paste-only: the app does not fetch the link or independently verify that the pasted text came from it. Reviewers must check supporting sources.
+
+A batch candidate must have all of the following:
+
+- An HTTPS link on a configured clinic host, with source type Clinic website.
+- Clinic, area, supported postal area, provider type, languages and a ten-digit North American phone number.
+- High confidence in every extracted field, no uncertainty notes, and explicit acceptance of new patients.
+- Literal support in the pasted text for clinic, area, postal area, provider type, languages, phone, an ISO evidence date, and “accepting new patients”. Negative wording routes it to individual review. These conservative text checks do not establish semantic correctness; alternate wording also goes to individual review.
+- A valid evidence date within the last 14 days and within the configured expiry window.
+- No full reports, pending proposals, or possible duplicates by normalized clinic name or phone, including other pending rows. Sample and real clinics are compared separately.
+
+Reviewers select up to 100 candidates, inspect evidence, exclude rows as needed, and explicitly authorize the selected set. No rows start selected. A spot check helps assess batch quality; it does not verify every row. The server reloads all selected rows, compares their versions and re-runs eligibility inside a serializable database transaction. A stale or newly ineligible row cancels the whole batch, leaving every selection unpublished. Repeated or concurrent approvals cannot create a second publication decision.
+
+Batch publication uses the original evidence date at UTC midnight to calculate expiry; approving an old notice never makes it fresh today. Individual re-confirmations also require an explicit valid evidence/confirmation date rather than silently defaulting to today. For a freshness phone check, the reviewer's “still taking patients” response records a clinic confirmation today.
+
+The `review_decisions` table retains the selected versions, original listing/evidence snapshots, publication dates, policy, source-host configuration and approval time. Individual new-listing publications are recorded too. The admin page shows the ten most recent publication decisions. This is application history, not a tamper-proof compliance log. The current shared password records the actor as `shared_admin`; individual reviewer accounts and clinic self-confirmation remain follow-up work.
+
+Deploy the new migration with `npm run db:migrate` before running the updated app. No real source hostnames are enabled by this change.
+
+### Database regression checks
+
+`npm test` runs the policy checks and existing tests. Database tests are opt-in and create/drop a uniquely named schema, leaving existing schemas untouched:
+
+```bash
+REVIEW_TEST_DATABASE_URL=postgresql://user:password@localhost:5432/doctorfinder npm test
+```
+
+Use a development database where the test user may create schemas. These checks cover publication, excluded rows, original dates, snapshots, stale evidence, new reports, new duplicates, source-policy changes, all-or-nothing rollback, repeated approval and concurrent reviewers.
 
 ## The extraction module
 

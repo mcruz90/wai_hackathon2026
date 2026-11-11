@@ -116,3 +116,8 @@ details.trace ol{margin:6px 0 0;padding-left:20px;display:grid;gap:6px}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;overflow-wrap:anywhere}
 .prio{font-size:.76rem;font-weight:700;border-radius:999px;padding:2px 8px;border:1.5px solid currentColor;text-transform:uppercase;letter-spacing:.04em}
 .prio.high{color:var(--bad)} .prio.normal{color:var(--aging)}
+
+.checkline{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.checkline input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
+details.card>summary{cursor:pointer}
+[id^="individual-"]:target{outline:3px solid var(--accent);outline-offset:3px}
