@@ -1,0 +1,34 @@
+{
+  "name": "ontario-doctor-finder",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
+    "postinstall": "prisma generate",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "eval": "tsx scripts/eval.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "job:expire": "tsx scripts/expire.ts",
+    "job:waitlist": "tsx scripts/waitlist-checkin.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@prisma/client": "^6.19.3",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "next": "^15.5.29",
+    "prisma": "^6.19.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

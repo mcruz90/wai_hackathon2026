@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProviderType {
+  family_doctor
+  nurse_practitioner
+}
+
+enum ListingStatus {
+  pending
+  live
+  expired
+  full
+}
+
+enum WaitlistChannel {
+  sms
+  email
+}
+
+enum WaitlistStatus {
+  waiting
+  offered
+  accepted
+  passed
+  left
+}
+
+model Listing {
+  id              String        @id @default(cuid())
+  clinic          String
+  area            String
+  fsa             String?
+  lat             Float
+  lng             Float
+  providerType    ProviderType  @map("provider_type")
+  languages       String[]
+  phone           String?
+  sourceType      String        @map("source_type")
+  sourceUrl       String?       @map("source_url")
+  rawText         String?       @map("raw_text")
+  /// Per-field confidence from the extraction, plus the model's note.
+  confidence      Json?
+  status          ListingStatus @default(pending)
+  lastConfirmedAt DateTime?     @map("last_confirmed_at")
+  expiresAt       DateTime?     @map("expires_at")
+  isSample        Boolean       @default(false) @map("is_sample")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  fullReports     FullReport[]
+  offers          Offer[]
+
+  @@index([status, expiresAt])
+  @@map("listings")
+}
+
+model FullReport {
+  id        String   @id @default(cuid())
+  listingId String   @map("listing_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  /// sha256 of (secret, date, network address). Changes every day. The address itself is never stored.
+  tokenHash String   @map("token_hash")
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, tokenHash])
+  @@map("full_reports")
+}
+
+model FsaCentroid {
+  fsa String @id
+  lat Float
+  lng Float
+
+  @@map("fsa_centroids")
+}
+
+/// Counters only. No row describes a person.
+model DailyCount {
+  date                  DateTime @db.Date
+  fsa                   String
+  language              String
+  isSample              Boolean  @default(false) @map("is_sample")
+  searches              Int      @default(0)
+  searchesNoLangMatch   Int      @default(0) @map("searches_with_no_language_match")
+  listingOpens          Int      @default(0) @map("listing_opens")
+  fullReports           Int      @default(0) @map("full_reports")
+
+  @@id([date, fsa, language, isSample])
+  @@map("daily_counts")
+}
+
+/// Sample rows only. is_sample is always true.
+model WaitlistEntry {
+  id            String          @id @default(cuid())
+  label         String
+  fsa           String
+  language      String
+  channel       WaitlistChannel
+  joinedAt      DateTime        @map("joined_at")
+  status        WaitlistStatus  @default(waiting)
+  lastCheckinAt DateTime        @map("last_checkin_at")
+  isSample      Boolean         @default(true) @map("is_sample")
+  offers        Offer[]
+  messages      OutboxMessage[]
+
+  @@index([status, joinedAt])
+  @@map("waitlist_entries")
+}
+
+model Offer {
+  id         String          @id @default(cuid())
+  listingId  String          @map("listing_id")
+  entryId    String          @map("entry_id")
+  sentAt     DateTime        @default(now()) @map("sent_at")
+  respondBy  DateTime        @map("respond_by")
+  /// null while open. accepted, passed, no_reply, or closed (someone else accepted).
+  response   String?
+  listing    Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  entry      WaitlistEntry   @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  messages   OutboxMessage[]
+
+  @@index([listingId, response])
+  @@map("offers")
+}
+
+/// What would be sent. Nothing here is ever delivered.
+model OutboxMessage {
+  id        String        @id @default(cuid())
+  entryId   String        @map("entry_id")
+  offerId   String?       @map("offer_id")
+  kind      String
+  body      String
+  createdAt DateTime      @default(now()) @map("created_at")
+  entry     WaitlistEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  offer     Offer?        @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@map("outbox_messages")
+}
