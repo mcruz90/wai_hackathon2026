@@ -17,7 +17,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "job:expire": "tsx scripts/expire.ts",
     "job:waitlist": "tsx scripts/waitlist-checkin.ts",
-    "job:freshness": "tsx scripts/freshness.ts"
+    "job:freshness": "tsx scripts/freshness.ts",
+    "db:seed:review-demo": "tsx scripts/seed-review-demo.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

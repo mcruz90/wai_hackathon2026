@@ -172,3 +172,17 @@ model OutboxMessage {
 
   @@map("outbox_messages")
 }
+
+/// Immutable snapshots of human publication decisions. Shared admin is not an individual identity.
+model ReviewDecision {
+  id        String   @id @default(cuid())
+  mode      String
+  action    String
+  actor     String   @default("shared_admin")
+  policy    String
+  items     Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("review_decisions")
+}
