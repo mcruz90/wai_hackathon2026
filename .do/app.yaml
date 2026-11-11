@@ -1,0 +1,101 @@
+# DigitalOcean App Platform spec.
+#   doctl apps create --spec .do/app.yaml          (first time)
+#   doctl apps update <app-id> --spec .do/app.yaml (after changing this file)
+# Secrets are NOT in this file. Set them as encrypted variables in the App Platform
+# console (or in a local, uncommitted copy of this spec) before the first deploy.
+name: ontario-doctor-finder
+region: tor
+
+databases:
+  # A managed PostgreSQL cluster. Create it first (see README), then this attaches it.
+  - name: db
+    engine: PG
+    version: "16"
+    production: true
+    cluster_name: doctor-finder-db
+    db_name: doctorfinder
+    db_user: doctorfinder
+
+envs:
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    value: ${db.DATABASE_URL}
+  - key: EXPIRY_DAYS
+    value: "30"
+  - key: WAITLIST_RADIUS_KM
+    value: "8"
+  - key: OFFER_BATCH_SIZE
+    value: "3"
+  - key: OFFER_WINDOW_HOURS
+    value: "72"
+  - key: LLM_PROVIDER
+    value: anthropic
+  - key: LLM_MODEL
+    value: claude-opus-5-5
+  - key: LLM_API_KEY
+    type: SECRET
+  - key: ADMIN_PASSWORD
+    type: SECRET
+  - key: TOKEN_SECRET
+    type: SECRET
+
+services:
+  - name: web
+    github:
+      repo: mcruz90/wai_hackathon2026
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npm run build
+    run_command: npm run start
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /
+    envs:
+      - key: PORT
+        value: "8080"
+
+jobs:
+  - name: migrate-and-seed
+    kind: PRE_DEPLOY
+    github:
+      repo: mcruz90/wai_hackathon2026
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npx prisma generate
+    run_command: npm run db:migrate && npm run db:seed
+    instance_count: 1
+    instance_size_slug: basic-xxs
+
+  - name: expire-listings
+    kind: SCHEDULED
+    schedule:
+      cron: "15 3 * * *"
+      time_zone: America/Toronto
+    github:
+      repo: mcruz90/wai_hackathon2026
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npx prisma generate
+    run_command: npm run job:expire
+    instance_count: 1
+    instance_size_slug: basic-xxs
+
+  - name: waitlist-checkins
+    kind: SCHEDULED
+    schedule:
+      cron: "45 3 * * *"
+      time_zone: America/Toronto
+    github:
+      repo: mcruz90/wai_hackathon2026
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npx prisma generate
+    run_command: npm run job:waitlist
+    instance_count: 1
+    instance_size_slug: basic-xxs
