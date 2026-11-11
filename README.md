@@ -2,11 +2,13 @@
 
 A working prototype that helps a newcomer in Toronto find a family doctor or nurse practitioner who is taking new patients, and leave with a plan for who to call.
 
+**WAI Hackathon Canada 2026, Team 14.** Theme 4: Social Impact (Health), under Agentic AI for Good. UN Sustainable Development Goals 3 (Good Health and Well-being) and 10 (Reduced Inequalities).
+
 **Every clinic, phone number, count and waitlist entry that ships with this repo is invented sample data.** Sample rows are flagged `is_sample` and the screens that show them carry a "Sample data" banner.
 
 ## The problem
 
-Finding a family doctor in Ontario is hard, and it is harder for newcomers. Notices that a clinic is "accepting new patients" are spread across clinic websites, regional lists and community posts. They are usually in English, often out of date, and say nothing about which languages the doctor speaks. A newcomer ends up calling clinics that filled up weeks ago, or that cannot see them in a language they are comfortable with.
+More than 2.5 million Ontarians do not have a family doctor, according to the Ontario Medical Association. Finding a family doctor in Ontario is hard, and it is harder for newcomers. Notices that a clinic is "accepting new patients" are spread across clinic websites, regional lists and community posts. They are usually in English, often out of date, and say nothing about which languages the doctor speaks. A newcomer ends up calling clinics that filled up weeks ago, or that cannot see them in a language they are comfortable with. Many also do not know that Ontario's official route, Health Care Connect, exists.
 
 ## Our approach
 
@@ -17,7 +19,9 @@ New to Ontario Doctor Finder brings those notices together in one place and puts
 3. **AI reads the notices and a person checks them.** A reviewer pastes a public announcement, and one AI call turns it into structured fields, each with a confidence level. Nothing is published until a person approves it.
 4. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers.
 
-It asks for no accounts, names or health information.
+It asks for no accounts, names or health information. It does not replace Health Care Connect: the patient's plan tells them, in their language, to register there as well.
+
+**How it reaches people.** The tool is meant to sit inside settlement agencies' welcome guides, not to be one more app a newcomer has to find. A regional partner funds a pilot and then pays per successful attachment, so it stays free for patients, with no advertising and no paid placement.
 
 ## Screenshots
 
@@ -49,16 +53,33 @@ It asks for no accounts, names or health information.
 
 ![Waitlist concept admin screen with a Simulate an opening button per clinic](docs/screenshots/09-waitlist.png)
 
-## Design choices
+## Responsible AI
 
 - **A person approves everything the AI reads.** The AI fills in a form and a reviewer publishes it. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
+- **Announcements are treated as data, not instructions.** The prompt tells the model to ignore anything in a post that reads like an instruction, and the app re-checks every field it returns.
+- **No personal or health information.** There are no accounts. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language. Counts under 5 are hidden in the partner view.
+- **Navigation only.** The tool does not choose a doctor for anyone and gives no medical advice.
+- **Honest about what is real.** Sample data is labelled on every screen that shows it. The extraction eval uses real public announcements and reports every mistake.
+- **Translations need review.** The patient screens were translated without a native speaker, and every new string is listed in `docs/translations-to-review.md` for review before a pilot.
+
+## Design choices
+
 - **Freshness is visible.** Every listing shows when it was last confirmed and expires after 30 days. Patient reports update it, and two "they are full" reports hide it.
 - **Language comes first.** Language match is the biggest factor in ranking (45%, then freshness 30% and distance 25%), and the patient screens come in English, French, Mandarin, Spanish and Tagalog.
-- **Privacy.** There are no accounts. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language.
 
 ## Built with
 
 Next.js 15, React 19, TypeScript, PostgreSQL with Prisma, and the Anthropic API (or OpenAI) for reading announcements. It is set up to deploy to DigitalOcean App Platform.
+
+Planned: Cohere's open Aya models for translating listings and call scripts into more languages. The prototype uses hand-written translations for now.
+
+## Limits and next steps
+
+- **Sample listings.** The clinics in the app are invented. A pilot would start from real public announcements, entered through the review queue.
+- **A small eval.** The extraction eval has 15 real public announcements; the target is 20.
+- **Draft translations.** They need native-speaker review before a pilot.
+- **Toronto only.** Postal areas cover 25 Toronto areas.
+- **Next step: a pilot** with a settlement agency and a regional partner.
 
 ---
 
@@ -121,15 +142,19 @@ npm run eval
 
 This reads `eval/announcements.jsonl`, runs each announcement through `lib/extract.ts` with whatever provider your environment points at, scores location, provider type, languages and date, and writes `eval/results.md` with accuracy per field and every mistake.
 
-The file has **3 invented examples**. The target is 20. Add one JSON object per line:
+The file has **15 real public announcements** from Toronto clinic websites, a community news article, and three family health teams outside Toronto (for the "not in Toronto" case). Each text is an exact excerpt of the page, with the `source` URL and the date it was retrieved. Some excerpts join lines from different parts of the same page, such as the notice and the address in the footer. `label_note` explains any label a reviewer might question. Check the labels before you publish results; a few are judgement calls (for example, staff languages versus doctors' languages, or an address whose postal area is not in the app's list of 25).
+
+The 3 original invented examples are in `eval/synthetic.jsonl`. Run them with `npm run eval -- eval/synthetic.jsonl`, which writes `eval/synthetic-results.md`.
+
+To add an example, add one JSON object per line:
 
 ```json
-{"id":"ex-04","today":"2026-11-10","text":"…the announcement…","expected":{"fsa":"M4C","provider_type":"family_doctor","languages":["English","Bengali"],"date":"2026-11-02"}}
+{"id":"real-16","source":"https://…","retrieved":"2026-11-11","today":"2026-11-11","text":"…the announcement…","expected":{"fsa":"M4C","provider_type":"family_doctor","languages":["English","Bengali"],"date":"2026-11-02"},"label_note":""}
 ```
 
 `fsa` is the first 3 postal characters (one of the areas in `lib/fsa.ts`) or null. `date` is null when the text alone does not settle it; returning null there is the correct answer. `today` is the date given to the model for reference.
 
-The committed `eval/results.md` was produced with `LLM_PROVIDER=mock`, so it shows that the script works, not how well a model reads. Re-run it with a real key.
+The committed `eval/results.md` was produced with `LLM_PROVIDER=mock`, the offline keyword reader, so it shows that the script works, not how well a model reads. Re-run it with a real key. The keyword reader scored well on the 3 invented examples it was written alongside and badly on the real ones, which is why the real set matters.
 
 ## Jobs
 
@@ -186,7 +211,7 @@ doctl apps create --spec .do/app.yaml
 
 ## What is not done
 
-- The eval set has 3 of 20 announcements, and has not been run against a real model.
+- The eval set has 15 of 20 real announcements, and has not been run against a real model yet.
 - Translations for the new screens are drafts. See `docs/translations-to-review.md`.
 - The rate limiter is in memory, which is fine for one web instance and not for several.
 - Postal areas cover the 25 Toronto areas from the demo. Other codes fall back to downtown with a notice.

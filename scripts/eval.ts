@@ -1,7 +1,8 @@
 /**
- * npm run eval
- * Scores the extraction module against eval/announcements.jsonl, field by field,
- * and writes eval/results.md with accuracy and every mistake.
+ * npm run eval                              (real announcements: eval/announcements.jsonl)
+ * npm run eval -- eval/synthetic.jsonl      (any other file of examples)
+ * Scores the extraction module field by field and writes eval/results.md
+ * (or <name>-results.md for another file) with accuracy and every mistake.
  */
 import "./env";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -13,7 +14,10 @@ const FIELDS = ["location", "provider_type", "languages", "date"] as const;
 type Field = (typeof FIELDS)[number];
 
 const dir = path.join(process.cwd(), "eval");
-const examples: Example[] = readFileSync(path.join(dir, "announcements.jsonl"), "utf8")
+const inputFile = process.argv[2] ? path.resolve(process.argv[2]) : path.join(dir, "announcements.jsonl");
+const base = path.basename(inputFile, ".jsonl");
+const resultsFile = path.join(dir, base === "announcements" ? "results.md" : `${base}-results.md`);
+const examples: Example[] = readFileSync(inputFile, "utf8")
   .split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("//")).map((l) => JSON.parse(l));
 
 const langSet = (a: string[]) => [...new Set(a.map((s) => s.trim().toLowerCase()))].sort().join(", ");
@@ -58,6 +62,7 @@ async function main() {
     `Run: ${new Date().toISOString()}  `,
     `Provider: ${provider}  `,
     `Model: ${model}  `,
+    `File: ${path.relative(process.cwd(), inputFile)}  `,
     `Announcements: ${examples.length} in the file, ${scored} scored, ${failures.length} failed to run`,
     "",
     "## Accuracy by field",
@@ -74,8 +79,8 @@ async function main() {
     "",
     ...(failures.length ? ["## Announcements that failed to run", "", ...failures, ""] : []),
   ].join("\n");
-  writeFileSync(path.join(dir, "results.md"), out);
-  console.log(`\nWrote eval/results.md (${mistakes.length} mistakes, ${failures.length} failures)`);
+  writeFileSync(resultsFile, out);
+  console.log(`\nWrote ${path.relative(process.cwd(), resultsFile)} (${mistakes.length} mistakes, ${failures.length} failures)`);
   if (failures.length === examples.length) process.exit(1);
 }
 main();
