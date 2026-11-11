@@ -54,9 +54,40 @@ model Listing {
   createdAt       DateTime      @default(now()) @map("created_at")
   fullReports     FullReport[]
   offers          Offer[]
+  proposals       AgentProposal[]
 
   @@index([status, expiresAt])
   @@map("listings")
+}
+
+enum ProposalStatus {
+  pending
+  approved
+  rejected
+}
+
+/// Something an agent wants to change. Nothing changes until a reviewer approves it in /admin.
+model AgentProposal {
+  id         String         @id @default(cuid())
+  /// "intake" or "freshness"
+  agent      String
+  /// reconfirm_listing, mark_full, recheck_listing, or no_listing
+  action     String
+  listingId  String?        @map("listing_id")
+  /// Action details, e.g. the confirmed date or the call script for a re-check.
+  payload    Json
+  rationale  String
+  priority   String         @default("normal")
+  /// Every tool call the agent made, in order, with its result.
+  trace      Json
+  rawText    String?        @map("raw_text")
+  status     ProposalStatus @default(pending)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  decidedAt  DateTime?      @map("decided_at")
+  listing    Listing?       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@map("agent_proposals")
 }
 
 model FullReport {

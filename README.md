@@ -16,7 +16,11 @@ New to Ontario Doctor Finder brings those notices together in one place and puts
 
 1. **Patients search in their own language.** They pick one of five languages and enter the first three characters of their postal code. Results rank clinics by whether the doctor speaks their language, how recently the listing was confirmed, and how close it is.
 2. **Each listing shows how fresh it is.** It says when it was last confirmed and when it expires. After calling, patients can report "still taking patients" or "they are full", which keeps the list current for the next person.
-3. **AI reads the notices and a person checks them.** A reviewer pastes a public announcement, and one AI call turns it into structured fields, each with a confidence level. Nothing is published until a person approves it.
+3. **Agents do the legwork, and a person approves every change.** Two agents keep the directory current:
+   - The **intake agent** reads a pasted public announcement into structured fields, each with a confidence level. It checks whether the clinic is already listed, then proposes a new listing, a re-confirmation of an existing one, marking one full, or not listing it at all.
+   - The **freshness agent** runs every night. It finds listings that are about to expire or that a patient reported full, and asks a reviewer to phone the clinic, with a call script ready.
+
+   Neither agent can publish or change a listing. Everything they propose waits for a person to approve it.
 4. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers.
 
 It asks for no accounts, names or health information. It does not replace Health Care Connect: the patient's plan tells them, in their language, to register there as well.
@@ -41,9 +45,13 @@ It asks for no accounts, names or health information. It does not replace Health
 
 ![Intake form with a pasted announcement and a Read announcement button](docs/screenshots/06-intake.png)
 
-**Review queue.** The announcement is turned into fields, each marked high, medium or low confidence, and anything uncertain is held for a person to check. In this screenshot the offline stand-in reader produced the fields (`LLM_PROVIDER=mock`). With an API key, a Claude model does this step.
+**Review queue.** The intake agent read the announcement, found no existing listing, and proposed a new one. Each field is marked high, medium or low confidence, anything uncertain is held for a person to check, and the agent's steps are shown so the reviewer can see how it got there. This screenshot comes from the offline mode (`LLM_PROVIDER=mock`). With an API key, Claude reads the text and chooses each step.
 
 ![Review queue item held for human review, with extracted fields and confidence badges](docs/screenshots/07-review-queue.png)
+
+**Agent proposals.** The freshness agent asks a reviewer to phone two clinics: one a patient reported full (high priority), and one that expires in 4 days. Below them, the intake agent matched a pasted notice to an existing listing by phone number and proposes re-confirming it instead of adding a duplicate. The reviewer records the outcome with one click.
+
+![Agent proposals: two re-check requests with call scripts, and a re-confirmation proposal with the agent's steps](docs/screenshots/10-agent-proposals.png)
 
 **Partner view.** Anonymous counts by postal area and language, and a ranked list of unmet demand. Counts under 5 are hidden.
 
@@ -55,7 +63,8 @@ It asks for no accounts, names or health information. It does not replace Health
 
 ## Responsible AI
 
-- **A person approves everything the AI reads.** The AI fills in a form and a reviewer publishes it. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
+- **A person approves every change.** The agents' tools can read the directory and write proposals, nothing else. Publishing, re-confirming and marking a listing full happen only when a reviewer clicks approve. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
+- **Every agent step is visible.** Each proposal shows the tools the agent called, what it passed, and what came back.
 - **Announcements are treated as data, not instructions.** The prompt tells the model to ignore anything in a post that reads like an instruction, and the app re-checks every field it returns.
 - **No personal or health information.** There are no accounts. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language. Counts under 5 are hidden in the partner view.
 - **Navigation only.** The tool does not choose a doctor for anyone and gives no medical advice.
@@ -69,7 +78,7 @@ It asks for no accounts, names or health information. It does not replace Health
 
 ## Built with
 
-Next.js 15, React 19, TypeScript, PostgreSQL with Prisma, and the Anthropic API (or OpenAI) for reading announcements. It is set up to deploy to DigitalOcean App Platform.
+Next.js 15, React 19, TypeScript, PostgreSQL with Prisma, and the Anthropic API: Claude tool use for the agents, and structured outputs for reading announcements (OpenAI also works for the reading step). It is set up to deploy to DigitalOcean App Platform.
 
 Planned: Cohere's open Aya models for translating listings and call scripts into more languages. The prototype uses hand-written translations for now.
 
@@ -88,7 +97,7 @@ Planned: Cohere's open Aya models for translating listings and call scripts into
 | Who | Where | What |
 | --- | --- | --- |
 | Patient | `/` → `/results` → `/listing/[id]` → `/plan` | Pick a language and postal area, see listings ranked by language (45%), freshness (30%) and distance (25%), get a call script, report "still taking patients" or "they are full", and leave with a call plan. Five languages: English, French, Mandarin, Spanish, Tagalog. |
-| Reviewer | `/admin` | Paste an announcement and its link. One LLM call turns it into fields with a confidence for each. Every read waits in the review queue; nothing is published without approval. |
+| Reviewer | `/admin` | Paste an announcement and its link. The intake agent reads it and proposes a new listing, an update to an existing one, or not listing it. The freshness agent proposes re-checks. Nothing changes without a reviewer's approval. |
 | Partner | `/partner` | Searches, searches with no listing in that language, listing opens and full reports by postal area and language, plus an unmet-demand list. Counts under 5 are hidden. |
 | Concept | `/admin/waitlist`, `/waitlist/status`, `/waitlist/rule`, `/waitlist/outbox` | A simulation of how a partner's waitlist could offer open spots fairly. Sample patients only. No message is ever sent. |
 
@@ -128,9 +137,21 @@ Sample listings age like real ones, so a month after seeding they will all have 
 
 Secrets never go in the repo. `.env` is git-ignored.
 
+## The agents
+
+The agents are in `lib/agent/`:
+
+- `runtime.ts` is a small tool-use loop. With `LLM_PROVIDER=anthropic`, Claude chooses which tool to call next, up to 8 turns. It uses strict tool schemas and the API's server-side refusal fallback. With any other provider, a scripted planner calls the same tools in a fixed order, so the pipeline works offline and in tests. Every run is stored as a trace and shown to the reviewer.
+- `intake.ts` has the tools `read_announcement` (the extraction module below), `find_matching_listings`, and three tools that end the run: `submit_new_listing`, `propose_update` (re-confirm or mark full) and `no_listing`. Each of those three only writes a pending listing or a proposal.
+- `freshness.ts` has the tools `find_listings_needing_attention` (live listings expiring within 10 days, or with a "full" report), `propose_recheck` (with a priority and a call script) and `finish`.
+
+Proposals are stored in the `agent_proposals` table. The only code that acts on them is `decideProposal` in `app/admin/actions.ts`, behind the reviewer's buttons.
+
+The rules that need no judgement stay plain code: the expiry job hides listings past their date, and two separate "full" reports hide a listing straight away.
+
 ## The extraction module
 
-All LLM use is in `lib/extract.ts`: one call per announcement, using the provider's structured JSON output with the schema in that file. The prompt says the announcement is data and not instructions, and tells the model to return null rather than guess. `normalize()` re-checks whatever comes back, so an invalid date or postal area becomes null with low confidence.
+The intake agent's `read_announcement` tool is `lib/extract.ts`: one call per announcement, using the provider's structured JSON output with the schema in that file. The prompt says the announcement is data and not instructions, and tells the model to return null rather than guess. `normalize()` re-checks whatever comes back, so an invalid date or postal area becomes null with low confidence.
 
 To add a provider, add a `via…` function there and a branch in `extractListing`. Nothing else in the app knows which provider is in use.
 
@@ -160,10 +181,11 @@ The committed `eval/results.md` was produced with `LLM_PROVIDER=mock`, the offli
 
 ```bash
 npm run job:expire      # marks live listings past EXPIRY_DAYS as expired
+npm run job:freshness   # freshness agent: proposes re-checks for listings near expiry or reported full
 npm run job:waitlist    # concept: reminders, closed reply windows, 30-day check-ins (sample rows only)
 ```
 
-Both also have a "run now" button on the admin screens. Patients never see a listing past its expiry date even before the job runs; the job makes the status change permanent.
+All three also have a "run now" button on the admin screens. Patients never see a listing past its expiry date even before the job runs; the job makes the status change permanent.
 
 ## Privacy
 
@@ -182,9 +204,9 @@ npm run typecheck
 
 ## Deploying to DigitalOcean App Platform
 
-The spec is `.do/app.yaml`: one web service, a managed PostgreSQL database, a `PRE_DEPLOY` job that runs migrations and the seed, and two `SCHEDULED` jobs (nightly expiry at 03:15 and waitlist check-ins at 03:45 Toronto time), in the Toronto region, with deploy on push.
+The spec is `.do/app.yaml`: one web service, a managed PostgreSQL database, a `PRE_DEPLOY` job that runs migrations and the seed, and three `SCHEDULED` jobs (nightly expiry at 03:15, the freshness agent at 03:30 and waitlist check-ins at 03:45 Toronto time), in the Toronto region, with deploy on push.
 
-**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`), the database `cluster_name`, and the two `SCHEDULED` job blocks. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
+**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`), the database `cluster_name`, and the three `SCHEDULED` job blocks. With `LLM_PROVIDER=anthropic`, the nightly freshness agent makes a few API calls each night. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
 This creates paid resources: the web service, the database cluster, and job run time.
 

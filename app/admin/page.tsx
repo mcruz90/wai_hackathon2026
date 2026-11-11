@@ -4,7 +4,8 @@ import { config } from "@/lib/config";
 import { prisma } from "@/lib/db";
 import { FSA_CODES } from "@/lib/fsa";
 import { ageDays } from "@/lib/ranking";
-import { approve, intake, reject, runExpiry } from "./actions";
+import AgentTrace from "@/components/AgentTrace";
+import { approve, intake, proposalApprove, proposalFull, proposalReject, proposalReviewAsNew, proposalStillOpen, reject, runExpiry, runFreshness } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   const rest = await prisma.listing.findMany({ where: { status: { not: "pending" } }, orderBy: { lastConfirmedAt: "desc" }, include: { _count: { select: { fullReports: true } } } });
   const now = new Date(), today = day(now);
   const provider = process.env.LLM_PROVIDER || "anthropic";
+  const proposals = await prisma.agentProposal.findMany({ where: { status: "pending" }, orderBy: [{ priority: "asc" }, { createdAt: "desc" }], include: { listing: { include: { _count: { select: { fullReports: true } } } } } });
+  const ACTION: Record<string, string> = { reconfirm_listing: "Re-confirm an existing listing", mark_full: "Mark an existing listing full", recheck_listing: "Phone the clinic to re-check", no_listing: "Do not list this announcement" };
   return (
     <div className="wrap wide">
       <AdminNav />
@@ -29,8 +32,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
 
       <form className="card" action={intake}>
         <h1>Intake</h1>
-        <p className="muted small">Paste one public announcement and its link. One AI call reads it into fields. Nothing is published until a reviewer approves it below. The demo text is invented.</p>
-        {provider === "mock" ? <p className="banner">LLM_PROVIDER is "mock": an offline keyword reader is standing in for the AI. Set a real provider and key for real reads.</p> : null}
+        <p className="muted small">Paste one public announcement and its link. The intake agent reads it into fields, checks whether the clinic is already listed, and proposes a new listing, an update, or not listing it. Nothing is published until a reviewer approves it below. The demo text is invented.</p>
+        {provider === "mock" ? <p className="banner">LLM_PROVIDER is "mock": an offline keyword reader stands in for the AI, and a scripted planner runs the agent's steps. Set a real provider and key for real reads.</p> : provider !== "anthropic" ? <p className="banner">The agent's steps are scripted with this provider. Claude chooses the steps when LLM_PROVIDER is anthropic.</p> : null}
         <div><label className="lbl" htmlFor="text">Announcement text</label><textarea id="text" name="text" rows={6} required maxLength={6000} defaultValue={SAMPLE_ANN} /></div>
         <div className="grid2">
           <div><label className="lbl" htmlFor="sourceUrl">Source link</label><input type="text" id="sourceUrl" name="sourceUrl" inputMode="url" placeholder="https://" /></div>
@@ -60,7 +63,9 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                   {reasons.length ? `Why: ${reasons.join("; ")}.` : notAccepting ? "" : "Check each field against the text, then approve."}
                 </span>
                 {c.notes ? <span className="small muted">AI note: {String(c.notes)}</span> : null}
+                {c.agent_rationale ? <span className="small muted">Agent: {String(c.agent_rationale)}</span> : null}
               </div>
+              <AgentTrace trace={c.agent_trace} />
               <details open><summary className="small muted">Announcement as pasted</summary><pre className="raw">{l.rawText}</pre></details>
               <div className="grid2">
                 <div><label className="lbl">Clinic<input type="text" name="clinic" defaultValue={l.clinic} required /></label></div>
@@ -80,6 +85,51 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
               <div className="row">
                 <button className="btn" type="submit">Approve and publish</button>
                 <button className="btn bad" type="submit" formAction={reject} formNoValidate>Reject</button>
+              </div>
+            </form>
+          );
+        })}
+      </section>
+
+      <section className="stack" id="proposals">
+        <h2>Agent proposals ({proposals.length})</h2>
+        <div className="card">
+          <p className="small muted">The freshness agent runs every night. It looks for live listings that expire within 10 days or that a patient reported full, and asks you to phone the clinic. It never changes a listing itself.</p>
+          <form action={runFreshness}><button className="btn ghost" type="submit">Run freshness agent now</button></form>
+        </div>
+        {proposals.length ? null : <p className="muted">No proposals are waiting.</p>}
+        {proposals.map((p) => {
+          const pl = (p.payload ?? {}) as { confirmed_date?: string | null; call_script?: string };
+          const l = p.listing;
+          return (
+            <form className="card" key={p.id} action={proposalApprove}>
+              <input type="hidden" name="id" value={p.id} />
+              <div className="review">
+                <b>{ACTION[p.action] ?? p.action} {p.priority === "high" ? <span className="prio high">High priority</span> : null}</b>
+                <span className="small">{p.rationale}</span>
+                <span className="small muted">From the {p.agent} agent · {p.createdAt.toISOString().slice(0, 16).replace("T", " ")} UTC</span>
+              </div>
+              {l ? (
+                <p className="small"><b>{l.clinic}</b>, {l.area} · {l.phone ?? "no phone"} · {l.status}{l.lastConfirmedAt ? `, confirmed ${day(l.lastConfirmedAt)}` : ""}{l.expiresAt ? `, expires ${day(l.expiresAt)}` : ""} · {l._count.fullReports} full report{l._count.fullReports === 1 ? "" : "s"} {l.isSample ? <span className="tag">Sample</span> : null}</p>
+              ) : null}
+              {pl.call_script ? <div><span className="lbl">Call script</span><pre className="raw">{pl.call_script}</pre></div> : null}
+              {p.rawText ? <details><summary className="small muted">Announcement as pasted</summary><pre className="raw">{p.rawText}</pre></details> : null}
+              {p.action === "reconfirm_listing" ? (
+                <div><label className="lbl">Date you confirm<input type="date" name="date" defaultValue={pl.confirmed_date ?? today} max={today} /></label></div>
+              ) : null}
+              <AgentTrace trace={p.trace} />
+              <div className="row">
+                {p.action === "recheck_listing" ? (<>
+                  <button className="btn" type="submit" formAction={proposalStillOpen}>They are still taking patients</button>
+                  <button className="btn bad" type="submit" formAction={proposalFull}>They are full</button>
+                  <button className="btn ghost" type="submit" formAction={proposalReject}>Dismiss</button>
+                </>) : p.action === "no_listing" ? (<>
+                  <button className="btn" type="submit" formAction={proposalApprove}>Agree: do not list</button>
+                  <button className="btn ghost" type="submit" formAction={proposalReviewAsNew}>Review it as a new listing</button>
+                </>) : (<>
+                  <button className="btn" type="submit" formAction={proposalApprove}>{p.action === "mark_full" ? "Approve: mark full" : "Approve: re-confirm"}</button>
+                  <button className="btn bad" type="submit" formAction={proposalReject}>Reject</button>
+                </>)}
               </div>
             </form>
           );
