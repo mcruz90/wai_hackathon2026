@@ -16,7 +16,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "job:expire": "tsx scripts/expire.ts",
-    "job:waitlist": "tsx scripts/waitlist-checkin.ts"
+    "job:waitlist": "tsx scripts/waitlist-checkin.ts",
+    "job:freshness": "tsx scripts/freshness.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

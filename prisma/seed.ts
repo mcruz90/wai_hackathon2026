@@ -55,7 +55,9 @@ async function seedListings() {
       },
     });
   }
-  console.log(`Seeded ${SAMPLE.length} sample listings.`);
+  // One sample "they are full" report, so the freshness agent has a high-priority re-check to propose.
+  await prisma.fullReport.create({ data: { listingId: "sample-4", tokenHash: "sample-report" } });
+  console.log(`Seeded ${SAMPLE.length} sample listings and 1 sample full report.`);
 }
 
 async function seedCounts() {

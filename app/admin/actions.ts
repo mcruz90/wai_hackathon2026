@@ -5,7 +5,10 @@ import { revalidatePath } from "next/cache";
 import { ADMIN_COOKIE, requireAdmin, safeEqual } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { expireListings } from "@/lib/expiry";
-import { extractListing, ExtractionError, needsReview } from "@/lib/extract";
+import { ExtractionError, needsReview, type Extraction } from "@/lib/extract";
+import { runFreshnessAgent } from "@/lib/agent/freshness";
+import { runIntakeAgent } from "@/lib/agent/intake";
+import { AgentError } from "@/lib/agent/runtime";
 import { cleanFsa, DOWNTOWN } from "@/lib/fsa";
 import { expiryFrom } from "@/lib/listings";
 import { adminCookieValue } from "@/lib/token";
@@ -29,28 +32,95 @@ export async function logout() {
   redirect("/admin/login");
 }
 
-/** Paste-only intake: one announcement in, one pending listing out. Nothing is published here. */
+/** Paste-only intake: one announcement in, one proposal out (from the intake agent). Nothing is published here. */
 export async function intake(form: FormData) {
   await requireAdmin();
   const text = str(form, "text"), sourceUrl = str(form, "sourceUrl"), sourceType = str(form, "sourceType");
   if (text.length < 20) go("/admin", "error", "Paste the announcement text first.");
   if (text.length > 6000) go("/admin", "error", "That announcement is too long. Paste only the announcement itself (6,000 characters at most).");
   if (sourceUrl && !/^https?:\/\/\S+$/i.test(sourceUrl)) go("/admin", "error", "The source link must start with http:// or https://");
-  let x;
-  try { x = await extractListing(text); }
-  catch (err) { return go("/admin", "error", err instanceof ExtractionError ? err.message : "The extraction did not work. Try again."); }
-  const centroid = x.fsa ? await prisma.fsaCentroid.findUnique({ where: { fsa: x.fsa } }) : null;
-  await prisma.listing.create({
-    data: {
-      clinic: x.clinic ?? "", area: x.area ?? "", fsa: centroid?.fsa ?? null, lat: centroid?.lat ?? DOWNTOWN[0], lng: centroid?.lng ?? DOWNTOWN[1],
-      providerType: x.provider_type === "nurse_practitioner" ? "nurse_practitioner" : "family_doctor",
-      languages: x.languages, phone: x.phone, sourceType: SOURCE_TYPES.includes(sourceType) ? sourceType : "rev", sourceUrl: sourceUrl || null,
-      rawText: text, status: "pending",
-      confidence: { ...x.confidence, provider_type_read: x.provider_type, accepting: x.accepting, date_read: x.date, notes: x.notes, needs_review: needsReview(x) },
-    },
-  });
+  let outcome;
+  try { outcome = await runIntakeAgent({ text, sourceUrl: sourceUrl || null, sourceType }); }
+  catch (err) { return go("/admin", "error", err instanceof ExtractionError || err instanceof AgentError ? err.message : "The intake agent did not work. Try again."); }
   revalidatePath("/admin");
-  go("/admin", "msg", "Announcement read. Check it in the review queue below.");
+  go("/admin", "msg", outcome.kind === "listing"
+    ? "The intake agent read the announcement and found no existing listing. Check the new listing in the review queue below."
+    : "The intake agent made a proposal about an existing listing or about not listing this. Check it under Agent proposals below.");
+}
+
+/** Re-confirm a listing as of a date: it goes live again with a fresh expiry, and old "full" reports are cleared. */
+async function reconfirm(listingId: string, date: string | null) {
+  const today = new Date().toISOString().slice(0, 10);
+  const d = date && /^\d{4}-\d{2}-\d{2}$/.test(date) && date <= today ? date : today;
+  const confirmed = new Date(Math.min(Date.now(), new Date(`${d}T17:00:00Z`).getTime()));
+  const expiresAt = expiryFrom(confirmed);
+  await prisma.$transaction([
+    prisma.fullReport.deleteMany({ where: { listingId } }),
+    prisma.listing.update({ where: { id: listingId }, data: { status: expiresAt > new Date() ? "live" : "expired", lastConfirmedAt: confirmed, expiresAt } }),
+  ]);
+  return { d, live: expiresAt > new Date() };
+}
+
+/**
+ * A reviewer decides on an agent proposal. This is the only place a proposal changes a listing.
+ * decision: approve | reject for intake proposals; still_open | full | reject for re-checks;
+ * review_as_new to override a "no listing" recommendation.
+ */
+async function decideProposal(form: FormData, decision: string) {
+  await requireAdmin();
+  const id = str(form, "id");
+  const p = await prisma.agentProposal.findFirst({ where: { id, status: "pending" }, include: { listing: true } });
+  if (!p) return go("/admin", "error", "That proposal is no longer waiting for a decision.");
+  const done = (status: "approved" | "rejected") => prisma.agentProposal.update({ where: { id }, data: { status, decidedAt: new Date() } });
+  const name = p.listing?.clinic ?? "the listing";
+  let msg = "";
+  if (decision === "reject") { await done("rejected"); msg = "Proposal rejected. Nothing changed."; }
+  else if ((p.action === "reconfirm_listing" && decision === "approve") || (p.action === "recheck_listing" && decision === "still_open")) {
+    if (!p.listingId) return go("/admin", "error", "That proposal has no listing.");
+    const r = await reconfirm(p.listingId, p.action === "reconfirm_listing" ? str(form, "date") || null : null);
+    await done("approved");
+    msg = r.live ? `Re-confirmed ${name} as of ${r.d}. It shows to patients with a fresh expiry date.` : `Saved ${name} as confirmed on ${r.d}, but that is past the expiry window, so patients will not see it.`;
+  } else if ((p.action === "mark_full" && decision === "approve") || (p.action === "recheck_listing" && decision === "full")) {
+    if (!p.listingId) return go("/admin", "error", "That proposal has no listing.");
+    await prisma.listing.update({ where: { id: p.listingId }, data: { status: "full" } });
+    await done("approved");
+    msg = `Marked ${name} as full. Patients no longer see it.`;
+  } else if (p.action === "no_listing" && decision === "approve") {
+    await done("approved"); msg = "Confirmed: not listed. Nothing was published.";
+  } else if (p.action === "no_listing" && decision === "review_as_new") {
+    const pl = (p.payload ?? {}) as { extraction?: Extraction; source_url?: string | null; source_type?: string };
+    const x = pl.extraction;
+    if (!x) return go("/admin", "error", "That proposal has no reading to review.");
+    const centroid = x.fsa ? await prisma.fsaCentroid.findUnique({ where: { fsa: x.fsa } }) : null;
+    await prisma.listing.create({
+      data: {
+        clinic: x.clinic ?? "", area: x.area ?? "", fsa: centroid?.fsa ?? null, lat: centroid?.lat ?? DOWNTOWN[0], lng: centroid?.lng ?? DOWNTOWN[1],
+        providerType: x.provider_type === "nurse_practitioner" ? "nurse_practitioner" : "family_doctor", languages: x.languages, phone: x.phone,
+        sourceType: SOURCE_TYPES.includes(pl.source_type ?? "") ? pl.source_type! : "rev", sourceUrl: pl.source_url ?? null, rawText: p.rawText, status: "pending",
+        confidence: { ...x.confidence, provider_type_read: x.provider_type, accepting: x.accepting, date_read: x.date, notes: x.notes, needs_review: needsReview(x), agent_rationale: `Reviewer overrode the agent's "no listing" recommendation: ${p.rationale}`, agent_trace: p.trace as object },
+      },
+    });
+    await done("rejected");
+    msg = "Moved to the review queue as a new listing. Check every field before publishing.";
+  } else return go("/admin", "error", "That decision does not apply to this proposal.");
+  revalidatePath("/admin");
+  go("/admin", "msg", msg);
+}
+
+// One server action per button, so the decision never depends on which button the browser reports.
+export async function proposalApprove(form: FormData) { return decideProposal(form, "approve"); }
+export async function proposalReject(form: FormData) { return decideProposal(form, "reject"); }
+export async function proposalStillOpen(form: FormData) { return decideProposal(form, "still_open"); }
+export async function proposalFull(form: FormData) { return decideProposal(form, "full"); }
+export async function proposalReviewAsNew(form: FormData) { return decideProposal(form, "review_as_new"); }
+
+export async function runFreshness() {
+  await requireAdmin();
+  let r;
+  try { r = await runFreshnessAgent(); }
+  catch (err) { return go("/admin", "error", err instanceof AgentError ? err.message : "The freshness agent did not work. Try again."); }
+  revalidatePath("/admin");
+  go("/admin", "msg", `Freshness agent ran. ${r.summary}`);
 }
 
 /** A reviewer confirms every field and the date. This is the only way a listing becomes live. */

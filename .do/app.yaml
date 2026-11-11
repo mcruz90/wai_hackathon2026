@@ -99,3 +99,18 @@ jobs:
     run_command: npm run job:waitlist
     instance_count: 1
     instance_size_slug: basic-xxs
+
+  - name: freshness-agent
+    kind: SCHEDULED
+    schedule:
+      cron: "30 3 * * *"
+      time_zone: America/Toronto
+    github:
+      repo: mcruz90/wai_hackathon2026
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npx prisma generate
+    run_command: npm run job:freshness
+    instance_count: 1
+    instance_size_slug: basic-xxs
