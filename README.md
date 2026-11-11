@@ -4,6 +4,64 @@ A working prototype that helps a newcomer in Toronto find a family doctor or nur
 
 **Every clinic, phone number, count and waitlist entry that ships with this repo is invented sample data.** Sample rows are flagged `is_sample` and the screens that show them carry a "Sample data" banner.
 
+## The problem
+
+Finding a family doctor in Ontario is hard, and it is harder for newcomers. Notices that a clinic is "accepting new patients" are spread across clinic websites, regional lists and community posts. They are usually in English, often out of date, and say nothing about which languages the doctor speaks. A newcomer ends up calling clinics that filled up weeks ago, or that cannot see them in a language they are comfortable with.
+
+## Our approach
+
+New to Ontario Doctor Finder brings those notices together in one place and puts them in the patient's language:
+
+1. **Patients search in their own language.** They pick one of five languages and enter the first three characters of their postal code. Results rank clinics by whether the doctor speaks their language, how recently the listing was confirmed, and how close it is.
+2. **Each listing shows how fresh it is.** It says when it was last confirmed and when it expires. After calling, patients can report "still taking patients" or "they are full", which keeps the list current for the next person.
+3. **AI reads the notices and a person checks them.** A reviewer pastes a public announcement, and one AI call turns it into structured fields, each with a confidence level. Nothing is published until a person approves it.
+4. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers.
+
+It asks for no accounts, names or health information.
+
+## Screenshots
+
+### For patients
+
+| 1. Choose a language and area | 2. Ranked results | 3. Call script and report |
+| --- | --- | --- |
+| ![Start screen with language choices, postal area and provider type](docs/screenshots/01-start.png) | ![Results near M5T, ranked best match first, each with freshness and distance](docs/screenshots/02-results.png) | ![Listing page with languages spoken, a phone script and buttons to report what the clinic said](docs/screenshots/03-listing.png) |
+
+| 4. A plan for who to call next | 5. The same results in Mandarin |
+| --- | --- |
+| ![My plan: clinics opened so far and who to call next](docs/screenshots/04-plan.png) | ![Results screen in Simplified Chinese, with clinics that speak Mandarin highlighted](docs/screenshots/05-results-zh.png) |
+
+### For reviewers and partners
+
+**Intake.** A reviewer pastes a public announcement and its link.
+
+![Intake form with a pasted announcement and a Read announcement button](docs/screenshots/06-intake.png)
+
+**Review queue.** The announcement is turned into fields, each marked high, medium or low confidence, and anything uncertain is held for a person to check. In this screenshot the offline stand-in reader produced the fields (`LLM_PROVIDER=mock`). With an API key, a Claude model does this step.
+
+![Review queue item held for human review, with extracted fields and confidence badges](docs/screenshots/07-review-queue.png)
+
+**Partner view.** Anonymous counts by postal area and language, and a ranked list of unmet demand. Counts under 5 are hidden.
+
+![Partner view with unmet demand list and a table of searches by area and language](docs/screenshots/08-partner.png)
+
+**Waitlist concept.** A simulation of how a partner's own waitlist could offer open spots fairly: people within 8 km of the clinic, earliest joined first, 3 at a time, with 72 hours to reply. It uses sample patients only and sends no messages.
+
+![Waitlist concept admin screen with a Simulate an opening button per clinic](docs/screenshots/09-waitlist.png)
+
+## Design choices
+
+- **A person approves everything the AI reads.** The AI fills in a form and a reviewer publishes it. Low-confidence fields are flagged, and the prompt tells the model to leave a field empty rather than guess.
+- **Freshness is visible.** Every listing shows when it was last confirmed and expires after 30 days. Patient reports update it, and two "they are full" reports hide it.
+- **Language comes first.** Language match is the biggest factor in ranking (45%, then freshness 30% and distance 25%), and the patient screens come in English, French, Mandarin, Spanish and Tagalog.
+- **Privacy.** There are no accounts. A patient's plan stays in their own browser, and the server only keeps daily counts by area and language.
+
+## Built with
+
+Next.js 15, React 19, TypeScript, PostgreSQL with Prisma, and the Anthropic API (or OpenAI) for reading announcements. It is set up to deploy to DigitalOcean App Platform.
+
+---
+
 ## What it does
 
 | Who | Where | What |
