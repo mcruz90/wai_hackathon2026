@@ -35,11 +35,13 @@ export async function publishReviewBatch(db: PrismaClient, selection: ReviewSele
         if (!listing || reviewVersion(listing) !== selected.version) throw new ReviewError("A selected listing changed. Nothing was published. Reload and review the batch again.");
         const check = batchEligibility(listing, ctx);
         if (!check.eligible || !check.confirmed) throw new ReviewError(`${listing.clinic} needs individual review: ${check.reasons.join("; ")}. Nothing was published.`);
-        const expiresAt = new Date(check.confirmed.getTime() + config.expiryDays * DAY_MS);
-        const result = await tx.listing.updateMany({ where: { id: listing.id, status: "pending" }, data: { status: "live", lastConfirmedAt: check.confirmed, expiresAt } });
+        // Match individual review: midnight UTC would display as the previous date in Toronto.
+        const confirmed = new Date(Math.min(now.getTime(), check.confirmed.getTime() + 17 * 60 * 60 * 1000));
+        const expiresAt = new Date(confirmed.getTime() + config.expiryDays * DAY_MS);
+        const result = await tx.listing.updateMany({ where: { id: listing.id, status: "pending" }, data: { status: "live", lastConfirmedAt: confirmed, expiresAt } });
         if (result.count !== 1) throw new ReviewError("A selected listing is no longer pending. Nothing was published.");
         items.push({ listingId: listing.id, version: selected.version, before: reviewSnapshot(listing) as Prisma.InputJsonObject,
-          after: { status: "live", lastConfirmedAt: check.confirmed.toISOString(), expiresAt: expiresAt.toISOString() } });
+          after: { status: "live", lastConfirmedAt: confirmed.toISOString(), expiresAt: expiresAt.toISOString() } });
       }
       return tx.reviewDecision.create({ data: { mode: "batch", action: "publish", policy: REVIEW_POLICY,
         items: { listings: items, sourceHosts: hosts, attestation: "Human authorized publication of the selected versions after reviewing the evidence." } } });

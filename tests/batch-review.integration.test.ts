@@ -8,6 +8,7 @@ test("batch publishing with PostgreSQL", { skip: !process.env.REVIEW_TEST_DATABA
   const { PrismaClient } = await import("@prisma/client");
   const { publishReviewBatch, reviewInclude, parseReviewSelection } = await import("../lib/batch-review");
   const { reviewVersion } = await import("../lib/review-policy");
+  const { shortDate } = await import("../lib/i18n");
   const schema = `review_test_${randomUUID().replaceAll("-", "")}`;
   const url = new URL(process.env.REVIEW_TEST_DATABASE_URL!);
   const root = new PrismaClient({ datasourceUrl: url.toString() });
@@ -45,6 +46,7 @@ test("batch publishing with PostgreSQL", { skip: !process.env.REVIEW_TEST_DATABA
         const saved = await db.listing.findUniqueOrThrow({ where: { id: l.id } });
         assert.equal(saved.status, "live");
         assert.equal(saved.lastConfirmedAt!.toISOString().slice(0, 10), date);
+        assert.equal(shortDate("en", saved.lastConfirmedAt!), shortDate("en", `${date}T17:00:00Z`));
       }
       assert.equal((await db.listing.findUniqueOrThrow({ where: { id: excluded.id } })).status, "pending");
       const items = decision.items as { listings: { listingId: string; version: string; before: { rawText: string } }[] };

@@ -87,7 +87,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
           const notAccepting = c.accepting !== "yes";
           return (
             <details className="card" key={l.id} id={`individual-${l.id}`} open={!checks.get(l.id)!.eligible}>
-              <summary><b>{l.clinic || "Unnamed clinic"}</b> · {checks.get(l.id)!.eligible ? "Batch candidate" : "Needs investigation"}</summary>
+              <summary><b>{l.clinic || "Unnamed clinic"}</b> {l.isSample ? <span className="tag">Sample</span> : null} · {checks.get(l.id)!.eligible ? "Batch candidate" : "Needs investigation"}</summary>
             <form className="stack" action={approve}>
               <input type="hidden" name="id" value={l.id} />
               <input type="hidden" name="version" value={reviewVersion(l)} />

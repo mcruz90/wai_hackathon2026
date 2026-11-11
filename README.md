@@ -41,17 +41,27 @@ It asks for no accounts, names or health information. It does not replace Health
 
 ### For reviewers and partners
 
-**Intake.** A reviewer pastes a public announcement and its link.
+**Intake.** A reviewer pastes a public announcement and its link. Agents still prepare proposals; people authorize publication.
 
-![Intake form with a pasted announcement and a Read announcement button](docs/screenshots/06-intake.png)
+![Updated intake form with mock-mode notice, announcement text, source link and source type](docs/screenshots/06-intake.png)
 
-**Review queue.** The intake agent read the announcement, found no existing listing, and proposed a new one. Each field is marked high, medium or low confidence, anything uncertain is held for a person to check, and the agent's steps are shown so the reviewer can see how it got there. This screenshot comes from the offline mode (`LLM_PROVIDER=mock`). With an API key, Claude reads the text and chooses each step.
+**Batch review.** Eligible new listings appear together with source links, evidence dates and expandable announcements. The reviewer selects the batch, excludes any listing that needs investigation, and explicitly authorizes publication. Changing the selection resets authorization. This example publishes one selected sample listing and leaves the other pending.
 
-![Review queue item held for human review, with extracted fields and confidence badges](docs/screenshots/07-review-queue.png)
+![Batch review showing two sample candidates, one selected, supporting evidence and an explicit publish authorization](docs/screenshots/11-batch-review.png)
 
-**Agent proposals.** The freshness agent asks a reviewer to phone two clinics: one a patient reported full (high priority), and one that expires in 4 days. Below them, the intake agent matched a pasted notice to an existing listing by phone number and proposes re-confirming it instead of adding a duplicate. The reviewer records the outcome with one click.
+**Needs investigation.** Missing dates, uncertain fields, unconfigured sources, possible duplicates and conflicts stay in individual review. This invented sample has no evidence date, so it cannot enter a batch.
 
-![Agent proposals: two re-check requests with call scripts, and a re-confirmation proposal with the agent's steps](docs/screenshots/10-agent-proposals.png)
+![Individual review of an invented clinic announcement with a missing date and the reasons it needs investigation](docs/screenshots/07-review-queue.png)
+
+**Needs clinic confirmation.** Freshness proposals stay separate from batch publishing. A reviewer checks with the clinic and records whether it is still accepting patients or is full; the agent does not contact the clinic.
+
+![Clinic confirmation queue with a sample re-check, priority, call script and individual outcome buttons](docs/screenshots/10-agent-proposals.png)
+
+**Publication history.** The human-approved versions, evidence snapshots, original dates and publication outcome are saved together. The current shared login is recorded as `shared_admin`, rather than claiming to identify an individual reviewer.
+
+![Publication history displaying a batch decision and the original sample listing and evidence snapshot](docs/screenshots/12-publication-history.png)
+
+These screenshots show the running application with invented review fixtures from `npm run db:seed:review-demo`. The fixtures deliberately exercise eligible and uncertain paths; their confidence badges are not an evaluation of model accuracy. The `.example` source links are placeholders. See [the local preview guide](docs/local-preview.md) to try the same workflow.
 
 **Partner view.** Anonymous counts by postal area and language, and a ranked list of unmet demand. Counts under 5 are hidden.
 
@@ -120,6 +130,10 @@ To try it without an LLM key, set `LLM_PROVIDER=mock` in `.env`. That swaps the 
 
 Sample listings age like real ones, so a month after seeding they will all have expired. `npm run db:seed -- --refresh` deletes the sample rows and re-creates them with fresh dates. It never touches real listings.
 
+## Click through a local preview
+
+You can run the whole app on your own computer before deploying. See [the local preview guide](docs/local-preview.md) for a Docker PostgreSQL setup, mock extraction without API quota, sample batch-review fixtures, and a walkthrough. The patient view runs at `http://localhost:3000`; staff review is at `/admin`.
+
 ## Environment variables
 
 | Variable | Default | Purpose |
@@ -166,7 +180,7 @@ A batch candidate must have all of the following:
 
 Reviewers select up to 100 candidates, inspect evidence, exclude rows as needed, and explicitly authorize the selected set. No rows start selected. A spot check helps assess batch quality; it does not verify every row. The server reloads all selected rows, compares their versions and re-runs eligibility inside a serializable database transaction. A stale or newly ineligible row cancels the whole batch, leaving every selection unpublished. Repeated or concurrent approvals cannot create a second publication decision.
 
-Batch publication uses the original evidence date at UTC midnight to calculate expiry; approving an old notice never makes it fresh today. Individual re-confirmations also require an explicit valid evidence/confirmation date rather than silently defaulting to today. For a freshness phone check, the reviewer's “still taking patients” response records a clinic confirmation today.
+Batch publication uses the original evidence date to calculate expiry, matching individual review so the date also displays correctly in Toronto; approving an old notice never makes it fresh today. Individual re-confirmations also require an explicit valid evidence/confirmation date rather than silently defaulting to today. For a freshness phone check, the reviewer's “still taking patients” response records a clinic confirmation today.
 
 The `review_decisions` table retains the selected versions, original listing/evidence snapshots, publication dates, policy, source-host configuration and approval time. Individual new-listing publications are recorded too. The admin page shows the ten most recent publication decisions. This is application history, not a tamper-proof compliance log. The current shared password records the actor as `shared_admin`; individual reviewer accounts and clinic self-confirmation remain follow-up work.
 
