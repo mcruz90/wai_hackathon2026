@@ -313,24 +313,27 @@ npm run typecheck
 
 ## Deploying to DigitalOcean App Platform
 
-The spec is `.do/app.yaml`: one web service, a managed PostgreSQL database, a `PRE_DEPLOY` job that runs migrations and the seed, and four `SCHEDULED` jobs (nightly expiry at 03:15, freshness at 03:30, waitlist check-ins at 03:45, and optional discovery hourly at ten past, Toronto time), in the Toronto region, with deploy on push.
+The spec is `.do/app.yaml`: one web service, a `PRE_DEPLOY` job that runs migrations and the seed, and four `SCHEDULED` jobs (nightly expiry at 03:15, freshness at 03:30, waitlist check-ins at 03:45, and optional discovery hourly at ten past, Toronto time), in the Toronto region, with deploy on push. The database is a free [Neon](https://neon.tech) PostgreSQL project, connected through the `DATABASE_URL` secret, so there is no paid DigitalOcean database.
 
-**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`), the database `cluster_name`, and the three `SCHEDULED` job blocks. The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the nightly freshness job runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
+**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`) and the `SCHEDULED` job blocks. The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the nightly freshness job runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
-This creates paid resources: the web service, the database cluster, and job run time.
+This creates paid resources on DigitalOcean: the web service and job run time. Neon's free plan covers the database for a demo.
 
 ```bash
 doctl auth init                                   # paste your DigitalOcean token
 doctl apps spec validate .do/app.yaml
 
-# 1. The database cluster (paid). The spec attaches to it by name.
-doctl databases create doctor-finder-db --engine pg --version 16 --region tor1 --size db-s-1vcpu-1gb --num-nodes 1
+# 1. The database: create a free project at neon.tech (any region near Toronto) and copy its
+#    direct connection string (connection pooling off; it ends in ?sslmode=require).
 
 # 2. The app. DigitalOcean must already have access to the GitHub repo.
+#    The first deploy fails at the migration step until DATABASE_URL is set; that is expected.
 doctl apps create --spec .do/app.yaml
 
 # 3. Secrets: in the console, open the app → Settings → App-Level Environment Variables,
-#    set LLM_API_KEY (your Cohere key), TAVILY_API_KEY, ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
+#    set DATABASE_URL (the Neon string), LLM_API_KEY (your Cohere key), TAVILY_API_KEY,
+#    ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy that
+#    runs the migrations and the sample data.
 ```
 
 ### Redeploying
