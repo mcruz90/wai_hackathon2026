@@ -174,7 +174,7 @@ Listings can now originate from scheduled monitoring rather than waiting for som
 
 Use **Add Ontario starter sources** to queue ten unverified starting URLs, or **Run offline Ontario demo** to try an invented Ottawa announcement without any network or LLM calls. Human approval is required before monitoring a new source and before publishing a listing. Monitoring permission and clinic-host verification for batch review are separate decisions.
 
-See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Brave Search configuration, hourly monitoring, the shared daily search budget, source review, network controls and the offline walkthrough. Live search is disabled until configured; monitoring can also run without a search API. Patient results use the configured nearby radius rather than mixing clinics from across the province. Postal-area data and starter URLs are credited in [data/SOURCES.md](data/SOURCES.md).
+See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Tavily search configuration, hourly monitoring, the shared daily search budget, source review, network controls and the offline walkthrough. Live search is disabled until configured; monitoring can also run without a search API. Patient results use the configured nearby radius rather than mixing clinics from across the province. Postal-area data and starter URLs are credited in [data/SOURCES.md](data/SOURCES.md).
 
 **Discovery workspace.** Search configuration, source leads and monitoring controls are shown separately from listing publication.
 

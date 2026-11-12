@@ -14,16 +14,20 @@ export function sourceKind(url: string): string {
   const host = new URL(url).hostname.toLowerCase();
   return /(?:^|\.)(facebook\.com|instagram\.com|x\.com|twitter\.com|tiktok\.com|threads\.net|linkedin\.com|youtube\.com|reddit\.com|redd\.it|bsky\.app|weibo\.com|fb\.watch|m\.me|pinterest\.com)$/.test(host) ? "social" : "unknown";
 }
+/** Web search for new clinic notices. Tavily (free tier: 1,000 basic searches a month) is the only provider; anything else means off. */
 export async function searchOntario(now: Date, limit = 3): Promise<SearchLead[]> {
-  if (process.env.DISCOVERY_SEARCH_PROVIDER !== "brave") return [];
-  const key = process.env.BRAVE_SEARCH_API_KEY;
-  if (!key) throw new Error("Set BRAVE_SEARCH_API_KEY in server-side environment settings to enable web search.");
+  if (process.env.DISCOVERY_SEARCH_PROVIDER !== "tavily") return [];
+  const key = process.env.TAVILY_API_KEY;
+  if (!key) throw new Error("Set TAVILY_API_KEY in server-side environment settings to enable web search.");
   const leads: SearchLead[] = [], dispatcher = new EnvHttpProxyAgent();
   try {
     for (const query of queriesForDay(now, limit)) {
-      const endpoint = new URL("https://api.search.brave.com/res/v1/web/search");
-      endpoint.search = new URLSearchParams({ q: query, country: "CA", search_lang: query.includes("nouveaux") ? "fr" : "en", count: "10", safesearch: "moderate" }).toString();
-      const response = await request(endpoint, { dispatcher, redirect: "error", signal: AbortSignal.timeout(10000), headers: { accept: "application/json", "x-subscription-token": key } });
+      // One basic search costs one Tavily credit. No answer or page content is requested: only result links become source leads.
+      const response = await request("https://api.tavily.com/search", {
+        method: "POST", dispatcher, redirect: "error", signal: AbortSignal.timeout(15000),
+        headers: { accept: "application/json", "content-type": "application/json", authorization: `Bearer ${key}` },
+        body: JSON.stringify({ query, search_depth: "basic", topic: "general", max_results: 10, include_answer: false, include_raw_content: false, include_images: false }),
+      });
       if (!response.ok) { await response.body?.cancel(); throw new Error(`Web search returned HTTP ${response.status}.`); }
       const chunks: Uint8Array[] = []; let size = 0;
       if (response.body) for await (const chunk of response.body) {
@@ -31,9 +35,8 @@ export async function searchOntario(now: Date, limit = 3): Promise<SearchLead[]>
         if (size > 1000000) throw new Error("Web search response is too large.");
         chunks.push(chunk);
       }
-      const text = Buffer.concat(chunks).toString("utf8");
-      const body = JSON.parse(text) as { web?: { results?: { url?: string; title?: string }[] } };
-      for (const result of body.web?.results ?? []) try {
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { results?: { url?: string; title?: string }[] };
+      for (const result of body.results ?? []) try {
         const url = canonicalSourceUrl(result.url ?? "");
         if (!leads.some((l) => l.url === url)) leads.push({ url, title: (result.title ?? "").slice(0,300), query });
       } catch { /* Invalid results are not sources. */ }
