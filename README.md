@@ -14,7 +14,7 @@ More than 2.5 million Ontarians do not have a family doctor, according to the On
 
 New to Ontario Doctor Finder brings those notices together in one place and puts them in the patient's language:
 
-1. **Patients search in their own language.** They pick one of five languages and enter the first three characters of their postal code. Results rank clinics by whether the doctor speaks their language, how recently the listing was confirmed, and how close it is.
+1. **Patients search in their own language.** They pick one of six languages and enter the first three characters of their postal code. Results rank clinics by whether the doctor speaks their language, how recently the listing was confirmed, and how close it is.
 2. **Each listing shows how fresh it is.** It says when it was last confirmed and when it expires. After calling, patients can report "still taking patients" or "they are full", which keeps the list current for the next person.
 3. **Agents do the legwork, and people authorize publication.** Two agents keep the directory current:
    - The **intake agent** reads a pasted public announcement into structured fields, each with a confidence level. It checks whether the clinic is already listed, then proposes a new listing, a re-confirmation of an existing one, marking one full, or not listing it at all.
@@ -38,6 +38,10 @@ It asks for no accounts, names or health information. It does not replace Health
 | 4. A plan for who to call next | 5. The same results in Mandarin |
 | --- | --- |
 | ![My plan: clinics opened so far and who to call next](docs/screenshots/04-plan.png) | ![Results screen in Simplified Chinese, with clinics that speak Mandarin highlighted](docs/screenshots/05-results-zh.png) |
+
+| 6. Results in Arabic, right to left | 7. A listing and call script in Punjabi |
+| --- | --- |
+| ![Results near M4H in Arabic, laid out right to left, with an Arabic-speaking sample clinic first](docs/screenshots/16-results-ar.png) | ![Sample listing in Punjabi with the call script in English and Gurmukhi](docs/screenshots/17-listing-pa.png) |
 
 ### For reviewers and partners
 
@@ -84,7 +88,8 @@ These screenshots show the running application with invented review fixtures fro
 ## Design choices
 
 - **Freshness is visible.** Every listing shows when it was last confirmed and expires after 30 days. Patient reports update it, and two "they are full" reports hide it.
-- **Language comes first.** Language match is the biggest factor in ranking (45%, then freshness 30% and distance 25%), and the patient screens come in English, French, Mandarin, Spanish and Tagalog.
+- **Language comes first.** Language match is the biggest factor in ranking (45%, then freshness 30% and distance 25%), and the patient screens come in English, French, Mandarin, Arabic, Punjabi and Tagalog. Arabic screens read right to left.
+- **Languages follow newcomer data.** Besides English and French, the four languages are the non-official languages that recent immigrants (arrived 2016 to 2021) in the Toronto area speak most often at home in the 2021 Census: Mandarin, Arabic, Punjabi and Tagalog ([Statistics Canada, Focus on Geography Series, Toronto CMA](https://www12.statcan.gc.ca/census-recensement/2021/as-sa/fogs-spg/page.cfm?dguid=2021S0503535&lang=E&topic=9)). Spanish was in the first prototype and was replaced by Arabic and Punjabi. A pilot should confirm the languages with its partner area.
 
 ## Built with
 
@@ -106,7 +111,7 @@ Planned: Cohere's open Aya models for translating listings and call scripts into
 
 | Who | Where | What |
 | --- | --- | --- |
-| Patient | `/` → `/results` → `/listing/[id]` → `/plan` | Pick a language and postal area, see listings ranked by language (45%), freshness (30%) and distance (25%), get a call script, report "still taking patients" or "they are full", and leave with a call plan. Five languages: English, French, Mandarin, Spanish, Tagalog. |
+| Patient | `/` → `/results` → `/listing/[id]` → `/plan` | Pick a language and postal area, see listings ranked by language (45%), freshness (30%) and distance (25%), get a call script, report "still taking patients" or "they are full", and leave with a call plan. Six languages: English, French, Mandarin, Arabic (right to left), Punjabi (Gurmukhi script), Tagalog. |
 | Reviewer | `/admin` | Paste an announcement and its link. The intake agent reads it and proposes a new listing, an update to an existing one, or not listing it. The freshness agent proposes re-checks. New listings can be explicitly approved individually or in eligible batches. Proposals remain individually reviewed. |
 | Partner | `/partner` | Searches, searches with no listing in that language, listing opens and full reports by postal area and language, plus an unmet-demand list. Counts under 5 are hidden. |
 | Concept | `/admin/waitlist`, `/waitlist/status`, `/waitlist/rule`, `/waitlist/outbox` | A simulation of how a partner's waitlist could offer open spots fairly. Sample patients only. No message is ever sent. |

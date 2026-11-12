@@ -58,8 +58,8 @@ export function ListingCard({ l, lang, href }: { l: PublicListing; lang: Lang; h
 }
 
 export function HtmlLang({ lang }: { lang: Lang }) {
-  // Sets <html lang> for screen readers without making the root layout depend on the query string.
-  return <script dangerouslySetInnerHTML={{ __html: `document.documentElement.lang=${JSON.stringify(T[lang].htmlLang)}` }} />;
+  // Sets <html lang> and <html dir> (Arabic is right to left) for screen readers without making the root layout depend on the query string.
+  return <script dangerouslySetInnerHTML={{ __html: `document.documentElement.lang=${JSON.stringify(T[lang].htmlLang)};document.documentElement.dir=${JSON.stringify(T[lang].dir)}` }} />;
 }
 
 export const expiryDays = () => config.expiryDays;

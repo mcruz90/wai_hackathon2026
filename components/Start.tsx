@@ -8,7 +8,7 @@ export default function Start({ initial }: { initial: { lang: Lang; fsa: string;
   const [fsa, setFsa] = useState(initial.fsa);
   const [type, setType] = useState(initial.type);
   const w = T[lang];
-  useEffect(() => { document.documentElement.lang = w.htmlLang; }, [w]);
+  useEffect(() => { document.documentElement.lang = w.htmlLang; document.documentElement.dir = w.dir; }, [w]);
 
   return (
     <>
@@ -20,7 +20,7 @@ export default function Start({ initial }: { initial: { lang: Lang; fsa: string;
           <span className="lbl" id="l-lang">{w.lang}</span>
           <div className="chips" role="group" aria-labelledby="l-lang">
             {LANGS.map((k) => (
-              <button type="button" key={k} lang={T[k].htmlLang} aria-pressed={lang === k} onClick={() => setLang(k)}>{T[k].name}</button>
+              <button type="button" key={k} lang={T[k].htmlLang} dir={T[k].dir} aria-pressed={lang === k} onClick={() => setLang(k)}>{T[k].name}</button>
             ))}
           </div>
           <input type="hidden" name="lang" value={lang} />
@@ -28,7 +28,7 @@ export default function Start({ initial }: { initial: { lang: Lang; fsa: string;
         <div>
           <label className="lbl" htmlFor="postal">{w.postal}</label>
           <input type="text" id="postal" name="fsa" maxLength={3} autoComplete="off" required pattern="[KLMNPklmnp][0-9][ABCEGHJKLMNPRSTVWXYZabceghjklmnprstvwxyz]"
-            placeholder="M1P" value={fsa} onChange={(e) => setFsa(e.target.value.trim())} />
+            dir="ltr" placeholder="M1P" value={fsa} onChange={(e) => setFsa(e.target.value.trim())} />
         </div>
         <div>
           <span className="lbl" id="l-type">{w.type}</span>

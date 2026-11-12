@@ -43,3 +43,7 @@ test("every language has every string", () => {
     assert.equal(T[l].wlRules.length, 5);
   }
 });
+
+test("Arabic reads right to left and every other language left to right", () => {
+  for (const l of LANGS) assert.equal(T[l].dir, l === "ar" ? "rtl" : "ltr", l);
+});

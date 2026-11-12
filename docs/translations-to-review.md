@@ -2,7 +2,14 @@
 
 Every patient-facing string is stored in `lib/i18n.ts`. There is no live AI translation.
 
-The strings ported from `reference/demo.html` were already marked draft there. The strings below are **new in this prototype** and were drafted in French, Mandarin (Simplified Chinese), Spanish and Tagalog without a native speaker. All of them need review before any pilot. Keys are the property names in `lib/i18n.ts`.
+The strings ported from `reference/demo.html` were already marked draft there. The strings below are **new in this prototype** and were drafted in French, Mandarin (Simplified Chinese) and Tagalog without a native speaker. All of them need review before any pilot.
+
+**Arabic and Punjabi are new in full.** Every string in the `ar` and `pa` blocks, including the call script, was drafted without a native speaker and needs review. Points to check:
+
+- Arabic is Modern Standard Arabic. Check number agreement (for example `days` uses أيام for every number, which is wrong above 10), and whether the waitlist messages should keep the Latin reply words YES and PASS.
+- Arabic screens are right to left. Check the layout of mixed Arabic and English text, such as clinic names and the English call-script lines.
+- Punjabi is written in Gurmukhi. Confirm this suits the pilot area, since some Punjabi speakers read Shahmukhi. The call script uses both masculine and feminine forms (ਰਿਹਾ/ਰਹੀ, ਬੋਲਦਾ/ਬੋਲਦੀ); a reviewer may prefer a neutral wording.
+- Spanish was removed from the patient screens. Its strings remain in git history. Keys are the property names in `lib/i18n.ts`.
 
 ## Changed from the demo
 
@@ -73,4 +80,4 @@ The strings ported from `reference/demo.html` were already marked draft there. T
 
 ## Ontario search changes
 
-Review the updated `unk` notice and new `radius` string in all five languages in `lib/i18n.ts`. Unknown locations no longer imply downtown Toronto. Results now explain their approximate postal-area distance and configured radius. French, Mandarin, Spanish and Tagalog wording is a draft awaiting native-speaker review.
+Review the updated `unk` notice and new `radius` string in all six languages in `lib/i18n.ts`. Unknown locations no longer imply downtown Toronto. Results now explain their approximate postal-area distance and configured radius. French, Mandarin, Arabic, Punjabi and Tagalog wording is a draft awaiting native-speaker review.

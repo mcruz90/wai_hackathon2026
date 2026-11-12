@@ -2,14 +2,17 @@
  * Every patient-facing string, stored. There is no live AI translation.
  * Strings marked "draft" in docs/translations-to-review.md need a native speaker's review.
  */
-export const LANGS = ["en", "fr", "zh", "es", "tl"] as const;
+export const LANGS = ["en", "fr", "zh", "ar", "pa", "tl"] as const;
 export type Lang = (typeof LANGS)[number];
 
 /** English name of each language, as used in listing data and in the English call script. */
-export const EN_NAME: Record<Lang, string> = { en: "English", fr: "French", zh: "Mandarin", es: "Spanish", tl: "Tagalog" };
+export const EN_NAME: Record<Lang, string> = { en: "English", fr: "French", zh: "Mandarin", ar: "Arabic", pa: "Punjabi", tl: "Tagalog" };
 
 export type Strings = {
-  name: string; loc: string; htmlLang: string; own: string; match: string[];
+  name: string; loc: string; htmlLang: string;
+  /** Text direction of the patient screens in this language. */
+  dir: "ltr" | "rtl";
+  own: string; match: string[];
   h: string; sub: string; lang: string; postal: string; type: string; any: string; fd: string; np: string;
   search: string; privacy: string; sample: string; results: string; count: string;
   today: string; day1: string; days: string; expires: string; exp1: string;
@@ -33,7 +36,7 @@ export type Strings = {
 
 export const T: Record<Lang, Strings> = {
   en: {
-    name: "English", loc: "en-CA", htmlLang: "en", own: "English", match: ["English"],
+    name: "English", loc: "en-CA", htmlLang: "en", dir: "ltr", own: "English", match: ["English"],
     h: "New to Ontario? Find a family doctor taking patients",
     sub: "See which family doctors and nurse practitioners near you are taking new patients, and when each listing was last confirmed.",
     lang: "Your language", postal: "First 3 characters of your postal code", type: "Who do you want to see?", any: "Either", fd: "Family doctor", np: "Nurse practitioner",
@@ -81,7 +84,7 @@ export const T: Record<Lang, Strings> = {
     mCheckin: "Do you still need a doctor? Reply 1 to keep waiting, 2 to switch area, or 3 to leave the list.",
   },
   fr: {
-    name: "Français", loc: "fr-CA", htmlLang: "fr", own: "français", match: ["French"],
+    name: "Français", loc: "fr-CA", htmlLang: "fr", dir: "ltr", own: "français", match: ["French"],
     h: "Nouvel arrivant en Ontario ? Trouvez un médecin de famille qui prend des patients",
     sub: "Voyez quels médecins de famille et infirmières praticiennes près de chez vous acceptent de nouveaux patients, et la date de la dernière confirmation.",
     lang: "Votre langue", postal: "Les 3 premiers caractères de votre code postal", type: "Qui souhaitez-vous consulter ?", any: "L'un ou l'autre", fd: "Médecin de famille", np: "Infirmière praticienne",
@@ -129,7 +132,7 @@ export const T: Record<Lang, Strings> = {
     mCheckin: "Avez-vous encore besoin d'un médecin ? Répondez 1 pour continuer d'attendre, 2 pour changer de secteur ou 3 pour quitter la liste.",
   },
   zh: {
-    name: "中文（普通话）", loc: "zh-CN", htmlLang: "zh", own: "普通话", match: ["Mandarin"],
+    name: "中文（普通话）", loc: "zh-CN", htmlLang: "zh", dir: "ltr", own: "普通话", match: ["Mandarin"],
     h: "刚到安大略省？查找正在接收新病人的家庭医生",
     sub: "查看您附近哪些家庭医生和执业护士正在接收新病人，以及每条信息最近确认的日期。",
     lang: "您的语言", postal: "邮政编码的前三位", type: "您想看哪一类？", any: "都可以", fd: "家庭医生", np: "执业护士",
@@ -176,56 +179,104 @@ export const T: Record<Lang, Strings> = {
     mReminder: "提醒：{clinic} 的名额为您保留到 {date}。回复 YES 接受，回复 PASS 放弃。",
     mCheckin: "您还需要找医生吗？回复 1 继续等候，回复 2 更换地区，回复 3 退出名单。",
   },
-  es: {
-    name: "Español", loc: "es", htmlLang: "es", own: "español", match: ["Spanish"],
-    h: "¿Nuevo en Ontario? Encuentre un médico de familia que acepta pacientes",
-    sub: "Vea qué médicos de familia y enfermeras practicantes cerca de usted aceptan pacientes nuevos, y cuándo se confirmó cada aviso por última vez.",
-    lang: "Su idioma", postal: "Los primeros 3 caracteres de su código postal", type: "¿A quién quiere ver?", any: "Cualquiera", fd: "Médico de familia", np: "Enfermera practicante",
-    search: "Ver lugares disponibles", privacy: "No pedimos su nombre, su tarjeta de salud ni información sobre su salud. No se guarda nada de lo que escribe.",
-    sample: "Datos de ejemplo. Estas clínicas no existen.", results: "Disponibles cerca de {fsa}", count: "{n} resultados, la mejor opción primero",
-    today: "Confirmado hoy", day1: "Confirmado ayer", days: "Confirmado hace {n} días", expires: "Vence en {n} días", exp1: "Vence mañana",
-    speaks: "Habla {lang}", km: "A {n} km", source: "Fuente", call: "Prepare su llamada", hint: "Diga la frase en inglés. Debajo está en español.",
-    phone: "Teléfono de la clínica", after: "Después de llamar, cuéntenos qué le dijeron", open: "Siguen aceptando pacientes", full: "Ya no hay lugar",
-    thOpen: "Gracias. La fecha de este aviso ahora es hoy.", thFull: "Gracias. Su aviso quedó registrado.",
-    hcc: "Inscríbase también en Health Care Connect",
-    what: "Health Care Connect es el programa oficial de Ontario. Una enfermera le ayuda a buscar un médico o una enfermera practicante. Puede tardar, así que siga buscando por su cuenta también.",
-    need: "Necesita una tarjeta de salud de Ontario (OHIP) válida.", online: "Inscribirse en línea", callnum: "O llame al 1-800-445-1822",
-    noohip: "¿Aún no tiene tarjeta de salud? Primero solicítela en persona en un centro de ServiceOntario.",
-    disc: "Esta herramienta le ayuda a encontrar clínicas y a comunicarse con ellas. No elige un médico por usted ni da consejos médicos.",
-    back: "Atrás", none: "Ningún aviso coincide. Pruebe «Cualquiera» u otro código postal.",
-    unk: "No tenemos datos de ubicación para esa zona postal de Ontario. Prueba una zona cercana; no sustituiremos tu ubicación.",
-    radius: "A unos {n} km de tu zona postal. Las distancias son aproximadas.",
-    src: { web: "Sitio web de la clínica", post: "Publicación comunitaria", list: "Lista regional", news: "Boletín de la clínica", rev: "Anuncio revisado" },
-    s: ["Hola. Busco un médico de familia.", "Vi que su clínica acepta pacientes nuevos. ¿Sigue siendo así?", "Hablo español. ¿Hay alguien que hable español, o un intérprete?", "¿Qué debo llevar para inscribirme?"],
-    toPlan: "Mi plan", tooMany: "Demasiados avisos por ahora. Inténtelo más tarde.", err: "No funcionó. Inténtelo de nuevo.",
-    gone: "Este aviso ya no se muestra.",
-    planH: "Mi plan",
-    planSub: "Llamar usted mismo a las clínicas es la forma más rápida de encontrar un médico. Esta lista se queda en este dispositivo y se borra al cerrar el navegador.",
-    opened: "Clínicas que abrió", noneOpened: "Todavía no ha abierto ninguna clínica.",
-    repOpen: "Usted informó: siguen aceptando pacientes", repFull: "Usted informó: ya no hay lugar", repNone: "Aún sin informar",
-    callNext: "Llame después a", noMore: "Por ahora no hay otros lugares disponibles cerca de usted. Vuelva a revisar en unos días.",
-    alsoDo: "Haga esto también", hccIf: "Si tiene una tarjeta de salud de Ontario válida, haga esto al mismo tiempo. Siga llamando a las clínicas mientras espera.",
-    concept: "Concepto", wlLink: "Vea cómo podría funcionar una lista de espera justa", needSearch: "Primero escriba su código postal.",
-    wlBanner: "Concepto, pacientes de ejemplo", wlNot: "Esta no es una lista de espera real. Nadie puede inscribirse y no se envía ningún mensaje.",
-    wlStatusH: "Estado de la lista de espera", wlEntry: "Inscripción de ejemplo cerca de {fsa}",
-    wlAbout: "Unas {n} personas esperan cerca de esta zona.", wlFew: "Menos de 5 personas esperan cerca de esta zona.",
-    wlLast: "El último lugar se ofreció hace {n} días.", wlLast1: "El último lugar se ofreció ayer.", wlLastToday: "Hoy se ofreció un lugar.",
-    wlNever: "Todavía no se ha ofrecido ningún lugar cerca de esta zona.",
-    wlNoPlace: "No mostramos un puesto exacto en la fila. Cambia cuando otras personas aceptan, pasan o salen de la lista.",
-    wlRuleLink: "Cómo funciona el orden", wlOutboxLink: "Ver los mensajes de ejemplo", wlRuleH: "Cómo funciona el orden",
+  ar: {
+    name: "العربية", loc: "ar", htmlLang: "ar", dir: "rtl", own: "العربية", match: ["Arabic"],
+    h: "جديد في أونتاريو؟ ابحث عن طبيب عائلة يقبل مرضى جدداً",
+    sub: "اعرف أيّ أطباء العائلة والممرضين الممارسين بالقرب منك يقبلون مرضى جدداً، ومتى تم تأكيد كل إعلان آخر مرة.",
+    lang: "لغتك", postal: "أول 3 أحرف من رمزك البريدي", type: "من تريد أن تراجع؟", any: "أيٌّ منهما", fd: "طبيب عائلة", np: "ممرض ممارس",
+    search: "اعرض الإعلانات المتاحة", privacy: "لا نطلب اسمك أو بطاقتك الصحية أو أي معلومات عن صحتك. لا يُحفظ أي شيء تكتبه.",
+    sample: "بيانات تجريبية. هذه العيادات غير حقيقية.", results: "متاح بالقرب من {fsa}", count: "عدد الإعلانات: {n}، الأنسب أولاً",
+    today: "تم التأكيد اليوم", day1: "تم التأكيد أمس", days: "تم التأكيد قبل {n} أيام", expires: "ينتهي خلال {n} أيام", exp1: "ينتهي غداً",
+    speaks: "يتحدث {lang}", km: "على بُعد {n} كم", source: "المصدر", call: "حضّر مكالمتك", hint: "قل الجملة بالإنجليزية. الترجمة العربية تحتها.",
+    phone: "هاتف العيادة", after: "بعد الاتصال، أخبرنا بما سمعته", open: "ما زالوا يقبلون مرضى", full: "لا توجد أماكن",
+    thOpen: "شكراً. أصبح تاريخ هذا الإعلان اليوم.", thFull: "شكراً. تم تسجيل بلاغك.",
+    hcc: "سجّل أيضاً في Health Care Connect",
+    what: "Health Care Connect هو البرنامج الرسمي في أونتاريو. تساعدك ممرضة في البحث عن طبيب أو ممرض ممارس. قد يستغرق ذلك وقتاً، لذا استمر في البحث بنفسك أيضاً.",
+    need: "تحتاج إلى بطاقة صحية سارية من أونتاريو (OHIP).", online: "سجّل عبر الإنترنت", callnum: "أو اتصل على 1-800-445-1822",
+    noohip: "ليست لديك بطاقة صحية بعد؟ قدّم طلباً شخصياً في أحد مراكز ServiceOntario أولاً.",
+    disc: "تساعدك هذه الأداة على إيجاد العيادات والتواصل معها. لا تختار طبيباً نيابةً عنك ولا تقدّم نصائح طبية.",
+    back: "رجوع", none: "لا توجد إعلانات متاحة مطابقة. جرّب «أيٌّ منهما» أو رمزاً بريدياً آخر.",
+    unk: "ليست لدينا بيانات موقع لهذه المنطقة البريدية في أونتاريو. جرّب منطقة بريدية قريبة؛ لن نستبدل موقعك بموقع آخر.",
+    radius: "ضمن نحو {n} كم من منطقتك البريدية. المسافات تقريبية.",
+    src: { web: "موقع العيادة", post: "منشور مجتمعي", list: "قائمة إقليمية", news: "نشرة العيادة", rev: "إعلان تمت مراجعته" },
+    s: ["مرحباً. أبحث عن طبيب عائلة.", "رأيت أن عيادتكم تقبل مرضى جدداً. هل ما زال ذلك صحيحاً؟", "أتحدث العربية. هل يوجد من يتحدث العربية، أو مترجم؟", "ما الذي يجب أن أحضره للتسجيل؟"],
+    toPlan: "خطتي", tooMany: "بلاغات كثيرة جداً حالياً. يرجى المحاولة لاحقاً.", err: "لم ينجح ذلك. يرجى المحاولة مرة أخرى.",
+    gone: "لم يعد هذا الإعلان معروضاً.",
+    planH: "خطتي",
+    planSub: "الاتصال بالعيادات بنفسك هو أسرع طريقة لإيجاد طبيب. تبقى هذه القائمة على هذا الجهاز وتُمسح عند إغلاق المتصفح.",
+    opened: "العيادات التي فتحتها", noneOpened: "لم تفتح أي عيادة بعد.",
+    repOpen: "أبلغتَ: ما زالوا يقبلون مرضى", repFull: "أبلغتَ: لا توجد أماكن", repNone: "لم يُبلَّغ بعد",
+    callNext: "اتصل بعد ذلك", noMore: "لا توجد إعلانات متاحة أخرى بالقرب منك الآن. تحقّق مرة أخرى بعد بضعة أيام.",
+    alsoDo: "افعل هذا أيضاً", hccIf: "إذا كانت لديك بطاقة صحية سارية من أونتاريو، فافعل هذا في الوقت نفسه. استمر في الاتصال بالعيادات أثناء الانتظار.",
+    concept: "فكرة تجريبية", wlLink: "اطّلع على كيف يمكن أن تعمل قائمة انتظار عادلة", needSearch: "أدخل رمزك البريدي أولاً.",
+    wlBanner: "فكرة تجريبية، مرضى افتراضيون", wlNot: "هذه ليست قائمة انتظار حقيقية. لا يمكن لأحد الانضمام إليها ولا تُرسَل أي رسالة.",
+    wlStatusH: "حالة قائمة الانتظار", wlEntry: "تسجيل تجريبي بالقرب من {fsa}",
+    wlAbout: "ينتظر نحو {n} شخصاً بالقرب من هذه المنطقة.", wlFew: "ينتظر أقل من 5 أشخاص بالقرب من هذه المنطقة.",
+    wlLast: "عُرض آخر مكان قبل {n} أيام.", wlLast1: "عُرض آخر مكان أمس.", wlLastToday: "عُرض مكان اليوم.",
+    wlNever: "لم يُعرض أي مكان بالقرب من هذه المنطقة بعد.",
+    wlNoPlace: "لا نعرض ترتيبك الدقيق في القائمة. فهو يتغيّر عندما يقبل الآخرون أو يتجاوزون العرض أو يغادرون.",
+    wlRuleLink: "كيف يعمل الترتيب", wlOutboxLink: "اطّلع على الرسائل التجريبية", wlRuleH: "كيف يعمل الترتيب",
     wlRules: [
-      "Cuando una clínica tiene un lugar, se ofrece a las personas que esperan a menos de {km} km de la clínica.",
-      "La persona que se inscribió primero recibe la oferta primero. Nada más cambia el orden.",
-      "Un lugar se ofrece a {batch} personas a la vez. La primera que acepta se queda con él.",
-      "Tiene {hours} horas para responder. Si pasa o no responde, la oferta va a la siguiente persona y usted conserva su puesto en la lista.",
-      "Cada 30 días preguntamos si todavía necesita un médico. Puede seguir esperando, cambiar de zona o salir de la lista.",
+      "عندما يتوفر مكان في عيادة، يُعرض على المنتظرين ضمن {km} كم من العيادة.",
+      "من انضم إلى القائمة أولاً يُعرض عليه المكان أولاً. لا شيء آخر يغيّر الترتيب.",
+      "يُعرض المكان على {batch} أشخاص في وقت واحد. أول من يقبل يحصل عليه.",
+      "لديك {hours} ساعة للرد. إذا تجاوزت العرض أو لم ترد، ينتقل إلى الشخص التالي وتحتفظ بمكانك في القائمة.",
+      "كل 30 يوماً نسألك إن كنت ما زلت بحاجة إلى طبيب. يمكنك مواصلة الانتظار أو تغيير المنطقة أو مغادرة القائمة.",
     ],
-    mOffer: "{clinic} ({area}) tiene un lugar para un paciente nuevo. Responda SÍ para aceptar o PASO para dejarlo. Responda antes del {date}. Si pasa, conserva su puesto en la lista.",
-    mReminder: "Recordatorio: el lugar en {clinic} está reservado para usted hasta el {date}. Responda SÍ para aceptar o PASO para dejarlo.",
-    mCheckin: "¿Todavía necesita un médico? Responda 1 para seguir esperando, 2 para cambiar de zona o 3 para salir de la lista.",
+    mOffer: "لدى {clinic} ({area}) مكان متاح لمريض جديد. أرسل YES للقبول أو PASS للتجاوز. يرجى الرد قبل {date}. إذا تجاوزت العرض، تحتفظ بمكانك في القائمة.",
+    mReminder: "تذكير: المكان في {clinic} محجوز لك حتى {date}. أرسل YES للقبول أو PASS للتجاوز.",
+    mCheckin: "هل ما زلت بحاجة إلى طبيب؟ أرسل 1 لمواصلة الانتظار، أو 2 لتغيير المنطقة، أو 3 لمغادرة القائمة.",
+  },
+  pa: {
+    name: "ਪੰਜਾਬੀ", loc: "pa", htmlLang: "pa", dir: "ltr", own: "ਪੰਜਾਬੀ", match: ["Punjabi"],
+    h: "ਓਨਟਾਰੀਓ ਵਿੱਚ ਨਵੇਂ ਹੋ? ਨਵੇਂ ਮਰੀਜ਼ ਲੈ ਰਹੇ ਫੈਮਿਲੀ ਡਾਕਟਰ ਲੱਭੋ",
+    sub: "ਦੇਖੋ ਕਿ ਤੁਹਾਡੇ ਨੇੜੇ ਕਿਹੜੇ ਫੈਮਿਲੀ ਡਾਕਟਰ ਅਤੇ ਨਰਸ ਪ੍ਰੈਕਟੀਸ਼ਨਰ ਨਵੇਂ ਮਰੀਜ਼ ਲੈ ਰਹੇ ਹਨ, ਅਤੇ ਹਰ ਸੂਚੀ ਦੀ ਆਖਰੀ ਵਾਰ ਪੁਸ਼ਟੀ ਕਦੋਂ ਹੋਈ ਸੀ।",
+    lang: "ਤੁਹਾਡੀ ਭਾਸ਼ਾ", postal: "ਤੁਹਾਡੇ ਪੋਸਟਲ ਕੋਡ ਦੇ ਪਹਿਲੇ 3 ਅੱਖਰ", type: "ਤੁਸੀਂ ਕਿਸ ਨੂੰ ਮਿਲਣਾ ਚਾਹੁੰਦੇ ਹੋ?", any: "ਕੋਈ ਵੀ", fd: "ਫੈਮਿਲੀ ਡਾਕਟਰ", np: "ਨਰਸ ਪ੍ਰੈਕਟੀਸ਼ਨਰ",
+    search: "ਖੁੱਲ੍ਹੀਆਂ ਸੂਚੀਆਂ ਦਿਖਾਓ", privacy: "ਅਸੀਂ ਤੁਹਾਡਾ ਨਾਮ, ਹੈਲਥ ਕਾਰਡ ਜਾਂ ਸਿਹਤ ਬਾਰੇ ਜਾਣਕਾਰੀ ਨਹੀਂ ਮੰਗਦੇ। ਤੁਸੀਂ ਜੋ ਵੀ ਲਿਖਦੇ ਹੋ, ਉਹ ਸੇਵ ਨਹੀਂ ਹੁੰਦਾ।",
+    sample: "ਨਮੂਨਾ ਡਾਟਾ। ਇਹ ਕਲੀਨਿਕ ਅਸਲੀ ਨਹੀਂ ਹਨ।", results: "{fsa} ਦੇ ਨੇੜੇ ਖੁੱਲ੍ਹੇ", count: "{n} ਸੂਚੀਆਂ ਮਿਲੀਆਂ, ਸਭ ਤੋਂ ਢੁਕਵੀਂ ਪਹਿਲਾਂ",
+    today: "ਅੱਜ ਪੁਸ਼ਟੀ ਹੋਈ", day1: "ਕੱਲ੍ਹ ਪੁਸ਼ਟੀ ਹੋਈ", days: "{n} ਦਿਨ ਪਹਿਲਾਂ ਪੁਸ਼ਟੀ ਹੋਈ", expires: "{n} ਦਿਨਾਂ ਵਿੱਚ ਖ਼ਤਮ", exp1: "ਕੱਲ੍ਹ ਖ਼ਤਮ",
+    speaks: "{lang} ਬੋਲਦੇ ਹਨ", km: "{n} ਕਿ.ਮੀ. ਦੂਰ", source: "ਸਰੋਤ", call: "ਆਪਣੀ ਕਾਲ ਦੀ ਤਿਆਰੀ ਕਰੋ", hint: "ਵਾਕ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਬੋਲੋ। ਹੇਠਾਂ ਪੰਜਾਬੀ ਵਿੱਚ ਹੈ।",
+    phone: "ਕਲੀਨਿਕ ਦਾ ਫ਼ੋਨ", after: "ਕਾਲ ਕਰਨ ਤੋਂ ਬਾਅਦ, ਸਾਨੂੰ ਦੱਸੋ ਕਿ ਉਨ੍ਹਾਂ ਨੇ ਕੀ ਕਿਹਾ", open: "ਅਜੇ ਵੀ ਮਰੀਜ਼ ਲੈ ਰਹੇ ਹਨ", full: "ਉਹ ਭਰ ਗਏ ਹਨ",
+    thOpen: "ਧੰਨਵਾਦ। ਇਸ ਸੂਚੀ ਦੀ ਤਾਰੀਖ਼ ਹੁਣ ਅੱਜ ਦੀ ਹੈ।", thFull: "ਧੰਨਵਾਦ। ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਦਰਜ ਹੋ ਗਈ ਹੈ।",
+    hcc: "Health Care Connect ਵਿੱਚ ਵੀ ਰਜਿਸਟਰ ਕਰੋ",
+    what: "Health Care Connect ਓਨਟਾਰੀਓ ਦਾ ਅਧਿਕਾਰਤ ਪ੍ਰੋਗਰਾਮ ਹੈ। ਇੱਕ ਨਰਸ ਤੁਹਾਡੇ ਲਈ ਡਾਕਟਰ ਜਾਂ ਨਰਸ ਪ੍ਰੈਕਟੀਸ਼ਨਰ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦੀ ਹੈ। ਇਸ ਵਿੱਚ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ, ਇਸ ਲਈ ਆਪ ਵੀ ਲੱਭਦੇ ਰਹੋ।",
+    need: "ਤੁਹਾਨੂੰ ਓਨਟਾਰੀਓ ਦੇ ਵੈਧ ਹੈਲਥ ਕਾਰਡ (OHIP) ਦੀ ਲੋੜ ਹੈ।", online: "ਔਨਲਾਈਨ ਰਜਿਸਟਰ ਕਰੋ", callnum: "ਜਾਂ 1-800-445-1822 'ਤੇ ਕਾਲ ਕਰੋ",
+    noohip: "ਅਜੇ ਹੈਲਥ ਕਾਰਡ ਨਹੀਂ ਹੈ? ਪਹਿਲਾਂ ਕਿਸੇ ServiceOntario ਸੈਂਟਰ ਵਿੱਚ ਜਾ ਕੇ ਅਪਲਾਈ ਕਰੋ।",
+    disc: "ਇਹ ਟੂਲ ਤੁਹਾਨੂੰ ਕਲੀਨਿਕ ਲੱਭਣ ਅਤੇ ਉਨ੍ਹਾਂ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ। ਇਹ ਤੁਹਾਡੇ ਲਈ ਡਾਕਟਰ ਨਹੀਂ ਚੁਣਦਾ ਅਤੇ ਡਾਕਟਰੀ ਸਲਾਹ ਨਹੀਂ ਦਿੰਦਾ।",
+    back: "ਵਾਪਸ", none: "ਕੋਈ ਖੁੱਲ੍ਹੀ ਸੂਚੀ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ। 'ਕੋਈ ਵੀ' ਜਾਂ ਕੋਈ ਹੋਰ ਪੋਸਟਲ ਕੋਡ ਅਜ਼ਮਾਓ।",
+    unk: "ਸਾਡੇ ਕੋਲ ਓਨਟਾਰੀਓ ਦੇ ਉਸ ਪੋਸਟਲ ਖੇਤਰ ਦਾ ਟਿਕਾਣਾ ਡਾਟਾ ਨਹੀਂ ਹੈ। ਨੇੜੇ ਦਾ ਕੋਈ ਪੋਸਟਲ ਖੇਤਰ ਅਜ਼ਮਾਓ; ਅਸੀਂ ਕੋਈ ਹੋਰ ਟਿਕਾਣਾ ਨਹੀਂ ਵਰਤਾਂਗੇ।",
+    radius: "ਤੁਹਾਡੇ ਪੋਸਟਲ ਖੇਤਰ ਤੋਂ ਲਗਭਗ {n} ਕਿ.ਮੀ. ਦੇ ਅੰਦਰ। ਦੂਰੀਆਂ ਅੰਦਾਜ਼ਨ ਹਨ।",
+    src: { web: "ਕਲੀਨਿਕ ਦੀ ਵੈੱਬਸਾਈਟ", post: "ਭਾਈਚਾਰਕ ਪੋਸਟ", list: "ਖੇਤਰੀ ਸੂਚੀ", news: "ਕਲੀਨਿਕ ਦਾ ਨਿਊਜ਼ਲੈਟਰ", rev: "ਸਮੀਖਿਆ ਕੀਤੀ ਘੋਸ਼ਣਾ" },
+    s: ["ਹੈਲੋ ਜੀ। ਮੈਂ ਫੈਮਿਲੀ ਡਾਕਟਰ ਲੱਭ ਰਿਹਾ/ਰਹੀ ਹਾਂ।", "ਮੈਂ ਦੇਖਿਆ ਕਿ ਤੁਹਾਡਾ ਕਲੀਨਿਕ ਨਵੇਂ ਮਰੀਜ਼ ਲੈ ਰਿਹਾ ਹੈ। ਕੀ ਇਹ ਅਜੇ ਵੀ ਸਹੀ ਹੈ?", "ਮੈਂ ਪੰਜਾਬੀ ਬੋਲਦਾ/ਬੋਲਦੀ ਹਾਂ। ਕੀ ਉੱਥੇ ਕੋਈ ਪੰਜਾਬੀ ਬੋਲਣ ਵਾਲਾ ਹੈ, ਜਾਂ ਕੋਈ ਦੁਭਾਸ਼ੀਆ?", "ਰਜਿਸਟਰ ਕਰਨ ਲਈ ਮੈਨੂੰ ਕੀ ਲੈ ਕੇ ਆਉਣਾ ਚਾਹੀਦਾ ਹੈ?"],
+    toPlan: "ਮੇਰੀ ਯੋਜਨਾ", tooMany: "ਇਸ ਵੇਲੇ ਬਹੁਤ ਸਾਰੀਆਂ ਰਿਪੋਰਟਾਂ ਹਨ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", err: "ਇਹ ਕੰਮ ਨਹੀਂ ਕੀਤਾ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    gone: "ਇਹ ਸੂਚੀ ਹੁਣ ਨਹੀਂ ਦਿਖਾਈ ਜਾਂਦੀ।",
+    planH: "ਮੇਰੀ ਯੋਜਨਾ",
+    planSub: "ਆਪ ਕਲੀਨਿਕਾਂ ਨੂੰ ਕਾਲ ਕਰਨਾ ਡਾਕਟਰ ਲੱਭਣ ਦਾ ਸਭ ਤੋਂ ਤੇਜ਼ ਤਰੀਕਾ ਹੈ। ਇਹ ਸੂਚੀ ਇਸੇ ਡਿਵਾਈਸ 'ਤੇ ਰਹਿੰਦੀ ਹੈ ਅਤੇ ਬ੍ਰਾਊਜ਼ਰ ਬੰਦ ਕਰਨ 'ਤੇ ਮਿਟ ਜਾਂਦੀ ਹੈ।",
+    opened: "ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੇ ਕਲੀਨਿਕ", noneOpened: "ਤੁਸੀਂ ਅਜੇ ਕੋਈ ਕਲੀਨਿਕ ਨਹੀਂ ਖੋਲ੍ਹਿਆ।",
+    repOpen: "ਤੁਹਾਡੀ ਰਿਪੋਰਟ: ਅਜੇ ਵੀ ਮਰੀਜ਼ ਲੈ ਰਹੇ ਹਨ", repFull: "ਤੁਹਾਡੀ ਰਿਪੋਰਟ: ਭਰ ਗਏ ਹਨ", repNone: "ਅਜੇ ਰਿਪੋਰਟ ਨਹੀਂ ਕੀਤੀ",
+    callNext: "ਅੱਗੇ ਇਨ੍ਹਾਂ ਨੂੰ ਕਾਲ ਕਰੋ", noMore: "ਇਸ ਵੇਲੇ ਤੁਹਾਡੇ ਨੇੜੇ ਕੋਈ ਹੋਰ ਖੁੱਲ੍ਹੀ ਸੂਚੀ ਨਹੀਂ ਹੈ। ਕੁਝ ਦਿਨਾਂ ਬਾਅਦ ਦੁਬਾਰਾ ਦੇਖੋ।",
+    alsoDo: "ਇਹ ਵੀ ਕਰੋ", hccIf: "ਜੇ ਤੁਹਾਡੇ ਕੋਲ ਓਨਟਾਰੀਓ ਦਾ ਵੈਧ ਹੈਲਥ ਕਾਰਡ ਹੈ, ਤਾਂ ਇਹ ਵੀ ਨਾਲ ਹੀ ਕਰੋ। ਉਡੀਕ ਕਰਦੇ ਹੋਏ ਕਲੀਨਿਕਾਂ ਨੂੰ ਕਾਲ ਕਰਦੇ ਰਹੋ।",
+    concept: "ਸੰਕਲਪ", wlLink: "ਦੇਖੋ ਕਿ ਇੱਕ ਨਿਰਪੱਖ ਉਡੀਕ ਸੂਚੀ ਕਿਵੇਂ ਕੰਮ ਕਰ ਸਕਦੀ ਹੈ", needSearch: "ਪਹਿਲਾਂ ਆਪਣਾ ਪੋਸਟਲ ਕੋਡ ਦਰਜ ਕਰੋ।",
+    wlBanner: "ਸੰਕਲਪ, ਨਮੂਨਾ ਮਰੀਜ਼", wlNot: "ਇਹ ਅਸਲੀ ਉਡੀਕ ਸੂਚੀ ਨਹੀਂ ਹੈ। ਕੋਈ ਇਸ ਵਿੱਚ ਸ਼ਾਮਲ ਨਹੀਂ ਹੋ ਸਕਦਾ ਅਤੇ ਕੋਈ ਸੁਨੇਹਾ ਨਹੀਂ ਭੇਜਿਆ ਜਾਂਦਾ।",
+    wlStatusH: "ਉਡੀਕ ਸੂਚੀ ਦੀ ਸਥਿਤੀ", wlEntry: "{fsa} ਦੇ ਨੇੜੇ ਨਮੂਨਾ ਐਂਟਰੀ",
+    wlAbout: "ਇਸ ਖੇਤਰ ਦੇ ਨੇੜੇ ਲਗਭਗ {n} ਲੋਕ ਉਡੀਕ ਕਰ ਰਹੇ ਹਨ।", wlFew: "ਇਸ ਖੇਤਰ ਦੇ ਨੇੜੇ 5 ਤੋਂ ਘੱਟ ਲੋਕ ਉਡੀਕ ਕਰ ਰਹੇ ਹਨ।",
+    wlLast: "ਆਖਰੀ ਥਾਂ {n} ਦਿਨ ਪਹਿਲਾਂ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਸੀ।", wlLast1: "ਆਖਰੀ ਥਾਂ ਕੱਲ੍ਹ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਸੀ।", wlLastToday: "ਅੱਜ ਇੱਕ ਥਾਂ ਪੇਸ਼ ਕੀਤੀ ਗਈ।",
+    wlNever: "ਇਸ ਖੇਤਰ ਦੇ ਨੇੜੇ ਅਜੇ ਤੱਕ ਕੋਈ ਥਾਂ ਪੇਸ਼ ਨਹੀਂ ਕੀਤੀ ਗਈ।",
+    wlNoPlace: "ਅਸੀਂ ਕਤਾਰ ਵਿੱਚ ਤੁਹਾਡੀ ਸਹੀ ਥਾਂ ਨਹੀਂ ਦਿਖਾਉਂਦੇ। ਇਹ ਉਦੋਂ ਬਦਲਦੀ ਹੈ ਜਦੋਂ ਲੋਕ ਸਵੀਕਾਰ ਕਰਦੇ ਹਨ, ਛੱਡ ਦਿੰਦੇ ਹਨ ਜਾਂ ਸੂਚੀ ਤੋਂ ਨਿਕਲ ਜਾਂਦੇ ਹਨ।",
+    wlRuleLink: "ਕ੍ਰਮ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ", wlOutboxLink: "ਨਮੂਨਾ ਸੁਨੇਹੇ ਦੇਖੋ", wlRuleH: "ਕ੍ਰਮ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ",
+    wlRules: [
+      "ਜਦੋਂ ਕਿਸੇ ਕਲੀਨਿਕ ਵਿੱਚ ਥਾਂ ਖਾਲੀ ਹੁੰਦੀ ਹੈ, ਤਾਂ ਇਹ ਕਲੀਨਿਕ ਤੋਂ {km} ਕਿ.ਮੀ. ਦੇ ਅੰਦਰ ਉਡੀਕ ਕਰ ਰਹੇ ਲੋਕਾਂ ਨੂੰ ਪੇਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
+      "ਜੋ ਸੂਚੀ ਵਿੱਚ ਪਹਿਲਾਂ ਸ਼ਾਮਲ ਹੋਇਆ, ਉਸਨੂੰ ਥਾਂ ਪਹਿਲਾਂ ਪੇਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਹੋਰ ਕੁਝ ਵੀ ਕ੍ਰਮ ਨਹੀਂ ਬਦਲਦਾ।",
+      "ਇੱਕ ਥਾਂ ਇੱਕੋ ਵੇਲੇ {batch} ਲੋਕਾਂ ਨੂੰ ਪੇਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਜੋ ਪਹਿਲਾਂ ਸਵੀਕਾਰ ਕਰਦਾ ਹੈ, ਉਸਨੂੰ ਮਿਲ ਜਾਂਦੀ ਹੈ।",
+      "ਤੁਹਾਡੇ ਕੋਲ ਜਵਾਬ ਦੇਣ ਲਈ {hours} ਘੰਟੇ ਹਨ। ਜੇ ਤੁਸੀਂ ਛੱਡ ਦਿੰਦੇ ਹੋ ਜਾਂ ਜਵਾਬ ਨਹੀਂ ਦਿੰਦੇ, ਤਾਂ ਪੇਸ਼ਕਸ਼ ਅਗਲੇ ਵਿਅਕਤੀ ਕੋਲ ਜਾਂਦੀ ਹੈ ਅਤੇ ਸੂਚੀ ਵਿੱਚ ਤੁਹਾਡੀ ਥਾਂ ਬਣੀ ਰਹਿੰਦੀ ਹੈ।",
+      "ਹਰ 30 ਦਿਨਾਂ ਬਾਅਦ ਅਸੀਂ ਪੁੱਛਦੇ ਹਾਂ ਕਿ ਕੀ ਤੁਹਾਨੂੰ ਅਜੇ ਵੀ ਡਾਕਟਰ ਦੀ ਲੋੜ ਹੈ। ਤੁਸੀਂ ਉਡੀਕ ਜਾਰੀ ਰੱਖ ਸਕਦੇ ਹੋ, ਖੇਤਰ ਬਦਲ ਸਕਦੇ ਹੋ, ਜਾਂ ਸੂਚੀ ਛੱਡ ਸਕਦੇ ਹੋ।",
+    ],
+    mOffer: "{clinic} ({area}) ਵਿੱਚ ਇੱਕ ਨਵੇਂ ਮਰੀਜ਼ ਲਈ ਥਾਂ ਖਾਲੀ ਹੈ। ਸਵੀਕਾਰ ਕਰਨ ਲਈ YES ਜਾਂ ਛੱਡਣ ਲਈ PASS ਭੇਜੋ। ਕਿਰਪਾ ਕਰਕੇ {date} ਤੱਕ ਜਵਾਬ ਦਿਓ। ਜੇ ਤੁਸੀਂ ਛੱਡਦੇ ਹੋ, ਤਾਂ ਸੂਚੀ ਵਿੱਚ ਤੁਹਾਡੀ ਥਾਂ ਬਣੀ ਰਹਿੰਦੀ ਹੈ।",
+    mReminder: "ਯਾਦ ਦਿਵਾਉਣਾ: {clinic} ਵਿੱਚ ਥਾਂ {date} ਤੱਕ ਤੁਹਾਡੇ ਲਈ ਰੱਖੀ ਗਈ ਹੈ। ਸਵੀਕਾਰ ਕਰਨ ਲਈ YES ਜਾਂ ਛੱਡਣ ਲਈ PASS ਭੇਜੋ।",
+    mCheckin: "ਕੀ ਤੁਹਾਨੂੰ ਅਜੇ ਵੀ ਡਾਕਟਰ ਦੀ ਲੋੜ ਹੈ? ਉਡੀਕ ਜਾਰੀ ਰੱਖਣ ਲਈ 1, ਖੇਤਰ ਬਦਲਣ ਲਈ 2, ਜਾਂ ਸੂਚੀ ਛੱਡਣ ਲਈ 3 ਭੇਜੋ।",
   },
   tl: {
-    name: "Tagalog", loc: "fil", htmlLang: "fil", own: "Tagalog", match: ["Tagalog"],
+    name: "Tagalog", loc: "fil", htmlLang: "fil", dir: "ltr", own: "Tagalog", match: ["Tagalog"],
     h: "Bago sa Ontario? Humanap ng family doctor na tumatanggap ng pasyente",
     sub: "Tingnan kung aling mga family doctor at nurse practitioner na malapit sa iyo ang tumatanggap ng bagong pasyente, at kung kailan huling nakumpirma ang bawat listahan.",
     lang: "Ang iyong wika", postal: "Unang 3 character ng iyong postal code", type: "Sino ang gusto mong makita?", any: "Kahit alin", fd: "Family doctor", np: "Nurse practitioner",
@@ -273,6 +324,9 @@ export const T: Record<Lang, Strings> = {
     mCheckin: "Kailangan mo pa ba ng doktor? Sumagot ng 1 para patuloy na maghintay, 2 para lumipat ng lugar, o 3 para umalis sa listahan.",
   },
 };
+
+/** The back-link arrow points the way the page reads. */
+export const backArrow = (lang: Lang) => (T[lang].dir === "rtl" ? "→" : "←");
 
 export const fill = (s: string, o: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(o[k] ?? ""));
 
