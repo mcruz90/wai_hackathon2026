@@ -5,6 +5,8 @@ import type { PublicListing } from "@/lib/listings";
 import { readPlan, type Opened } from "@/lib/session";
 import { ListingCard, SampleBanner, Steps } from "./bits";
 
+const HCC_PHONE = "1-800-445-1822";
+
 export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; type: string; q: string }) {
   const w = T[lang];
   const [opened, setOpened] = useState<Opened[]>([]);
@@ -56,7 +58,8 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
         <ol className="plain">
           <li><b>{w.need}</b><div className="small muted">{w.noohip}</div></li>
           <li><a href="https://www.ontario.ca/healthcareconnect">{w.online}</a><div className="small muted">ontario.ca/healthcareconnect</div></li>
-          <li>{w.callnum}</li>
+          {/* The phone number is its own left-to-right element, so it reads correctly inside Arabic. */}
+          <li>{w.callnum.split(HCC_PHONE)[0]}<bdi dir="ltr">{HCC_PHONE}</bdi>{w.callnum.split(HCC_PHONE)[1] ?? ""}</li>
         </ol>
       </section>
 
