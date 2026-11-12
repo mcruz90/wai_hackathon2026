@@ -1,8 +1,8 @@
 import { FreshLine, HtmlLang, SampleBanner, Steps } from "@/components/bits";
 import ListingClient from "@/components/ListingClient";
 import { prisma } from "@/lib/db";
-import { backArrow, callScript, shortDate, T } from "@/lib/i18n";
-import { liveWhere, originFor, parseSearch, searchQuery, toPublic } from "@/lib/listings";
+import { backArrow, callScript, fill, shortDate, T } from "@/lib/i18n";
+import { liveWhere, originFor, parseSearch, reportedLanguages, searchQuery, toPublic } from "@/lib/listings";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
         <a className="btn" href={`/plan?${q}`}>{w.toPlan}</a></main></div>
     );
   }
-  const l = toPublic(row, (await originFor(s.fsa)).at, w.match);
+  const l = toPublic(row, (await originFor(s.fsa)).at, w.match, (await reportedLanguages([row.id])).get(row.id));
   const type = l.providerType === "nurse_practitioner" ? w.np : w.fd;
   const safeUrl = l.sourceUrl && /^https?:\/\//i.test(l.sourceUrl) ? l.sourceUrl : null;
   return (
@@ -36,7 +36,10 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
           <FreshLine l={l} lang={s.lang} />
           <div className="why">
             {l.languages.map((x) => <span key={x} className={`pill ${w.match.includes(x) && s.lang !== "en" ? "match" : ""}`}>{x}</span>)}
+            {l.byReport && s.lang !== "en" ? <span className="pill match">{fill(w.speaksRep, { lang: w.own })}</span> : null}
+            {l.li ? <span className="pill partial">{w.interpRep}</span> : null}
           </div>
+          {!l.languages.length && !l.byReport ? <p className="note">{w.langUnknown}</p> : null}
           <p className="small muted">
             {w.source}: {safeUrl ? <a href={safeUrl} rel="noopener noreferrer nofollow" target="_blank">{w.src[l.sourceType] ?? w.src.rev}</a> : (w.src[l.sourceType] ?? w.src.rev)}
           </p>
@@ -53,6 +56,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
             <div className="small muted">{w.phone}</div>
             <div className="phone" dir="ltr">{l.phone ? <a href={`tel:${l.phone.replace(/[^\d+]/g, "")}`}>{l.phone}</a> : "—"}</div>
           </div>
+          <a className="btn ghost" href={`/guide?${q}`}>{w.guideLink}</a>
         </section>
         <ListingClient lang={s.lang} fsa={s.fsa} listing={{ id: l.id, clinic: l.clinic, area: l.area, phone: l.phone }} />
         <a className="btn" href={`/plan?${q}`}>{w.toPlan}</a>

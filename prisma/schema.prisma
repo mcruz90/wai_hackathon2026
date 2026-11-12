@@ -53,6 +53,7 @@ model Listing {
   isSample        Boolean       @default(false) @map("is_sample")
   createdAt       DateTime      @default(now()) @map("created_at")
   fullReports     FullReport[]
+  languageReports LanguageReport[]
   offers          Offer[]
   proposals       AgentProposal[]
 
@@ -100,6 +101,24 @@ model FullReport {
 
   @@unique([listingId, tokenHash])
   @@map("full_reports")
+}
+
+/// After calling, a patient says whether the clinic spoke their language. Nothing about the patient is stored.
+model LanguageReport {
+  id        String   @id @default(cuid())
+  listingId String   @map("listing_id")
+  /// English language name, as in listing data, e.g. "Arabic".
+  language  String
+  /// "spoke", "interpreter" or "neither"
+  outcome   String
+  /// sha256 of (secret, date, network address), as for full reports. The address itself is never stored.
+  tokenHash String   @map("token_hash")
+  createdAt DateTime @default(now()) @map("created_at")
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, language, tokenHash])
+  @@index([listingId])
+  @@map("language_reports")
 }
 
 model FsaCentroid {

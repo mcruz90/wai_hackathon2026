@@ -59,6 +59,10 @@ a{color:var(--accent)}
 .why{display:flex;flex-wrap:wrap;gap:6px}
 .pill{border-radius:999px;padding:3px 10px;font-size:.84rem;background:var(--sunk)}
 .pill.match{background:var(--accent);color:var(--on-accent);font-weight:700}
+.pill.partial{background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-weight:700}
+.pill.unknown{background:transparent;border:1.5px dashed var(--muted);color:var(--muted)}
+.guide-group{display:flex;flex-direction:column;gap:10px}
+.guide-group h2{font-size:1.05rem}
 .meter{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
 .meter i{display:block;height:100%;background:var(--fresh)}
 .meter.aging i{background:var(--aging)} .meter.stale i{background:var(--stale)}

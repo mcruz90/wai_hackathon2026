@@ -55,6 +55,8 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
           : <p className="note">{w.noMore}</p>}
       </section>
 
+      <a className="btn ghost" href={`/guide?${q}`}>{w.guideLink}</a>
+
       <section className="card">
         <h2>{w.alsoDo}</h2>
         <h3>{w.hcc}</h3>

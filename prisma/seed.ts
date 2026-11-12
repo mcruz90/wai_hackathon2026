@@ -33,6 +33,16 @@ const SAMPLE: S[] = [
   { id: 10, name: "Sorrel Street Doctors", area: "East Danforth", fsa: "M4C", at: [43.686, -79.305], type: "fd", langs: ["English", "French", "Bengali"], src: "web", age: 1, phone: "416-555-0104" },
   { id: 11, name: "Plover Lane Nurse Practitioner Clinic", area: "Downtown East", fsa: "M5A", at: [43.657, -79.365], type: "np", langs: ["English", "French", "Spanish", "Amharic"], src: "list", age: 9, phone: "416-555-0119" },
   { id: 12, name: "Yarrow Road Family Health", area: "Malton, Mississauga", fsa: "L4T", at: [43.709, -79.637], type: "fd", langs: ["English", "Punjabi", "Hindi", "Urdu"], src: "web", age: 3, phone: "416-555-0123" },
+  // Most real notices do not say which languages are spoken (11 of the 15 in eval/announcements.jsonl), so two samples list none.
+  { id: 13, name: "Linden Grove Family Practice", area: "Flemingdon Park", fsa: "M3C", at: [43.718, -79.333], type: "fd", langs: [], src: "web", age: 5, phone: "416-555-0131" },
+  { id: 14, name: "Osprey Lane Health Centre", area: "Dorset Park, Scarborough", fsa: "M1P", at: [43.761, -79.282], type: "np", langs: [], src: "list", age: 12, phone: "416-555-0146" },
+];
+
+/** Sample patient language reports: 2 separate reports are needed before a listing shows them. */
+const SAMPLE_LANGUAGE_REPORTS: { listing: number; language: string; outcome: "spoke" | "interpreter" | "neither"; n: number }[] = [
+  { listing: 13, language: "Arabic", outcome: "spoke", n: 2 },
+  { listing: 10, language: "Arabic", outcome: "interpreter", n: 2 },
+  { listing: 4, language: "Tagalog", outcome: "neither", n: 1 },
 ];
 
 async function seedCentroids() {
@@ -56,6 +66,9 @@ async function seedListings() {
       },
     });
   }
+  for (const r of SAMPLE_LANGUAGE_REPORTS)
+    for (let k = 1; k <= r.n; k++)
+      await prisma.languageReport.create({ data: { listingId: `sample-${r.listing}`, language: r.language, outcome: r.outcome, tokenHash: `sample-language-report-${r.listing}-${r.language}-${k}` } });
   // One sample "they are full" report, so the freshness agent has a high-priority re-check to propose.
   await prisma.fullReport.create({ data: { listingId: "sample-4", tokenHash: "sample-report" } });
   console.log(`Seeded ${SAMPLE.length} sample listings and 1 sample full report.`);

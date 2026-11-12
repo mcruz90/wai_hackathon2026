@@ -100,6 +100,9 @@ async function decideProposal(form: FormData, decision: string) {
     const date = p.action === "reconfirm_listing" ? str(form, "date") : new Date().toISOString().slice(0, 10);
     if (!evidenceDate(date, new Date())) return go("/admin", "error", "Enter a valid evidence or clinic confirmation date. Approval alone does not confirm availability today.");
     const r = await reconfirm(p.listingId, date);
+    // On a clinic call the reviewer can record the languages the clinic gave; an empty field keeps the current list.
+    const told = p.action === "recheck_listing" ? [...new Set(str(form, "languages").split(",").map((s) => s.trim()).filter(Boolean))] : [];
+    if (told.length) await prisma.listing.update({ where: { id: p.listingId }, data: { languages: told } });
     await done("approved");
     msg = r.live ? `Re-confirmed ${name} as of ${r.d}. It shows to patients with a fresh expiry date.` : `Saved ${name} as confirmed on ${r.d}, but that is past the expiry window, so patients will not see it.`;
   } else if ((p.action === "mark_full" && decision === "approve") || (p.action === "recheck_listing" && decision === "full")) {
@@ -157,7 +160,7 @@ export async function approve(form: FormData) {
   const problems = [
     !clinic && "clinic name", !area && "area", !centroid && "postal area",
     providerType !== "family_doctor" && providerType !== "nurse_practitioner" && "provider type",
-    !languages.length && "languages", !evidenceDate(date, new Date()) && "valid evidence date",
+    !evidenceDate(date, new Date()) && "valid evidence date",
   ].filter(Boolean);
   if (problems.length) go("/admin", "error", `Not published. Fill in: ${problems.join(", ")}.`);
   const today = new Date().toISOString().slice(0, 10);

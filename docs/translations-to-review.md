@@ -81,3 +81,30 @@ The strings ported from `reference/demo.html` were already marked draft there. T
 ## Ontario search changes
 
 Review the updated `unk` notice and new `radius` string in all six languages in `lib/i18n.ts`. Unknown locations no longer imply downtown Toronto. Results now explain their approximate postal-area distance and configured radius. French, Mandarin, Arabic, Punjabi and Tagalog wording is a draft awaiting native-speaker review.
+
+## Languages not listed, language reports and the appointment guide
+
+New in all six languages, drafted without a native speaker. Keys in `lib/i18n.ts`:
+
+| Key | English |
+| --- | --- |
+| `langUnknown` | Languages not listed. Ask when you call. |
+| `speaksRep` | Patients report: speaks {lang} |
+| `interpRep` | Patients report: interpreter offered |
+| `langQ` | Did they speak {lang}? |
+| `lSpoke` | Yes, someone spoke {lang} |
+| `lInterp` | They offered an interpreter |
+| `lNeither` | Neither |
+| `thLang` | Thank you. This tells the next person what to expect. |
+| `guideLink` | Questions to bring to your appointment |
+| `guideH` | Questions for your appointment |
+| `guideSub` | Show these to the clinic. They are practical questions. For the health conversation itself, ask for a professional interpreter. |
+| `gt[0..4]` | Calling the clinic · Booking your first appointment · At your first visit · Medications and records · After the visit |
+| `gq[0..9]` | The 10 guide questions, in the order of `GUIDE` in `lib/i18n.ts` |
+
+The guide questions are shown to clinic staff, so the English is the part that must be exact; the translation tells the patient what they are showing. Check especially:
+
+- The IFHP question names the program the way patients know it in each language (French: Programme fédéral de santé intérimaire, PFSI).
+- The Punjabi first-person lines use both masculine and feminine forms (ਨਵਾਂ/ਨਵੀਂ, ਲੈਂਦਾ/ਲੈਂਦੀ), like the call script.
+- The medication question asks for a longer renewal; it must not read as asking for a different medication or dose.
+

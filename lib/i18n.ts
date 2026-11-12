@@ -32,6 +32,14 @@ export type Strings = {
   wlLast: string; wlLast1: string; wlLastToday: string; wlNever: string; wlNoPlace: string;
   wlRuleLink: string; wlOutboxLink: string; wlRuleH: string; wlRules: [string, string, string, string, string];
   mOffer: string; mReminder: string; mCheckin: string;
+  // ---- languages not listed, patient language reports, appointment guide (draft) ----
+  langUnknown: string; speaksRep: string; interpRep: string;
+  langQ: string; lSpoke: string; lInterp: string; lNeither: string; thLang: string;
+  guideLink: string; guideH: string; guideSub: string;
+  /** Guide group titles, one per group in GUIDE. */
+  gt: [string, string, string, string, string];
+  /** Guide questions in this language, in GUIDE order. Empty for English, where the question itself is shown. */
+  gq: string[];
 };
 
 export const T: Record<Lang, Strings> = {
@@ -82,6 +90,19 @@ export const T: Record<Lang, Strings> = {
     mOffer: "{clinic} ({area}) has an open spot for a new patient. Reply YES to accept or PASS to skip. Please reply by {date}. If you pass, you keep your place on the list.",
     mReminder: "Reminder: the open spot at {clinic} is held for you until {date}. Reply YES to accept or PASS to skip.",
     mCheckin: "Do you still need a doctor? Reply 1 to keep waiting, 2 to switch area, or 3 to leave the list.",
+    langUnknown: "Languages not listed. Ask when you call.",
+    speaksRep: "Patients report: speaks {lang}",
+    interpRep: "Patients report: interpreter offered",
+    langQ: "Did they speak {lang}?",
+    lSpoke: "Yes, someone spoke {lang}",
+    lInterp: "They offered an interpreter",
+    lNeither: "Neither",
+    thLang: "Thank you. This tells the next person what to expect.",
+    guideLink: "Questions to bring to your appointment",
+    guideH: "Questions for your appointment",
+    guideSub: "Show these to the clinic. They are practical questions. For the health conversation itself, ask for a professional interpreter.",
+    gt: ["Calling the clinic", "Booking your first appointment", "At your first visit", "Medications and records", "After the visit"],
+    gq: ["", "", "", "", "", "", "", "", "", ""],
   },
   fr: {
     name: "Français", loc: "fr-CA", htmlLang: "fr", dir: "ltr", own: "français", match: ["French"],
@@ -130,6 +151,19 @@ export const T: Record<Lang, Strings> = {
     mOffer: "{clinic} ({area}) a une place pour un nouveau patient. Répondez OUI pour accepter ou PASSER pour laisser la place. Répondez avant le {date}. Si vous passez, vous gardez votre place dans la liste.",
     mReminder: "Rappel : la place à {clinic} vous est réservée jusqu'au {date}. Répondez OUI pour accepter ou PASSER pour laisser la place.",
     mCheckin: "Avez-vous encore besoin d'un médecin ? Répondez 1 pour continuer d'attendre, 2 pour changer de secteur ou 3 pour quitter la liste.",
+    langUnknown: "Langues non indiquées. Demandez-le quand vous appelez.",
+    speaksRep: "Selon des patients : parle {lang}",
+    interpRep: "Selon des patients : interprète proposé",
+    langQ: "Vous a-t-on parlé en {lang} ?",
+    lSpoke: "Oui, quelqu'un parlait {lang}",
+    lInterp: "On m'a proposé un interprète",
+    lNeither: "Ni l'un ni l'autre",
+    thLang: "Merci. Cela aide la prochaine personne à savoir à quoi s'attendre.",
+    guideLink: "Questions à apporter à votre rendez-vous",
+    guideH: "Questions pour votre rendez-vous",
+    guideSub: "Montrez l'anglais à la clinique. Le français est en dessous. Ce sont des questions pratiques. Pour parler de votre santé, demandez un interprète professionnel.",
+    gt: ["Quand vous appelez la clinique", "Pour prendre votre premier rendez-vous", "À votre première visite", "Médicaments et dossier médical", "Après la visite"],
+    gq: ["Acceptez-vous les patients couverts par le Programme fédéral de santé intérimaire (PFSI) ?", "Quelles langues parlent vos médecins et votre personnel ?", "J'aimerais un interprète pour mon rendez-vous. Pouvez-vous en prévoir un ?", "Que dois-je apporter à mon premier rendez-vous ?", "Je suis nouveau en Ontario et c'est mon premier médecin de famille ici.", "Pouvez-vous parler lentement ? Pouvez-vous me l'écrire ?", "Je prends des médicaments régulièrement. Pouvez-vous les renouveler pour plus d'un mois ?", "Mon dossier médical peut-il vous être envoyé par mon ancien médecin ?", "Comment puis-je prendre mon prochain rendez-vous ?", "Que dois-je faire si je suis malade quand la clinique est fermée ?"],
   },
   zh: {
     name: "中文（普通话）", loc: "zh-CN", htmlLang: "zh", dir: "ltr", own: "普通话", match: ["Mandarin"],
@@ -178,6 +212,19 @@ export const T: Record<Lang, Strings> = {
     mOffer: "{clinic}（{area}）有一个新病人名额。回复 YES 接受，回复 PASS 放弃。请在 {date} 前回复。如果放弃，您在名单上的位置保持不变。",
     mReminder: "提醒：{clinic} 的名额为您保留到 {date}。回复 YES 接受，回复 PASS 放弃。",
     mCheckin: "您还需要找医生吗？回复 1 继续等候，回复 2 更换地区，回复 3 退出名单。",
+    langUnknown: "未列出语言。打电话时请询问。",
+    speaksRep: "患者反映：会说{lang}",
+    interpRep: "患者反映：提供口译员",
+    langQ: "他们会说{lang}吗？",
+    lSpoke: "会，有人说{lang}",
+    lInterp: "他们提供了口译员",
+    lNeither: "都没有",
+    thLang: "谢谢。这能让下一位患者知道会遇到什么情况。",
+    guideLink: "就诊时可以问的问题",
+    guideH: "就诊问题清单",
+    guideSub: "把英文给诊所工作人员看。中文在下面。这些是日常事务问题。谈论健康状况时，请要求专业口译员。",
+    gt: ["给诊所打电话时", "预约第一次就诊", "第一次就诊时", "药物和病历", "就诊之后"],
+    gq: ["你们接受由临时联邦健康计划（IFHP）承保的患者吗？", "你们的医生和工作人员会说哪些语言？", "我希望就诊时有口译员。你们可以安排吗？", "第一次就诊我需要带什么？", "我刚来安大略省，这是我在这里的第一位家庭医生。", "请说慢一点。可以帮我写下来吗？", "我需要长期服药。可以给我开超过一个月的药量吗？", "可以把我以前医生的病历转给你们吗？", "我怎样预约下一次就诊？", "诊所关门时如果我生病了，该怎么办？"],
   },
   ar: {
     name: "العربية", loc: "ar", htmlLang: "ar", dir: "rtl", own: "العربية", match: ["Arabic"],
@@ -226,6 +273,19 @@ export const T: Record<Lang, Strings> = {
     mOffer: "لدى {clinic} ({area}) مكان متاح لمريض جديد. أرسل YES للقبول أو PASS للتجاوز. يرجى الرد قبل {date}. إذا تجاوزت العرض، تحتفظ بمكانك في القائمة.",
     mReminder: "تذكير: المكان في {clinic} محجوز لك حتى {date}. أرسل YES للقبول أو PASS للتجاوز.",
     mCheckin: "هل ما زلت بحاجة إلى طبيب؟ أرسل 1 لمواصلة الانتظار، أو 2 لتغيير المنطقة، أو 3 لمغادرة القائمة.",
+    langUnknown: "اللغات غير مذكورة. اسأل عند الاتصال.",
+    speaksRep: "حسب المرضى: يتحدثون {lang}",
+    interpRep: "حسب المرضى: عُرض مترجم",
+    langQ: "هل تحدثوا {lang}؟",
+    lSpoke: "نعم، تحدث أحدهم {lang}",
+    lInterp: "عرضوا مترجماً",
+    lNeither: "لا هذا ولا ذاك",
+    thLang: "شكراً. هذا يساعد الشخص التالي على معرفة ما يتوقعه.",
+    guideLink: "أسئلة تأخذها معك إلى موعدك",
+    guideH: "أسئلة لموعدك",
+    guideSub: "اعرض النص الإنجليزي على موظفي العيادة. الترجمة العربية تحته. هذه أسئلة عملية. للحديث عن صحتك نفسها، اطلب مترجماً محترفاً.",
+    gt: ["عند الاتصال بالعيادة", "عند حجز موعدك الأول", "في زيارتك الأولى", "الأدوية والسجلات الطبية", "بعد الزيارة"],
+    gq: ["هل تقبلون المرضى المشمولين بالبرنامج الفيدرالي المؤقت للصحة (IFHP)؟", "ما اللغات التي يتحدثها أطباؤكم وموظفوكم؟", "أرغب في وجود مترجم في موعدي. هل يمكنكم ترتيب ذلك؟", "ماذا يجب أن أحضر إلى موعدي الأول؟", "أنا جديد في أونتاريو وهذا أول طبيب عائلة لي هنا.", "من فضلك تحدث ببطء. هل يمكنك كتابة ذلك لي؟", "أتناول دواءً بانتظام. هل يمكنك تجديده لأكثر من شهر واحد؟", "هل يمكن إرسال سجلاتي الطبية من طبيبي السابق إليكم؟", "كيف أحجز موعدي القادم؟", "ماذا أفعل إذا مرضت والعيادة مغلقة؟"],
   },
   pa: {
     name: "ਪੰਜਾਬੀ", loc: "pa", htmlLang: "pa", dir: "ltr", own: "ਪੰਜਾਬੀ", match: ["Punjabi"],
@@ -274,6 +334,19 @@ export const T: Record<Lang, Strings> = {
     mOffer: "{clinic} ({area}) ਵਿੱਚ ਇੱਕ ਨਵੇਂ ਮਰੀਜ਼ ਲਈ ਥਾਂ ਖਾਲੀ ਹੈ। ਸਵੀਕਾਰ ਕਰਨ ਲਈ YES ਜਾਂ ਛੱਡਣ ਲਈ PASS ਭੇਜੋ। ਕਿਰਪਾ ਕਰਕੇ {date} ਤੱਕ ਜਵਾਬ ਦਿਓ। ਜੇ ਤੁਸੀਂ ਛੱਡਦੇ ਹੋ, ਤਾਂ ਸੂਚੀ ਵਿੱਚ ਤੁਹਾਡੀ ਥਾਂ ਬਣੀ ਰਹਿੰਦੀ ਹੈ।",
     mReminder: "ਯਾਦ ਦਿਵਾਉਣਾ: {clinic} ਵਿੱਚ ਥਾਂ {date} ਤੱਕ ਤੁਹਾਡੇ ਲਈ ਰੱਖੀ ਗਈ ਹੈ। ਸਵੀਕਾਰ ਕਰਨ ਲਈ YES ਜਾਂ ਛੱਡਣ ਲਈ PASS ਭੇਜੋ।",
     mCheckin: "ਕੀ ਤੁਹਾਨੂੰ ਅਜੇ ਵੀ ਡਾਕਟਰ ਦੀ ਲੋੜ ਹੈ? ਉਡੀਕ ਜਾਰੀ ਰੱਖਣ ਲਈ 1, ਖੇਤਰ ਬਦਲਣ ਲਈ 2, ਜਾਂ ਸੂਚੀ ਛੱਡਣ ਲਈ 3 ਭੇਜੋ।",
+    langUnknown: "ਭਾਸ਼ਾਵਾਂ ਨਹੀਂ ਦੱਸੀਆਂ ਗਈਆਂ। ਕਾਲ ਕਰਨ ਵੇਲੇ ਪੁੱਛੋ।",
+    speaksRep: "ਮਰੀਜ਼ਾਂ ਮੁਤਾਬਕ: {lang} ਬੋਲਦੇ ਹਨ",
+    interpRep: "ਮਰੀਜ਼ਾਂ ਮੁਤਾਬਕ: ਦੁਭਾਸ਼ੀਏ ਦੀ ਪੇਸ਼ਕਸ਼ ਕੀਤੀ",
+    langQ: "ਕੀ ਉਨ੍ਹਾਂ ਨੇ {lang} ਬੋਲੀ?",
+    lSpoke: "ਹਾਂ, ਕਿਸੇ ਨੇ {lang} ਬੋਲੀ",
+    lInterp: "ਉਨ੍ਹਾਂ ਨੇ ਦੁਭਾਸ਼ੀਏ ਦੀ ਪੇਸ਼ਕਸ਼ ਕੀਤੀ",
+    lNeither: "ਦੋਵਾਂ ਵਿੱਚੋਂ ਕੋਈ ਨਹੀਂ",
+    thLang: "ਧੰਨਵਾਦ। ਇਸ ਨਾਲ ਅਗਲੇ ਵਿਅਕਤੀ ਨੂੰ ਪਤਾ ਲੱਗਦਾ ਹੈ ਕਿ ਕੀ ਉਮੀਦ ਕਰਨੀ ਹੈ।",
+    guideLink: "ਆਪਣੀ ਮੁਲਾਕਾਤ ਲਈ ਸਵਾਲ",
+    guideH: "ਤੁਹਾਡੀ ਮੁਲਾਕਾਤ ਲਈ ਸਵਾਲ",
+    guideSub: "ਕਲੀਨਿਕ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਦਿਖਾਓ। ਹੇਠਾਂ ਪੰਜਾਬੀ ਵਿੱਚ ਹੈ। ਇਹ ਵਿਹਾਰਕ ਸਵਾਲ ਹਨ। ਆਪਣੀ ਸਿਹਤ ਬਾਰੇ ਗੱਲਬਾਤ ਲਈ, ਪੇਸ਼ੇਵਰ ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
+    gt: ["ਕਲੀਨਿਕ ਨੂੰ ਕਾਲ ਕਰਨ ਵੇਲੇ", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਬੁੱਕ ਕਰਨ ਵੇਲੇ", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਵੇਲੇ", "ਦਵਾਈਆਂ ਅਤੇ ਮੈਡੀਕਲ ਰਿਕਾਰਡ", "ਮੁਲਾਕਾਤ ਤੋਂ ਬਾਅਦ"],
+    gq: ["ਕੀ ਤੁਸੀਂ ਅੰਤਰਿਮ ਫੈਡਰਲ ਹੈਲਥ ਪ੍ਰੋਗਰਾਮ (IFHP) ਵਾਲੇ ਮਰੀਜ਼ ਲੈਂਦੇ ਹੋ?", "ਤੁਹਾਡੇ ਡਾਕਟਰ ਅਤੇ ਸਟਾਫ਼ ਕਿਹੜੀਆਂ ਭਾਸ਼ਾਵਾਂ ਬੋਲਦੇ ਹਨ?", "ਮੈਨੂੰ ਆਪਣੀ ਮੁਲਾਕਾਤ ਲਈ ਦੁਭਾਸ਼ੀਆ ਚਾਹੀਦਾ ਹੈ। ਕੀ ਤੁਸੀਂ ਇਸ ਦਾ ਪ੍ਰਬੰਧ ਕਰ ਸਕਦੇ ਹੋ?", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਲਈ ਮੈਨੂੰ ਕੀ ਲੈ ਕੇ ਆਉਣਾ ਚਾਹੀਦਾ ਹੈ?", "ਮੈਂ ਓਨਟਾਰੀਓ ਵਿੱਚ ਨਵਾਂ/ਨਵੀਂ ਹਾਂ ਅਤੇ ਇਹ ਇੱਥੇ ਮੇਰਾ ਪਹਿਲਾ ਫੈਮਿਲੀ ਡਾਕਟਰ ਹੈ।", "ਕਿਰਪਾ ਕਰਕੇ ਹੌਲੀ ਬੋਲੋ। ਕੀ ਤੁਸੀਂ ਇਹ ਮੈਨੂੰ ਲਿਖ ਕੇ ਦੇ ਸਕਦੇ ਹੋ?", "ਮੈਂ ਨਿਯਮਿਤ ਤੌਰ 'ਤੇ ਦਵਾਈ ਲੈਂਦਾ/ਲੈਂਦੀ ਹਾਂ। ਕੀ ਤੁਸੀਂ ਇਸਨੂੰ ਇੱਕ ਮਹੀਨੇ ਤੋਂ ਵੱਧ ਲਈ ਦੁਬਾਰਾ ਲਿਖ ਸਕਦੇ ਹੋ?", "ਕੀ ਮੇਰੇ ਪਿਛਲੇ ਡਾਕਟਰ ਤੋਂ ਮੇਰੇ ਮੈਡੀਕਲ ਰਿਕਾਰਡ ਤੁਹਾਨੂੰ ਭੇਜੇ ਜਾ ਸਕਦੇ ਹਨ?", "ਮੈਂ ਆਪਣੀ ਅਗਲੀ ਮੁਲਾਕਾਤ ਕਿਵੇਂ ਬੁੱਕ ਕਰਾਂ?", "ਜੇ ਕਲੀਨਿਕ ਬੰਦ ਹੋਣ ਵੇਲੇ ਮੈਂ ਬੀਮਾਰ ਹੋ ਜਾਵਾਂ ਤਾਂ ਮੈਨੂੰ ਕੀ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ?"],
   },
   tl: {
     name: "Tagalog", loc: "fil", htmlLang: "fil", dir: "ltr", own: "Tagalog", match: ["Tagalog"],
@@ -322,8 +395,39 @@ export const T: Record<Lang, Strings> = {
     mOffer: "May bukas na puwesto para sa bagong pasyente sa {clinic} ({area}). Sumagot ng OO para tanggapin o PASA para laktawan. Pakisagot bago ang {date}. Kung papasa ka, mananatili ang puwesto mo sa listahan.",
     mReminder: "Paalala: nakalaan para sa iyo ang puwesto sa {clinic} hanggang {date}. Sumagot ng OO para tanggapin o PASA para laktawan.",
     mCheckin: "Kailangan mo pa ba ng doktor? Sumagot ng 1 para patuloy na maghintay, 2 para lumipat ng lugar, o 3 para umalis sa listahan.",
+    langUnknown: "Hindi nakalista ang mga wika. Itanong kapag tumawag ka.",
+    speaksRep: "Ayon sa mga pasyente: nagsasalita ng {lang}",
+    interpRep: "Ayon sa mga pasyente: may inalok na interpreter",
+    langQ: "Nagsalita ba sila ng {lang}?",
+    lSpoke: "Oo, may nagsalita ng {lang}",
+    lInterp: "Nag-alok sila ng interpreter",
+    lNeither: "Wala sa dalawa",
+    thLang: "Salamat. Makakatulong ito sa susunod na tao na malaman ang aasahan.",
+    guideLink: "Mga tanong na dadalhin sa iyong appointment",
+    guideH: "Mga tanong para sa iyong appointment",
+    guideSub: "Ipakita ang Ingles sa klinika. Nasa ibaba ang Tagalog. Mga praktikal na tanong ito. Para sa usapan tungkol sa iyong kalusugan, humingi ng propesyonal na interpreter.",
+    gt: ["Kapag tumatawag sa klinika", "Kapag nagbu-book ng unang appointment", "Sa iyong unang pagbisita", "Mga gamot at medical record", "Pagkatapos ng pagbisita"],
+    gq: ["Tumatanggap ba kayo ng mga pasyenteng sakop ng Interim Federal Health Program (IFHP)?", "Anong mga wika ang sinasalita ng inyong mga doktor at staff?", "Gusto ko sana ng interpreter para sa aking appointment. Maaari ba ninyong ayusin ito?", "Ano ang kailangan kong dalhin sa aking unang appointment?", "Bago ako sa Ontario at ito ang aking unang family doctor dito.", "Pakiusap, magsalita nang dahan-dahan. Maaari ba ninyong isulat iyon para sa akin?", "Regular akong umiinom ng gamot. Maaari ba ninyong i-renew ito nang higit sa isang buwan?", "Maaari bang ipadala sa inyo ang aking medical records mula sa dati kong doktor?", "Paano ko ibu-book ang susunod kong appointment?", "Ano ang dapat kong gawin kung magkasakit ako habang sarado ang klinika?"],
   },
 };
+
+/**
+ * The appointment guide: fixed practical questions, written and reviewed in advance (no live translation, no chat).
+ * Each group has its English questions; T[lang].gq holds the same questions in order in the patient's language.
+ */
+export const GUIDE: string[][] = [
+  ["Do you accept patients covered by the Interim Federal Health Program (IFHP)?", "Which languages do your doctors and staff speak?"],
+  ["I would like an interpreter for my appointment. Can you arrange one?", "What do I need to bring to my first appointment?"],
+  ["I am new to Ontario and this is my first family doctor here.", "Please speak slowly. Can you write that down for me?"],
+  ["I take medication regularly. Can you renew it for longer than one month?", "Can my medical records from my previous doctor be sent to you?"],
+  ["How do I book my next appointment?", "What should I do if I am sick when the clinic is closed?"],
+];
+
+/** The guide in one language: each group's title, and each question in English with this language underneath. */
+export function guide(lang: Lang): { title: string; items: { en: string; own: string }[] }[] {
+  let i = 0;
+  return GUIDE.map((qs, g) => ({ title: T[lang].gt[g], items: qs.map((en) => ({ en, own: T[lang].gq[i++] ?? "" })) }));
+}
 
 /** The back-link arrow points the way the page reads. */
 export const backArrow = (lang: Lang) => (T[lang].dir === "rtl" ? "→" : "←");
