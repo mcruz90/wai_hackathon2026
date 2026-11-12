@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { T, type Lang } from "@/lib/i18n";
+import { backArrow, T, type Lang } from "@/lib/i18n";
 import type { PublicListing } from "@/lib/listings";
 import { readPlan, type Opened } from "@/lib/session";
 import { ListingCard, SampleBanner, Steps } from "./bits";
@@ -12,6 +12,7 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
 
   useEffect(() => {
     document.documentElement.lang = w.htmlLang;
+    document.documentElement.dir = w.dir;
     const mine = readPlan().opened;
     setOpened(mine);
     if (!fsa) { setNext([]); return; }
@@ -26,7 +27,7 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
   return (
     <>
       <Steps n={4} />
-      <a className="btn link" href={fsa ? `/results?${q}` : `/?${q}`}>← {w.back}</a>
+      <a className="btn link" href={fsa ? `/results?${q}` : `/?${q}`}>{backArrow(lang)} {w.back}</a>
       <div><h1>{w.planH}</h1><p className="muted">{w.planSub}</p></div>
 
       <section className="card">

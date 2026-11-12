@@ -32,6 +32,7 @@ const SAMPLE: S[] = [
   { id: 9, name: "Bittern Road Family Health", area: "Rexdale", fsa: "M9V", at: [43.722, -79.572], type: "np", langs: ["English", "Punjabi", "Hindi", "Somali"], src: "post", age: 34, phone: "416-555-0191" },
   { id: 10, name: "Sorrel Street Doctors", area: "East Danforth", fsa: "M4C", at: [43.686, -79.305], type: "fd", langs: ["English", "French", "Bengali"], src: "web", age: 1, phone: "416-555-0104" },
   { id: 11, name: "Plover Lane Nurse Practitioner Clinic", area: "Downtown East", fsa: "M5A", at: [43.657, -79.365], type: "np", langs: ["English", "French", "Spanish", "Amharic"], src: "list", age: 9, phone: "416-555-0119" },
+  { id: 12, name: "Yarrow Road Family Health", area: "Malton, Mississauga", fsa: "L4T", at: [43.709, -79.637], type: "fd", langs: ["English", "Punjabi", "Hindi", "Urdu"], src: "web", age: 3, phone: "416-555-0123" },
 ];
 
 async function seedCentroids() {
@@ -66,10 +67,10 @@ async function seedCounts() {
   const rand = rng(20261111);
   // Daily search volume by area and language. Small numbers on purpose in a few cells to show suppression.
   const demand: [string, Partial<Record<(typeof LANGS)[number], number>>][] = [
-    ["M1P", { en: 6, zh: 5, tl: 3 }], ["M1T", { zh: 7, en: 3 }], ["M1L", { tl: 4, en: 4, es: 0.1 }], ["M1B", { tl: 3, en: 2, zh: 2 }],
-    ["M3N", { es: 5, en: 4, tl: 2 }], ["M9V", { en: 5, es: 3, fr: 2, tl: 1.5 }], ["M9W", { en: 3, zh: 1.5 }],
-    ["M4H", { en: 5, fr: 0.1 }], ["M6K", { tl: 3, en: 4, es: 2 }], ["M5A", { fr: 3, en: 5, es: 2 }],
-    ["M2N", { zh: 5, en: 3 }], ["M8V", { en: 2, es: 2, zh: 0.12 }], ["M4C", { fr: 2, en: 3 }],
+    ["M1P", { en: 6, zh: 5, tl: 3 }], ["M1T", { zh: 7, en: 3 }], ["M1L", { tl: 4, en: 4, pa: 0.1 }], ["M1B", { tl: 3, en: 2, zh: 2 }],
+    ["M3N", { ar: 3, en: 4, tl: 2, pa: 2 }], ["M9V", { en: 5, pa: 5, ar: 3, fr: 2, tl: 1.5 }], ["M9W", { en: 3, pa: 3, zh: 1.5 }],
+    ["M4H", { en: 5, ar: 4, fr: 0.1 }], ["M6K", { tl: 3, en: 4, ar: 2 }], ["M5A", { fr: 3, en: 5, ar: 2 }],
+    ["M2N", { zh: 5, en: 3 }], ["M8V", { en: 2, ar: 2, zh: 0.12 }], ["M4C", { fr: 2, en: 3 }],
   ];
   const rows = [];
   for (let day = 0; day < 30; day++) {
@@ -96,7 +97,7 @@ async function seedWaitlist() {
   if (await prisma.waitlistEntry.count()) return console.log("Sample waitlist already present.");
   const rand = rng(60);
   const fsas = Object.keys(FSA_TABLE);
-  const langWeights: [string, number][] = [["en", 0.35], ["zh", 0.2], ["tl", 0.15], ["es", 0.15], ["fr", 0.15]];
+  const langWeights: [string, number][] = [["en", 0.3], ["zh", 0.2], ["ar", 0.15], ["pa", 0.15], ["tl", 0.1], ["fr", 0.1]];
   const pick = () => { let r = rand(); for (const [l, w] of langWeights) { if ((r -= w) < 0) return l; } return "en"; };
   const entries = [];
   for (let i = 1; i <= 60; i++) {

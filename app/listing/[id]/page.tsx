@@ -1,7 +1,7 @@
 import { FreshLine, HtmlLang, SampleBanner, Steps } from "@/components/bits";
 import ListingClient from "@/components/ListingClient";
 import { prisma } from "@/lib/db";
-import { callScript, shortDate, T } from "@/lib/i18n";
+import { backArrow, callScript, shortDate, T } from "@/lib/i18n";
 import { liveWhere, originFor, parseSearch, searchQuery, toPublic } from "@/lib/listings";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
   const s = parseSearch(await searchParams);
   const w = T[s.lang], q = searchQuery(s);
   const row = await prisma.listing.findFirst({ where: { id, ...liveWhere() } });
-  const back = <a className="btn link" href={s.fsa ? `/results?${q}` : `/?${q}`}>← {w.back}</a>;
+  const back = <a className="btn link" href={s.fsa ? `/results?${q}` : `/?${q}`}>{backArrow(s.lang)} {w.back}</a>;
   if (!row) {
     return (
       <div className="wrap"><HtmlLang lang={s.lang} /><main className="stack">{back}<p className="note">{w.gone}</p>
@@ -46,12 +46,12 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
           <p className="muted small">{w.hint}</p>
           <div className="script">
             {callScript(s.lang).map((line) => (
-              <div className="say" key={line.en}><b lang="en">{line.en}</b>{line.own ? <span>{line.own}</span> : null}</div>
+              <div className="say" key={line.en}><b lang="en" dir="ltr">{line.en}</b>{line.own ? <span>{line.own}</span> : null}</div>
             ))}
           </div>
           <div>
             <div className="small muted">{w.phone}</div>
-            <div className="phone">{l.phone ? <a href={`tel:${l.phone.replace(/[^\d+]/g, "")}`}>{l.phone}</a> : "—"}</div>
+            <div className="phone" dir="ltr">{l.phone ? <a href={`tel:${l.phone.replace(/[^\d+]/g, "")}`}>{l.phone}</a> : "—"}</div>
           </div>
         </section>
         <ListingClient lang={s.lang} fsa={s.fsa} listing={{ id: l.id, clinic: l.clinic, area: l.area, phone: l.phone }} />

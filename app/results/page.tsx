@@ -2,7 +2,7 @@ import { config } from "@/lib/config";
 import { redirect } from "next/navigation";
 import { HtmlLang, ListingCard, SampleBanner, Steps } from "@/components/bits";
 import Track from "@/components/Track";
-import { fill, T } from "@/lib/i18n";
+import { backArrow, fill, T } from "@/lib/i18n";
 import { parseSearch, rankedListings, searchQuery } from "@/lib/listings";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export default async function Results({ searchParams }: { searchParams: Promise<
       <Track fsa={s.fsa} lang={s.lang} type={s.type} />
       <main className="stack">
         <Steps n={2} />
-        <a className="btn link" href={`/?${q}`}>← {w.back}</a>
+        <a className="btn link" href={`/?${q}`}>{backArrow(s.lang)} {w.back}</a>
         {listings.some((l) => l.isSample) ? <SampleBanner lang={s.lang} /> : null}
         <div>
           <h1 style={{ fontSize: "1.3rem" }}>{fill(w.results, { fsa: s.fsa })}</h1>
