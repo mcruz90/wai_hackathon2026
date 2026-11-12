@@ -47,16 +47,7 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
         ) : <p className="muted">{w.noneOpened}</p>}
       </section>
 
-      <section className="stack">
-        <h2>{w.callNext}</h2>
-        {!fsa ? <p className="note"><a href={`/?${q}`}>{w.needSearch}</a></p>
-          : next === null ? <p className="muted small">…</p>
-          : next.length ? <>{next.some((l) => l.isSample) ? <SampleBanner lang={lang} /> : null}{next.map((l) => <ListingCard key={l.id} l={l} lang={lang} href={`/listing/${l.id}?${q}`} />)}</>
-          : <p className="note">{w.noMore}</p>}
-      </section>
-
-      <a className="btn ghost" href={`/guide?${q}`}>{w.guideLink}</a>
-
+      {/* Health Care Connect sits near the top so it is not lost below the clinic list. */}
       <section className="card">
         <h2>{w.alsoDo}</h2>
         <h3>{w.hcc}</h3>
@@ -68,6 +59,16 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
           <li>{w.callnum}</li>
         </ol>
       </section>
+
+      <section className="stack">
+        <h2>{w.callNext}</h2>
+        {!fsa ? <p className="note"><a href={`/?${q}`}>{w.needSearch}</a></p>
+          : next === null ? <p className="muted small">…</p>
+          : next.length ? <>{next.some((l) => l.isSample) ? <SampleBanner lang={lang} /> : null}{next.map((l) => <ListingCard key={l.id} l={l} lang={lang} href={`/listing/${l.id}?${q}`} />)}</>
+          : <p className="note">{w.noMore}</p>}
+      </section>
+
+      <a className="btn ghost" href={`/guide?${q}`}>{w.guideLink}</a>
 
       <p><span className="tag">{w.concept}</span> <a href={`/waitlist/status?lang=${lang}&fsa=${fsa}&type=${type}`}>{w.wlLink}</a></p>
       <p className="small muted">{w.disc}</p>
