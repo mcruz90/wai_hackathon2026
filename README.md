@@ -1,5 +1,7 @@
 # New to Ontario Doctor Finder
 
+By: Wanlin Song and May Cruz-Greenwood
+
 A working prototype that helps a newcomer in Ontario find a family doctor or nurse practitioner who is taking new patients, and leave with a plan for who to call.
 
 **WAI Hackathon Canada 2026, Team 14.** Theme 4: Social Impact (Health), under Agentic AI for Good. UN Sustainable Development Goals 3 (Good Health and Well-being) and 10 (Reduced Inequalities).
