@@ -3,7 +3,7 @@
  * into a structured listing. Swap providers with LLM_PROVIDER; nothing else in the
  * app knows which one is in use.
  *
- *   LLM_PROVIDER  anthropic | openai | mock
+ *   LLM_PROVIDER  anthropic | openai | cohere | mock
  *   LLM_MODEL     model id for that provider
  *   LLM_API_KEY   key for that provider (server-side only)
  */
@@ -77,14 +77,24 @@ ${text}
   return { system, user };
 }
 
-/** Tidy whatever came back so the rest of the app can trust the shape. */
-export function normalize(raw: unknown): Extraction {
+/** True when the postal area is written in the text itself, alone or as the start of a full postal code. */
+export function fsaInText(fsa: string, text: string): boolean {
+  return new RegExp(`(?<![A-Za-z0-9])${fsa}(?![A-Za-z])`, "i").test(text);
+}
+
+/**
+ * Tidy whatever came back so the rest of the app can trust the shape.
+ * With the source text, a postal area the text does not state is dropped: the
+ * prompt asks for an explicitly stated code, and models sometimes infer one anyway.
+ */
+export function normalize(raw: unknown, sourceText?: string): Extraction {
   const x = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
   const conf = (v: unknown): Confidence => (v === "high" || v === "medium" ? v : "low");
   const c = (x.confidence && typeof x.confidence === "object" ? x.confidence : {}) as Record<string, unknown>;
   const fsa = str(x.fsa)?.toUpperCase() ?? null;
-  const validFsa = fsa && FSA_CODES.includes(fsa) ? fsa : null;
+  const unstated = !!fsa && sourceText !== undefined && !fsaInText(fsa, sourceText);
+  const validFsa = fsa && FSA_CODES.includes(fsa) && !unstated ? fsa : null;
   const date = str(x.date);
   const validDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(date)) && new Date(date).toISOString().slice(0,10) === date ? date : null;
   const languages = Array.isArray(x.languages) ? x.languages.map(str).filter((s): s is string => !!s) : [];
@@ -105,7 +115,7 @@ export function normalize(raw: unknown): Extraction {
       languages: languages.length ? conf(c.languages) : "low",
       date: validDate ? conf(c.date) : "low",
     },
-    notes: str(x.notes) ?? "",
+    notes: [str(x.notes), unstated ? `Postal area ${fsa} removed: the text does not state it.` : null].filter(Boolean).join(" "),
   };
 }
 
@@ -120,16 +130,51 @@ export async function extractListing(text: string, opts: { today?: string; offli
   const today = opts.today ?? new Date().toISOString().slice(0, 10);
   const provider = opts.offline ? "mock" : (process.env.LLM_PROVIDER || "anthropic").toLowerCase();
   const prompt = buildPrompt(text, today);
-  if (provider === "mock") return normalize(mockExtract(text));
+  if (provider === "mock") return normalize(mockExtract(text), text);
   const apiKey = process.env.LLM_API_KEY;
   const model = process.env.LLM_MODEL;
   if (!apiKey) throw new ExtractionError("LLM_API_KEY is not set.");
-  if (provider === "anthropic") return normalize(await viaAnthropic(prompt, apiKey, model || "claude-opus-5-5"));
+  if (provider === "anthropic") return normalize(await viaAnthropic(prompt, apiKey, model || "claude-opus-5-5"), text);
   if (provider === "openai") {
     if (!model) throw new ExtractionError("LLM_MODEL is not set.");
-    return normalize(await viaOpenAI(prompt, apiKey, model));
+    return normalize(await viaOpenAI(prompt, apiKey, model), text);
   }
-  throw new ExtractionError(`Unknown LLM_PROVIDER "${provider}". Use anthropic, openai or mock.`);
+  if (provider === "cohere") return normalize(await viaCohere(prompt, apiKey, model || "command-r7b-12-2024"), text);
+  throw new ExtractionError(`Unknown LLM_PROVIDER "${provider}". Use anthropic, openai, cohere or mock.`);
+}
+
+/**
+ * Cohere v2 Chat with a JSON schema. Cohere does not list every model (Command R7B
+ * among them) as supporting structured output, so a schema rejection is reported
+ * with Cohere's own message instead of silently retrying without the schema.
+ */
+async function viaCohere(prompt: { system: string; user: string }, apiKey: string, model: string): Promise<unknown> {
+  let res: Response;
+  try {
+    res = await fetch("https://api.cohere.com/v2/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "system", content: prompt.system }, { role: "user", content: `${prompt.user}\n\nReply with the listing as one JSON object.` }],
+        response_format: { type: "json_object", json_schema: EXTRACTION_SCHEMA },
+      }),
+    });
+  } catch {
+    throw new ExtractionError("The LLM provider returned an error (network).");
+  }
+  if (res.status === 401) throw new ExtractionError("The LLM API key was rejected.");
+  if (res.status === 429) throw new ExtractionError("The LLM provider is rate limiting. Try again in a minute.");
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 300);
+    throw new ExtractionError(`The LLM provider returned an error (${res.status}). ${detail}`.trim());
+  }
+  const body = await res.json();
+  if (body?.finish_reason === "MAX_TOKENS") throw new ExtractionError("The model's answer was cut off.");
+  const content = body?.message?.content;
+  const text = Array.isArray(content) ? content.find((c: { type?: string }) => c?.type === "text")?.text : undefined;
+  if (typeof text !== "string") throw new ExtractionError("The model returned no text.");
+  try { return JSON.parse(text); } catch { throw new ExtractionError("The model's answer could not be read."); }
 }
 
 async function viaAnthropic(prompt: { system: string; user: string }, apiKey: string, model: string): Promise<unknown> {

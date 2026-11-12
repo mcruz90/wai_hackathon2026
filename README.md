@@ -146,8 +146,8 @@ You can run the whole app on your own computer before deploying. See [the local 
 | `DATABASE_URL` | none | PostgreSQL connection string. |
 | `ADMIN_PASSWORD` | none | Password for the review queue, partner view and waitlist admin. If unset, nobody can sign in. |
 | `TOKEN_SECRET` | falls back to `ADMIN_PASSWORD` | Secret for hashing the anonymous daily token used by full reports and rate limits. |
-| `LLM_PROVIDER` | `anthropic` | `anthropic`, `openai` or `mock`. |
-| `LLM_MODEL` | `claude-opus-5-5` for anthropic | Model id for the chosen provider. Required for `openai`. |
+| `LLM_PROVIDER` | `anthropic` | `anthropic`, `openai`, `cohere` or `mock`. |
+| `LLM_MODEL` | `claude-opus-5-5` for anthropic, `command-r7b-12-2024` for cohere | Model id for the chosen provider. Required for `openai`. |
 | `LLM_API_KEY` | none | API key for the chosen provider. Server-side only. |
 | `EXPIRY_DAYS` | `30` | Days a listing stays live after it was last confirmed. |
 | `WAITLIST_RADIUS_KM` | `8` | Concept: how far from the clinic an entry can be to get an offer. |
