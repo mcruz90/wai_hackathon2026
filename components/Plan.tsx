@@ -5,6 +5,8 @@ import type { PublicListing } from "@/lib/listings";
 import { readPlan, type Opened } from "@/lib/session";
 import { ListingCard, SampleBanner, Steps } from "./bits";
 
+const HCC_PHONE = "1-800-445-1822";
+
 export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; type: string; q: string }) {
   const w = T[lang];
   const [opened, setOpened] = useState<Opened[]>([]);
@@ -47,6 +49,20 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
         ) : <p className="muted">{w.noneOpened}</p>}
       </section>
 
+      {/* Health Care Connect sits near the top so it is not lost below the clinic list. */}
+      <section className="card">
+        <h2>{w.alsoDo}</h2>
+        <h3>{w.hcc}</h3>
+        <p className="small">{w.hccIf}</p>
+        <p className="small muted">{w.what}</p>
+        <ol className="plain">
+          <li><b>{w.need}</b><div className="small muted">{w.noohip}</div></li>
+          <li><a href="https://www.ontario.ca/healthcareconnect">{w.online}</a><div className="small muted">ontario.ca/healthcareconnect</div></li>
+          {/* The phone number is its own left-to-right element, so it reads correctly inside Arabic. */}
+          <li>{w.callnum.split(HCC_PHONE)[0]}<bdi dir="ltr">{HCC_PHONE}</bdi>{w.callnum.split(HCC_PHONE)[1] ?? ""}</li>
+        </ol>
+      </section>
+
       <section className="stack">
         <h2>{w.callNext}</h2>
         {!fsa ? <p className="note"><a href={`/?${q}`}>{w.needSearch}</a></p>
@@ -56,18 +72,6 @@ export default function Plan({ lang, fsa, type, q }: { lang: Lang; fsa: string; 
       </section>
 
       <a className="btn ghost" href={`/guide?${q}`}>{w.guideLink}</a>
-
-      <section className="card">
-        <h2>{w.alsoDo}</h2>
-        <h3>{w.hcc}</h3>
-        <p className="small">{w.hccIf}</p>
-        <p className="small muted">{w.what}</p>
-        <ol className="plain">
-          <li><b>{w.need}</b><div className="small muted">{w.noohip}</div></li>
-          <li><a href="https://www.ontario.ca/healthcareconnect">{w.online}</a><div className="small muted">ontario.ca/healthcareconnect</div></li>
-          <li>{w.callnum}</li>
-        </ol>
-      </section>
 
       <p><span className="tag">{w.concept}</span> <a href={`/waitlist/status?lang=${lang}&fsa=${fsa}&type=${type}`}>{w.wlLink}</a></p>
       <p className="small muted">{w.disc}</p>

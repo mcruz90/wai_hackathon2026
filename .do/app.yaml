@@ -57,6 +57,9 @@ services:
       - key: PORT
         value: "8080"
 
+# Demo setup: only the pre-deploy job runs. The nightly expiry and freshness checks, the
+# waitlist check-ins and hourly discovery are not scheduled; run them from the admin screens
+# ("Run now", "Search and monitor now") or with npm run job:* when needed.
 jobs:
   - name: migrate-and-seed
     kind: PRE_DEPLOY
@@ -67,65 +70,5 @@ jobs:
     environment_slug: node-js
     build_command: npx prisma generate
     run_command: npm run db:migrate && npm run db:seed
-    instance_count: 1
-    instance_size_slug: basic-xxs
-
-  - name: expire-listings
-    kind: SCHEDULED
-    schedule:
-      cron: "15 3 * * *"
-      time_zone: America/Toronto
-    github:
-      repo: mcruz90/wai_hackathon2026
-      branch: main
-      deploy_on_push: true
-    environment_slug: node-js
-    build_command: npx prisma generate
-    run_command: npm run job:expire
-    instance_count: 1
-    instance_size_slug: basic-xxs
-
-  - name: waitlist-checkins
-    kind: SCHEDULED
-    schedule:
-      cron: "45 3 * * *"
-      time_zone: America/Toronto
-    github:
-      repo: mcruz90/wai_hackathon2026
-      branch: main
-      deploy_on_push: true
-    environment_slug: node-js
-    build_command: npx prisma generate
-    run_command: npm run job:waitlist
-    instance_count: 1
-    instance_size_slug: basic-xxs
-
-  - name: freshness-agent
-    kind: SCHEDULED
-    schedule:
-      cron: "30 3 * * *"
-      time_zone: America/Toronto
-    github:
-      repo: mcruz90/wai_hackathon2026
-      branch: main
-      deploy_on_push: true
-    environment_slug: node-js
-    build_command: npx prisma generate
-    run_command: npm run job:freshness
-    instance_count: 1
-    instance_size_slug: basic-xxs
-
-  - name: ontario-discovery
-    kind: SCHEDULED
-    schedule:
-      cron: "10 * * * *"
-      time_zone: America/Toronto
-    github:
-      repo: mcruz90/wai_hackathon2026
-      branch: main
-      deploy_on_push: true
-    environment_slug: node-js
-    build_command: npx prisma generate
-    run_command: npm run job:discover
     instance_count: 1
     instance_size_slug: basic-xxs
