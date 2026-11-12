@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { score, WEIGHTS } from "../lib/ranking";
+import { LANGUAGE_SCORE, score, WEIGHTS } from "../lib/ranking";
 import { buildPrompt, needsReview, normalize } from "../lib/extract";
-import { LANGS, T } from "../lib/i18n";
+import { GUIDE, guide, LANGS, T } from "../lib/i18n";
 
 const now = new Date("2026-11-11T12:00:00Z");
 const at: [number, number] = [43.757, -79.273];
@@ -58,4 +58,33 @@ test("every language has every string", () => {
 
 test("Arabic reads right to left and every other language left to right", () => {
   for (const l of LANGS) assert.equal(T[l].dir, l === "ar" ? "rtl" : "ltr", l);
+});
+
+test("languages not listed rank above a known no, below a match or an interpreter", () => {
+  const unknown = { ...base, languages: [] as string[] };
+  const lang = (l: typeof base, want: string[], reported?: { spoke: string[]; interpreter: string[] }) => score(l, at, want, 30, now, reported);
+  const s = (x: ReturnType<typeof lang>) => x.score;
+  assert.ok(LANGUAGE_SCORE.match > LANGUAGE_SCORE.interpreter && LANGUAGE_SCORE.interpreter > LANGUAGE_SCORE.unknown && LANGUAGE_SCORE.unknown > LANGUAGE_SCORE.none);
+  const u = lang(unknown, ["Arabic"]);
+  assert.equal(u.lu, true); assert.equal(u.lm, false);
+  assert.ok(s(u) > s(lang(base, ["Arabic"])), "unknown beats a listing that lists other languages only");
+  assert.ok(s(u) < s(lang(base, ["Tagalog"])));
+  // Patients reported being served in Arabic: a match, flagged as a report.
+  const r = lang(unknown, ["Arabic"], { spoke: ["Arabic"], interpreter: [] });
+  assert.equal(r.lm, true); assert.equal(r.byReport, true); assert.equal(r.lu, false);
+  // Interpreter reported: between unknown and a match.
+  const i = lang(base, ["Arabic"], { spoke: [], interpreter: ["Arabic"] });
+  assert.equal(i.li, true); assert.ok(s(i) > s(u) && s(i) < s(r));
+  // English speakers: a listing with no languages listed is treated as English.
+  assert.equal(lang(unknown, ["English"]).lm, true);
+});
+
+test("the appointment guide has every question in every language", () => {
+  const total = GUIDE.flat().length;
+  for (const l of LANGS) {
+    assert.equal(T[l].gt.length, GUIDE.length, l);
+    assert.equal(T[l].gq.length, total, l);
+    for (const q of T[l].gq) assert.ok(l === "en" ? q === "" : q.trim().length > 0, `${l} guide question`);
+    assert.equal(guide(l).flatMap((g) => g.items).length, total);
+  }
 });

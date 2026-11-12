@@ -111,7 +111,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                   <select name="fsa" defaultValue={l.fsa ?? ""} required><option value="">Choose</option>{FSA_CODES.map((f) => <option key={f}>{f}</option>)}</select></label></div>
                 <div><label className="lbl">Provider type {pill(unclearProvider ? "low" : c.provider_type)}
                   <select name="providerType" defaultValue={unclearProvider ? "" : l.providerType} required><option value="">Choose</option><option value="family_doctor">Family doctor</option><option value="nurse_practitioner">Nurse practitioner</option></select></label></div>
-                <div><label className="lbl">Languages, comma separated {pill(c.languages)}<input type="text" name="languages" defaultValue={l.languages.join(", ")} required /></label></div>
+                <div><label className="lbl">Languages, comma separated {pill(c.languages)} (leave empty if not stated: patients see “Languages not listed. Ask when you call.”)<input type="text" name="languages" defaultValue={l.languages.join(", ")} /></label></div>
                 <div><label className="lbl">Phone<input type="text" name="phone" defaultValue={l.phone ?? ""} /></label></div>
                 <div><label className="lbl">Date you confirm {pill(c.date_read ? c.date : "low")}
                   <input type="date" name="date" defaultValue={typeof c.date_read === "string" ? c.date_read : ""} max={today} required /></label>
@@ -155,6 +155,9 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
               {p.rawText ? <details><summary className="small muted">Announcement as pasted</summary><pre className="raw">{p.rawText}</pre></details> : null}
               {p.action === "reconfirm_listing" ? (
                 <div><label className="lbl">Date you confirm<input type="date" name="date" defaultValue={pl.confirmed_date ?? ""} required max={today} /></label></div>
+              ) : null}
+              {p.action === "recheck_listing" && l ? (
+                <div><label className="lbl">Languages the clinic told you, comma separated (optional; replaces the listed languages)<input type="text" name="languages" defaultValue={l.languages.join(", ")} /></label></div>
               ) : null}
               <AgentTrace trace={p.trace} />
               <div className="row">

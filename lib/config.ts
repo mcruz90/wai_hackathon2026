@@ -16,5 +16,7 @@ export const DAY_MS = 864e5;
 export const NEARBY_KM = 15;
 /** A listing is hidden after this many separate full reports. */
 export const FULL_REPORTS_TO_HIDE = 2;
+/** Separate patient reports needed before a reported language or interpreter is shown on a listing. */
+export const LANGUAGE_REPORTS_TO_SHOW = 2;
 /** Partner view hides any count under this. */
 export const SMALL_CELL = 5;

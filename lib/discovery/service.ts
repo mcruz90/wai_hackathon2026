@@ -59,7 +59,7 @@ export async function runDiscoveryJob(db: PrismaClient, options: { manual?: bool
   if (!options.manual && process.env.DISCOVERY_ENABLED !== "true") return { enabled: false, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
   const now = options.now ?? new Date(), deps = options.deps ?? {};
   const result = { enabled: true, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
-  if (deps.search || process.env.DISCOVERY_SEARCH_PROVIDER === "brave") {
+  if (deps.search || process.env.DISCOVERY_SEARCH_PROVIDER === "tavily") {
     await db.discoverySearchState.upsert({ where: { id: "ontario" }, update: {}, create: { id: "ontario", nextSearchAt: now } });
     const searchLease = new Date(now.getTime()+10*60000);
     const claim = await db.discoverySearchState.updateMany({ where: { id: "ontario", nextSearchAt: { lte: now }, OR: [{ leaseUntil: null }, { leaseUntil: { lt: now } }] }, data: { leaseUntil: searchLease } });

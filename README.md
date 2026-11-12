@@ -21,7 +21,9 @@ New to Ontario Doctor Finder brings those notices together in one place and puts
    - The **freshness agent** runs every night. It finds listings that are about to expire or that a patient reported full, and asks a reviewer to phone the clinic, with a call script ready.
 
    Neither agent can publish or change a listing. Reviewers can explicitly publish eligible new listings as a selected batch; uncertain listings, updates and clinic checks stay in individual review.
-4. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers.
+4. **Languages are found out, not assumed.** Most notices do not say which languages are spoken, so a listing without them shows "Languages not listed. Ask when you call." and ranks above a clinic known not to speak the patient's language. The language is then filled in by the people already in the loop: the call script asks the clinic, a reviewer records what the clinic says on a re-check call, and after calling, patients can report "someone spoke my language", "they offered an interpreter" or "neither". A reported language shows, labelled as a patient report, once 2 separate patients agree.
+5. **Patients bring the right questions.** A fixed guide of practical questions for the appointment (an interpreter, IFHP coverage, longer medication renewals, records, after-hours care) is shown in English with the patient's language underneath, so they can show it to clinic staff. It is written in advance, not generated, and it says to ask for a professional interpreter for the health conversation itself.
+6. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers. Each gap says whether nearby listings simply do not list languages yet, or whether it is a known gap.
 
 It asks for no accounts, names or health information. It does not replace Health Care Connect: the patient's plan tells them, in their language, to register there as well.
 
@@ -42,6 +44,10 @@ It asks for no accounts, names or health information. It does not replace Health
 | 6. Results in Arabic, right to left | 7. A listing and call script in Punjabi |
 | --- | --- |
 | ![Results near M4H in Arabic, laid out right to left, with an Arabic-speaking sample clinic first](docs/screenshots/16-results-ar.png) | ![Sample listing in Punjabi with the call script in English and Gurmukhi](docs/screenshots/17-listing-pa.png) |
+
+| 8. What is known about language | 9. After calling: was your language spoken? | 10. Questions for the appointment |
+| --- | --- | --- |
+| ![Arabic results: a patient-reported Arabic speaker, a listed one, an interpreter reported by patients, and a clinic whose languages are not listed](docs/screenshots/18-results-ar-languages.png) | ![Arabic listing with the call script, a link to the appointment questions, and buttons to report whether the clinic spoke Arabic, offered an interpreter, or neither](docs/screenshots/20-listing-ar-report.png) | ![Appointment questions in English with Arabic underneath, grouped from calling the clinic to after the visit](docs/screenshots/21-guide-ar.png) |
 
 ### For reviewers and partners
 
@@ -88,7 +94,7 @@ These screenshots show the running application with invented review fixtures fro
 ## Design choices
 
 - **Freshness is visible.** Every listing shows when it was last confirmed and expires after 30 days. Patient reports update it, and two "they are full" reports hide it.
-- **Language comes first.** Language match is the biggest factor in ranking (45%, then freshness 30% and distance 25%), and the patient screens come in English, French, Mandarin, Arabic, Punjabi and Tagalog. Arabic screens read right to left.
+- **Language comes first.** Language match is the biggest factor in ranking (45%, then freshness 30% and distance 25%). Within the language part, a listed or patient-reported match scores 1, a reported interpreter 0.6, languages not listed 0.4 and a known mismatch 0, so nobody is hidden for missing data. Ranking is never a filter: a nearby clinic that does not speak the language still shows. The screens come in English, French, Mandarin, Arabic, Punjabi and Tagalog. Arabic screens read right to left.
 - **Languages follow newcomer data.** Besides English and French, the four languages are the non-official languages that recent immigrants (arrived 2016 to 2021) in the Toronto area speak most often at home in the 2021 Census: Mandarin, Arabic, Punjabi and Tagalog ([Statistics Canada, Focus on Geography Series, Toronto CMA](https://www12.statcan.gc.ca/census-recensement/2021/as-sa/fogs-spg/page.cfm?dguid=2021S0503535&lang=E&topic=9)). Spanish was in the first prototype and was replaced by Arabic and Punjabi. A pilot should confirm the languages with its partner area.
 
 ## Built with
@@ -174,7 +180,7 @@ Listings can now originate from scheduled monitoring rather than waiting for som
 
 Use **Add Ontario starter sources** to queue ten unverified starting URLs, or **Run offline Ontario demo** to try an invented Ottawa announcement without any network or LLM calls. Human approval is required before monitoring a new source and before publishing a listing. Monitoring permission and clinic-host verification for batch review are separate decisions.
 
-See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Brave Search configuration, hourly monitoring, the shared daily search budget, source review, network controls and the offline walkthrough. Live search is disabled until configured; monitoring can also run without a search API. Patient results use the configured nearby radius rather than mixing clinics from across the province. Postal-area data and starter URLs are credited in [data/SOURCES.md](data/SOURCES.md).
+See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Tavily search configuration, hourly monitoring, the shared daily search budget, source review, network controls and the offline walkthrough. Live search is disabled until configured; monitoring can also run without a search API. Patient results use the configured nearby radius rather than mixing clinics from across the province. Postal-area data and starter URLs are credited in [data/SOURCES.md](data/SOURCES.md).
 
 **Discovery workspace.** Search configuration, source leads and monitoring controls are shown separately from listing publication.
 
@@ -295,7 +301,7 @@ All three also have a "run now" button on the admin screens. Patients never see 
 - No patient accounts. No names, health card numbers or health information are asked for or stored.
 - The patient's plan (which clinics they opened and what they reported) lives in `sessionStorage` in their browser and is never sent to the server.
 - The only patient-side data stored is `daily_counts`: counters by date, postal area and language.
-- A full report stores a hash of (secret, date, network address) that changes daily and cannot be reversed. The address itself is never stored or logged. A listing is hidden after 2 separate reports, and the endpoint is limited to 10 reports an hour per token.
+- A full report or a language report stores a hash of (secret, date, network address) that changes daily and cannot be reversed. A language report keeps only the listing, the language and the answer. The address itself is never stored or logged. A listing is hidden after 2 separate reports, and the endpoint is limited to 10 reports an hour per token.
 - Staff can paste announcements. Optional discovery collects approved public HTML pages under robots.txt and network limits; source content and retrieval times are retained as evidence. No private groups or login-only content is collected.
 
 ## Tests
@@ -324,7 +330,7 @@ doctl databases create doctor-finder-db --engine pg --version 16 --region tor1 -
 doctl apps create --spec .do/app.yaml
 
 # 3. Secrets: in the console, open the app → Settings → App-Level Environment Variables,
-#    set LLM_API_KEY (your Cohere key), ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
+#    set LLM_API_KEY (your Cohere key), TAVILY_API_KEY, ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
 ```
 
 ### Redeploying

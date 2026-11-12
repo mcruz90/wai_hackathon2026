@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { T, type Lang } from "@/lib/i18n";
+import { fill, T, type Lang } from "@/lib/i18n";
 import { firstTime, readPlan, rememberOpened, rememberReport } from "@/lib/session";
 
 type Props = { lang: Lang; fsa: string; listing: { id: string; clinic: string; area: string; phone: string | null } };
@@ -10,6 +10,7 @@ export default function ListingClient({ lang, fsa, listing }: Props) {
   const w = T[lang];
   const [state, setState] = useState<"idle" | "busy" | "open" | "full">("idle");
   const [error, setError] = useState("");
+  const [langState, setLangState] = useState<"idle" | "busy" | "done">("idle");
 
   useEffect(() => {
     rememberOpened(listing);
@@ -30,6 +31,17 @@ export default function ListingClient({ lang, fsa, listing }: Props) {
     } catch { setError(w.err); setState("idle"); }
   }
 
+  /** After calling: did the clinic speak the patient's language, offer an interpreter, or neither? */
+  async function reportLanguage(outcome: "spoke" | "interpreter" | "neither") {
+    setLangState("busy"); setError("");
+    try {
+      const res = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ listingId: listing.id, kind: "lang", outcome, fsa, lang }) });
+      if (res.status === 429) { setError(w.tooMany); setLangState("idle"); return; }
+      if (!res.ok) throw new Error();
+      setLangState("done");
+    } catch { setError(w.err); setLangState("idle"); }
+  }
+
   return (
     <section className="card">
       <h3>{w.after}</h3>
@@ -39,6 +51,16 @@ export default function ListingClient({ lang, fsa, listing }: Props) {
         <div className="row">
           <button className="btn ghost" disabled={state === "busy"} onClick={() => report("open")}>{w.open}</button>
           <button className="btn bad" disabled={state === "busy"} onClick={() => report("full")}>{w.full}</button>
+        </div>
+      )}
+      {lang === "en" ? null : langState === "done" ? <p className="ok" role="status">{w.thLang}</p> : (
+        <div className="stack">
+          <h3>{fill(w.langQ, { lang: w.own })}</h3>
+          <div className="row">
+            <button className="btn ghost" disabled={langState === "busy"} onClick={() => reportLanguage("spoke")}>{fill(w.lSpoke, { lang: w.own })}</button>
+            <button className="btn ghost" disabled={langState === "busy"} onClick={() => reportLanguage("interpreter")}>{w.lInterp}</button>
+            <button className="btn ghost" disabled={langState === "busy"} onClick={() => reportLanguage("neither")}>{w.lNeither}</button>
+          </div>
         </div>
       )}
       {error ? <p className="err" role="alert">{error}</p> : null}

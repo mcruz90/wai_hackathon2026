@@ -48,7 +48,9 @@ export function ListingCard({ l, lang, href }: { l: PublicListing; lang: Lang; h
         <div className="stampbox">{shortDate(lang, l.confirmedAt)}</div>
       </div>
       <div className="why">
-        {l.lm && lang !== "en" ? <span className="pill match">{fill(w.speaks, { lang: w.own })}</span> : null}
+        {l.lm && lang !== "en" ? <span className="pill match">{fill(l.byReport ? w.speaksRep : w.speaks, { lang: w.own })}</span> : null}
+        {l.li ? <span className="pill partial">{w.interpRep}</span> : null}
+        {l.lu ? <span className="pill unknown">{w.langUnknown}</span> : null}
         {l.d === null ? null : <span className="pill">{fill(w.km, { n: l.d.toFixed(1) })}</span>}
         <span className="pill">{w.source}: {w.src[l.sourceType] ?? w.src.rev}</span>
       </div>
