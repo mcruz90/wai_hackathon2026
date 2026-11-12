@@ -309,7 +309,7 @@ npm run typecheck
 
 The spec is `.do/app.yaml`: one web service, a managed PostgreSQL database, a `PRE_DEPLOY` job that runs migrations and the seed, and four `SCHEDULED` jobs (nightly expiry at 03:15, freshness at 03:30, waitlist check-ins at 03:45, and optional discovery hourly at ten past, Toronto time), in the Toronto region, with deploy on push.
 
-**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`), the database `cluster_name`, and the three `SCHEDULED` job blocks. With `LLM_PROVIDER=anthropic`, the nightly freshness agent makes a few API calls each night. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
+**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`), the database `cluster_name`, and the three `SCHEDULED` job blocks. The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the nightly freshness job runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
 This creates paid resources: the web service, the database cluster, and job run time.
 
@@ -324,7 +324,7 @@ doctl databases create doctor-finder-db --engine pg --version 16 --region tor1 -
 doctl apps create --spec .do/app.yaml
 
 # 3. Secrets: in the console, open the app → Settings → App-Level Environment Variables,
-#    set LLM_API_KEY, ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
+#    set LLM_API_KEY (your Cohere key), ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
 ```
 
 ### Redeploying
