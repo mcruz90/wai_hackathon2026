@@ -6,20 +6,12 @@
 name: ontario-doctor-finder
 region: tor
 
-databases:
-  # A managed PostgreSQL cluster. Create it first (see README), then this attaches it.
-  - name: db
-    engine: PG
-    version: "16"
-    production: true
-    cluster_name: doctor-finder-db
-    db_name: doctorfinder
-    db_user: doctorfinder
-
+# The database is a free Neon PostgreSQL project, not a DigitalOcean cluster.
+# Set DATABASE_URL to Neon's direct (non-pooled) connection string as an encrypted variable in the console.
 envs:
   - key: DATABASE_URL
     scope: RUN_AND_BUILD_TIME
-    value: ${db.DATABASE_URL}
+    type: SECRET
   - key: DISCOVERY_ENABLED
     value: "true"
   - key: DISCOVERY_SEARCH_PROVIDER
