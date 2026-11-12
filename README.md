@@ -8,7 +8,7 @@ A working prototype that helps a newcomer in Ontario find a family doctor or nur
 
 ## The problem
 
-More than 2.5 million Ontarians do not have a family doctor, according to the Ontario Medical Association. Finding a family doctor in Ontario is hard, and it is harder for newcomers. Notices that a clinic is "accepting new patients" are spread across clinic websites, regional lists and community posts. They are usually in English, often out of date, and say nothing about which languages the doctor speaks. A newcomer ends up calling clinics that filled up weeks ago, or that cannot see them in a language they are comfortable with. Many also do not know that Ontario's official route, Health Care Connect, exists.
+More than 2.5 million Ontarians do not have a family doctor, according to the Ontario Medical Association. Finding a family doctor in Ontario is hard, and it is harder for newcomers. Notices that a clinic is "accepting new patients" are spread across clinic websites, regional lists and community posts. They are often out of date, and most do not say which languages are spoken: 11 of the 15 real notices in our eval set name no language. A newcomer ends up calling clinics that filled up weeks ago, or that cannot see them in a language they are comfortable with. Ontario's official route, Health Care Connect, has a nurse look for a provider, but it can take time.
 
 ## Our approach
 
@@ -93,14 +93,14 @@ These screenshots show the running application with invented review fixtures fro
 
 ## Built with
 
-Next.js 15, React 19, TypeScript, PostgreSQL with Prisma, and the Anthropic API: Claude tool use for the agents, and structured outputs for reading announcements (OpenAI also works for the reading step). It is set up to deploy to DigitalOcean App Platform.
+Next.js 15, React 19, TypeScript and PostgreSQL with Prisma. Announcements are read by Cohere Command A+ (`command-a-plus-05-2026`) through the Cohere v2 Chat API with a JSON schema. The reading step also works with the Anthropic API (Claude) and OpenAI. The agent loop lets the model choose its own tool calls only with `LLM_PROVIDER=anthropic`. With Cohere, a scripted planner calls the same tools in a fixed order, and every run is still stored as a trace for the reviewer. It is set up to deploy to DigitalOcean App Platform.
 
 Planned: Cohere's open Aya models for translating listings and call scripts into more languages. The prototype uses hand-written translations for now.
 
 ## Limits and next steps
 
 - **Sample listings.** The clinics in the app are invented. A pilot would start from real public announcements, entered through the review queue.
-- **A small eval.** The extraction eval has 15 real public announcements; the target is 20.
+- **A small eval.** On 15 real public announcements, Cohere Command A+ scored 100% on location, languages and date and 73% on provider type, in one run. All 4 misses were "unknown" at low confidence, so those listings go to individual review. The target is 20 or more announcements and repeated runs.
 - **Draft translations.** They need native-speaker review before a pilot.
 - **Ontario coverage.** Search supports 527 Ontario postal areas from a credited GeoNames snapshot. Representative points and straight-line distances are approximate; newer areas need a data update.
 - **Next step: a pilot** with a settlement agency and a regional partner.
@@ -247,7 +247,38 @@ To add an example, add one JSON object per line:
 
 `fsa` is the first 3 postal characters (one of the areas in `lib/fsa.ts`) or null. `date` is null when the text alone does not settle it; returning null there is the correct answer. `today` is the date given to the model for reference.
 
-The committed `eval/results.md` was produced with `LLM_PROVIDER=mock`, the offline keyword reader, so it shows that the script works, not how well a model reads. Re-run it with a real key. The keyword reader scored well on the 3 invented examples it was written alongside and badly on the real ones, which is why the real set matters.
+To run it with Cohere, set these in `.env` (the eval needs no database):
+
+```dotenv
+LLM_PROVIDER="cohere"
+LLM_MODEL="command-a-plus-05-2026"
+LLM_API_KEY="your Cohere key"
+```
+
+Set `LLM_MODEL` explicitly. A model name copied from another provider makes every call fail.
+
+### Results
+
+The committed `eval/results.md` is one run of Cohere Command A+ (`command-a-plus-05-2026`) on the 15 real announcements. All 15 were scored and none failed.
+
+| Field | Correct | Accuracy |
+| --- | --- | --- |
+| location | 15 of 15 | 100% |
+| provider type | 11 of 15 | 73% |
+| languages | 15 of 15 | 100% |
+| date | 15 of 15 | 100% |
+
+All 4 misses (real-01, real-03, real-04, real-06) expected a family doctor and got "unknown" at low confidence, so they would go to individual review rather than batch publication. real-01 and real-06 contain no word such as doctor, physician or Dr., so their labels may be the question rather than the model. The labels have not been changed.
+
+Read these numbers with care:
+
+- 15 announcements is a small set: one mistake moves a field by about 7 points.
+- It is a single run. Repeated runs of the smaller model below gave different results.
+- The location score is the model plus a plain-code check. `normalize()` drops any postal area that the announcement does not state word for word, with low location confidence. All 7 expected postal areas in the real set appear in the text, so the check breaks none of them. How many of Command A+'s answers it changed was not recorded.
+
+For comparison, Cohere `command-r7b-12-2024` on the same 15, before the postal-area check, scored location 73%, provider type 87%, languages 93% and date 80%. Its typical mistake was filling in a postal area or today's date that the text does not state, often with high confidence. That is why the check exists. With the check it scored location 100%, provider type 93%, languages 100% and date 73%.
+
+On the 3 invented examples (`eval/synthetic-results.md`), Command A+ got provider type, languages and date right and location wrong in all 3. It returned null because those texts give only a neighbourhood, never a postal code. Their location labels predate the "explicitly stated" rule, so the labels, not the model, are out of date.
 
 ## Jobs
 
@@ -305,7 +336,7 @@ doctl apps create --spec .do/app.yaml
 
 ## What is not done
 
-- The eval set has 15 of 20 real announcements, and has not been run against a real model yet.
+- The eval set has 15 of 20 real announcements and one Command A+ run. The 3 synthetic examples still have location labels from before the "explicitly stated" rule.
 - Translations for the new screens are drafts. See `docs/translations-to-review.md`.
 - The rate limiter is in memory, which is fine for one web instance and not for several.
 - Postal-area coordinates are a snapshot, not an authoritative address directory. Unknown areas show a notice and do not fall back to Toronto.
