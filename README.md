@@ -324,7 +324,7 @@ doctl databases create doctor-finder-db --engine pg --version 16 --region tor1 -
 doctl apps create --spec .do/app.yaml
 
 # 3. Secrets: in the console, open the app → Settings → App-Level Environment Variables,
-#    set LLM_API_KEY (your Cohere key), ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
+#    set LLM_API_KEY (your Cohere key), TAVILY_API_KEY, ADMIN_PASSWORD and TOKEN_SECRET, tick Encrypt, and save. That triggers a deploy.
 ```
 
 ### Redeploying

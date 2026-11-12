@@ -21,9 +21,11 @@ envs:
     scope: RUN_AND_BUILD_TIME
     value: ${db.DATABASE_URL}
   - key: DISCOVERY_ENABLED
-    value: "false"
+    value: "true"
   - key: DISCOVERY_SEARCH_PROVIDER
-    value: "off"
+    value: tavily
+  - key: TAVILY_API_KEY
+    type: SECRET
   - key: SEARCH_RADIUS_KM
     value: "75"
   - key: EXPIRY_DAYS
