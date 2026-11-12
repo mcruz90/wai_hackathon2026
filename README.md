@@ -313,9 +313,9 @@ npm run typecheck
 
 ## Deploying to DigitalOcean App Platform
 
-The spec is `.do/app.yaml`: one web service, a `PRE_DEPLOY` job that runs migrations and the seed, and four `SCHEDULED` jobs (nightly expiry at 03:15, freshness at 03:30, waitlist check-ins at 03:45, and optional discovery hourly at ten past, Toronto time), in the Toronto region, with deploy on push. The database is a free [Neon](https://neon.tech) PostgreSQL project, connected through the `DATABASE_URL` secret, so there is no paid DigitalOcean database.
+The spec is `.do/app.yaml`: one web service and a `PRE_DEPLOY` job that runs migrations and the seed, in the Toronto region, with deploy on push. For the demo there are no scheduled jobs: expiry, freshness, waitlist check-ins and discovery run from their buttons on the admin screens (or `npm run job:*`). To schedule them for a pilot, add `SCHEDULED` jobs to the spec that run those same commands. The database is a free [Neon](https://neon.tech) PostgreSQL project, connected through the `DATABASE_URL` secret, so there is no paid DigitalOcean database.
 
-**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`) and the `SCHEDULED` job blocks. The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the nightly freshness job runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
+**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`). The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the freshness check runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
 This creates paid resources on DigitalOcean: the web service and job run time. Neon's free plan covers the database for a demo.
 
