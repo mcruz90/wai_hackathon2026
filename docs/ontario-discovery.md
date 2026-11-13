@@ -43,6 +43,8 @@ SEARCH_RADIUS_KM=75
 
 The API key belongs in your local git-ignored `.env` or encrypted DigitalOcean environment settings. Never commit it or paste it into chat. `DISCOVERY_SEARCH_PROVIDER=off` disables web search while retaining approved-page monitoring.
 
+To test or demo without spending Tavily credits, set `DISCOVERY_SEARCH_PROVIDER=mock`. Search then runs the same daily queries offline and returns invented leads on `.example` hosts, marked as samples. They appear in the workspace like real leads but are never fetched or monitored, and mock search is not limited to one run a day.
+
 Search uses [Tavily](https://tavily.com). Each daily query is one basic search, which costs one credit on Tavily's free tier (1,000 credits a month at the time of writing), so the three-a-day budget below uses about 90 a month. Only result links are kept; they become source leads that a person must approve before anything is collected from them.
 
 The demo `.do/app.yaml` has no scheduled discovery job; run `npm run job:discover` on a schedule (for example hourly) to collect automatically. Scheduled collection is disabled until `DISCOVERY_ENABLED=true`; the explicit staff “Search and monitor now” action can run approved monitoring independently. Search has a shared database budget of at most three queries every 24 hours, including manual runs, with a one-hour retry window after failure. A run checks at most 20 due sources; each source is normally revisited after 24 hours. The staff action checks at most three sources to keep manual runs smaller. A source lease prevents concurrent workers from processing it twice. Increase capacity deliberately as the reviewed source set grows.

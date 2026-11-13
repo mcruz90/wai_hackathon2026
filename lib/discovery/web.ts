@@ -74,7 +74,14 @@ export function parsePage(html: string, url: string): PageEvidence {
   const title = $("title").first().text().trim().slice(0, 300);
   const publication = $('meta[property="article:published_time"],meta[name="date"],meta[itemprop="datePublished"]').first().attr("content") ?? "";
   const publishedDate = /^\d{4}-\d{2}-\d{2}(?:T|$)/.test(publication) ? publication.slice(0,10) : null;
-  const links = $("a[href]").toArray().map((a) => ({ href: $(a).attr("href")!, title: $(a).text().replace(/\s+/g, " ").trim().slice(0,200) }))
+  // Link text only: <noscript> fallbacks inside a link (common for lazy-loaded images) hold raw HTML as text.
+  const linkText = (a: Parameters<typeof $>[0]) => {
+    const el = $(a).clone();
+    el.find("noscript,script,style,svg,img").remove();
+    const text = el.text().replace(/<[^>]*>?/g, " ").replace(/\s+/g, " ").trim();
+    return (text || $(a).attr("aria-label") || $(a).attr("title") || "").trim().slice(0,200);
+  };
+  const links = $("a[href]").toArray().map((a) => ({ href: $(a).attr("href")!, title: linkText(a) }))
     .filter((a) => /clinic|family|patients?|register|registration|accepting|médecin|inscription/i.test(a.title+" "+a.href))
     .flatMap((a) => { try { return [{ url: canonicalSourceUrl(new URL(a.href,url).toString()), title: a.title }]; } catch { return []; } })
     .filter((a, i, all) => a.url !== url && all.findIndex((b) => b.url === a.url) === i).slice(0,10);

@@ -24,6 +24,7 @@ export default function Start({ initial }: { initial: { lang: Lang; fsa: string;
             ))}
           </div>
           <input type="hidden" name="lang" value={lang} />
+          <p className="small"><a href={`/guide?lang=${lang}`}>{w.xlLink}</a></p>
         </div>
         <div>
           <label className="lbl" htmlFor="postal">{w.postal}</label>

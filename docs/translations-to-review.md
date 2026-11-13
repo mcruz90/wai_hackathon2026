@@ -108,3 +108,44 @@ The guide questions are shown to clinic staff, so the English is the part that m
 - The Punjabi first-person lines use both masculine and feminine forms (ਨਵਾਂ/ਨਵੀਂ, ਲੈਂਦਾ/ਲੈਂਦੀ), like the call script.
 - The medication question asks for a longer renewal; it must not read as asking for a different medication or dose.
 
+## Read aloud and other languages
+
+New in all six languages, drafted without a native speaker:
+
+| Key | English |
+| --- | --- |
+| `speak` | Read aloud in English |
+| `xlLabel` | Another language? Type it, and we will machine-translate the phone script and these questions. |
+| `xlPlaceholder` | For example: Somali, Farsi, Ukrainian |
+| `xlButton` | Translate |
+| `xlNote` | Machine translation into {lang}, not reviewed by a person. The English is what you show or play to the clinic. |
+| `xlFail` | The translation is not available right now. The English below still works. |
+| `xlLink` | Another language? Get the phone script and appointment questions machine-translated |
+
+Languages typed into the guide are translated by Cohere at the time of use and are never reviewed. Spot-check the most requested ones (for example Somali, Farsi, Urdu, Tamil, Ukrainian, Spanish) with native speakers before a pilot, and move any that matter into reviewed translations in `lib/i18n.ts`.
+
+
+## Clinic instructions into the patient's language
+
+The guide page has a panel where clinic staff type an instruction in English, or tap an example, and the patient sees it machine-translated into their language. The staff-facing text in that panel is English only. The strings below are new in all six languages, drafted without a native speaker:
+
+| Key | English |
+| --- | --- |
+| `clinicH` | When the clinic gives you instructions |
+| `clinicNote` | Machine translation, not checked by a person. Always confirm doses and dates with the pharmacist, or ask for a professional interpreter. |
+| `clinicOwn` | In your language: |
+| `clinicSpeak` | Read aloud in your language |
+| `clinicFail` | The translation is not available right now. Ask for an interpreter. |
+| `clinicNums` | Warning: the numbers in the translation do not match the English. Check them with the clinic. |
+
+The instruction itself is translated by Cohere at the time of use and is never reviewed. Cohere's translation model (`command-a-translate-08-2025`) is used for the 23 languages it covers; Punjabi, Tagalog and other languages go to `LLM_MODEL`. Before a pilot, check the example instructions (`CLINIC_PRESETS` in `lib/i18n.ts`) in each language with a native speaker, especially doses and times.
+
+## Patient reports start a re-check
+
+When a patient reports a clinic full, or that nobody spoke their language, the freshness agent asks a reviewer to call the clinic, and the patient is told so. A single "full" report also shows a warning on the listing. These strings are new or changed in all six languages, drafted without a native speaker:
+
+| Key | English |
+| --- | --- |
+| `thFull` (changed) | Thank you. We have asked a reviewer to call the clinic and check. Try the next clinic in My plan. |
+| `thNeither` | Thank you. We have asked a reviewer to ask the clinic which languages it offers. Try the next clinic in My plan. |
+| `fullRep` | A patient recently said this clinic was full. Ask when you call. |

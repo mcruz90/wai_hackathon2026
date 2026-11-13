@@ -20,11 +20,13 @@ New to Ontario Doctor Finder brings those notices together in one place and puts
 2. **Each listing shows how fresh it is.** It says when it was last confirmed and when it expires. After calling, patients can report "still taking patients" or "they are full", which keeps the list current for the next person.
 3. **Agents do the legwork, and people authorize publication.** Two agents keep the directory current:
    - The **intake agent** reads a pasted public announcement into structured fields, each with a confidence level. It checks whether the clinic is already listed, then proposes a new listing, a re-confirmation of an existing one, marking one full, or not listing it at all.
-   - The **freshness agent** runs every night. It finds listings that are about to expire or that a patient reported full, and asks a reviewer to phone the clinic, with a call script ready.
+   - The **freshness agent** runs as soon as a patient reports a problem with a clinic ("they are full", or nobody spoke their language), and for the whole directory from a button. It asks a reviewer to phone the clinic, with a call script ready. The patient is told a reviewer will check, and is pointed to the next clinic on their plan.
+   - The **triage agent** sorts the pages web search finds: it watches clear clinic and directory pages, dismisses news stories and social posts, and leaves only the unsure ones for a person. It sees only the link, title and search description, and a person can undo any choice.
 
-   Neither agent can publish or change a listing. Reviewers can explicitly publish eligible new listings as a selected batch; uncertain listings, updates and clinic checks stay in individual review.
+   No agent can publish or change a listing. The reviewer's inbox (`/admin`) has three buckets: **Ready to publish** (the agent is sure: one batch approval), **Needs you** (each item says why), and **Call the clinic**. A reviewer can also put a hidden clinic back when it is taking patients again.
 4. **Languages are found out, not assumed.** Most notices do not say which languages are spoken, so a listing without them shows "Languages not listed. Ask when you call." and ranks above a clinic known not to speak the patient's language. The language is then filled in by the people already in the loop: the call script asks the clinic, a reviewer records what the clinic says on a re-check call, and after calling, patients can report "someone spoke my language", "they offered an interpreter" or "neither". A reported language shows, labelled as a patient report, once 2 separate patients agree.
-5. **Patients bring the right questions.** A fixed guide of practical questions for the appointment (an interpreter, IFHP coverage, longer medication renewals, records, after-hours care) is shown in English with the patient's language underneath, so they can show it to clinic staff. It is written in advance, not generated, and it says to ask for a professional interpreter for the health conversation itself.
+5. **Patients bring the right questions.** A fixed guide of practical questions for the appointment (an interpreter, IFHP coverage, longer medication renewals, records, after-hours care) is shown in English with the patient's language underneath, so they can show it to clinic staff. It is written in advance, not generated, and it says to ask for a professional interpreter for the health conversation itself. Every English line in the guide and the phone script has a **Read aloud in English** button that uses the browser's own speech, so a patient can play the question to staff who speak only English.
+   - **Other languages.** For a language without reviewed translations, the patient types its name and Cohere machine-translates the phone script and the guide questions into it (`lib/translate.ts`). The English stays exactly as written; only the line underneath is machine-translated, and the page says it was not reviewed by a person. Each language is translated once per server start and then reused. Typing one of the six reviewed languages goes to its reviewed version instead.
 6. **Partners see where the gaps are.** Community health partners get anonymous counts of searches by area and language, plus a list of places where people searched in a language no nearby clinic offers. Each gap says whether nearby listings simply do not list languages yet, or whether it is a known gap.
 
 It asks for no accounts, names or health information. It does not replace Health Care Connect: the patient's plan tells them, in their language, to register there as well.
@@ -101,7 +103,7 @@ These screenshots show the running application with invented review fixtures fro
 
 ## Built with
 
-Next.js 15, React 19, TypeScript and PostgreSQL with Prisma. Announcements are read by Cohere Command A+ (`command-a-plus-05-2026`) through the Cohere v2 Chat API with a JSON schema. The reading step also works with the Anthropic API (Claude) and OpenAI. The agent loop lets the model choose its own tool calls only with `LLM_PROVIDER=anthropic`. With Cohere, a scripted planner calls the same tools in a fixed order, and every run is still stored as a trace for the reviewer. It is set up to deploy to DigitalOcean App Platform.
+Next.js 15, React 19, TypeScript and PostgreSQL with Prisma. Announcements are read by Cohere Command A+ (`command-a-plus-05-2026`) through the Cohere v2 Chat API with a JSON schema. The reading step also works with the Anthropic API (Claude) and OpenAI. The agents use Cohere tool calling: Command A+ reads the task, writes a short plan, and chooses which tool to call next until it writes a proposal. Claude does the same with `LLM_PROVIDER=anthropic`. Every run, including the model's plan before each step, is stored as a trace for the reviewer. It is set up to deploy to DigitalOcean App Platform.
 
 Planned: Cohere's open Aya models for translating listings and call scripts into more languages. The prototype uses hand-written translations for now.
 
@@ -168,19 +170,19 @@ Secrets never go in the repo. `.env` is git-ignored.
 
 The agents are in `lib/agent/`:
 
-- `runtime.ts` is a small tool-use loop. With `LLM_PROVIDER=anthropic`, Claude chooses which tool to call next, up to 8 turns. It uses strict tool schemas and the API's server-side refusal fallback. With any other provider, a scripted planner calls the same tools in a fixed order, so the pipeline works offline and in tests. Every run is stored as a trace and shown to the reviewer.
+- `runtime.ts` is a small tool-use loop, up to 8 turns. With `LLM_PROVIDER=cohere`, Cohere's tool calling chooses the next tool, and its `tool_plan` (the model's reasoning before each call) is kept in the trace. If Cohere errors or stops without a proposal, a scripted planner finishes the run with the same tools, and the trace says so. With `LLM_PROVIDER=anthropic`, Claude chooses the steps with strict tool schemas and the API's server-side refusal fallback. With any other provider, or with `AGENT_PLANNER=scripted` (a switch to turn the model's choices off, for example on a demo day), the scripted planner calls the same tools in a fixed order, so the pipeline works offline and in tests. Every run is stored as a trace and shown to the reviewer.
 - `intake.ts` has the tools `read_announcement` (the extraction module below), `find_matching_listings`, and three tools that end the run: `submit_new_listing`, `propose_update` (re-confirm or mark full) and `no_listing`. Each of those three only writes a pending listing or a proposal.
 - `freshness.ts` has the tools `find_listings_needing_attention` (live listings expiring within 10 days, or with a "full" report), `propose_recheck` (with a priority and a call script) and `finish`.
 
 Proposals are stored in the `agent_proposals` table. The only code that acts on them is `decideProposal` in `app/admin/actions.ts`, behind the reviewer's buttons.
 
-The rules that need no judgement stay plain code: the expiry job hides listings past their date, and two separate "full" reports hide a listing straight away.
+The rules that need no judgement stay plain code: the expiry job hides listings past their date, and two separate "full" reports (`FULL_REPORTS_TO_HIDE`, default 2) hide a listing straight away. One report shows patients a warning ("A patient recently said this clinic was full. Ask when you call.") without hiding the clinic. Either way, the freshness agent runs for that clinic right after the report, and a reviewer who hears the clinic is taking patients again puts it back with one click.
 
 ## Proactive discovery across Ontario
 
 Listings can now originate from scheduled monitoring rather than waiting for someone to submit an announcement. `/admin/discovery` manages web-search leads, source approval, monitoring and collected evidence. English/French searches rotate across Ontario regions; approved clinic pages feed changed announcements into the existing intake agent. Directories discover links only, and social posts remain leads to a clinic's public site. Unchanged content creates no duplicate proposal and never refreshes availability.
 
-Use **Add Ontario starter sources** to queue ten unverified starting URLs, or **Run offline Ontario demo** to try an invented Ottawa announcement without any network or LLM calls. Human approval is required before monitoring a new source and before publishing a listing. Monitoring permission and clinic-host verification for batch review are separate decisions.
+Use **Add Ontario starter sources** to queue ten unverified starting URLs, or **Run offline Ontario demo** to try an invented Ottawa announcement without any network or LLM calls. The triage agent decides which found pages to watch (a person decides the unsure ones and can undo any choice); human approval is always required before publishing a listing.
 
 See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Tavily search configuration, hourly monitoring, the shared daily search budget, source review, network controls and the offline walkthrough. Live search is disabled until configured; monitoring can also run without a search API. Patient results use the configured nearby radius rather than mixing clinics from across the province. Postal-area data and starter URLs are credited in [data/SOURCES.md](data/SOURCES.md).
 
@@ -198,13 +200,13 @@ See [Ontario discovery setup and limits](docs/ontario-discovery.md) for Tavily s
 
 ## Human review at scale
 
-`/admin` separates **Ready for batch review**, **Needs investigation**, and **Needs clinic confirmation**. The batch workflow publishes new pending listings only. Existing-listing updates, re-confirmations, full recommendations and freshness checks remain individual decisions. The agents still have no publication tool.
+`/admin` separates **Ready to publish**, **Needs you**, and **Call the clinic**. The batch workflow publishes new pending listings only. Existing-listing updates, re-confirmations, full recommendations and freshness checks remain individual decisions. The agents still have no publication tool.
 
-A pilot administrator must verify a dedicated clinic host in Discovery or configure exact hostnames in `CLINIC_SOURCE_HOSTS`, for example `clinic-one.example,clinic-two.example`. Both start unconfigured: no host is implicitly trusted for batch publication. Subdomains must be configured separately. A source type or model confidence label never creates trust. Manual intake does not fetch its pasted link. The optional discovery collector records fetched source evidence separately. Reviewers must still check supporting sources.
+**Prototype setting.** By default any notice with a public HTTPS source link can be batch-published if every other check below passes. Set `REQUIRE_TRUSTED_CLINIC_SOURCE=true` (as a pilot should) to accept only clinic websites a person has verified, as described next. With it on, a pilot administrator must verify a dedicated clinic host in Discovery or configure exact hostnames in `CLINIC_SOURCE_HOSTS`, for example `clinic-one.example,clinic-two.example`. Both start unconfigured: no host is implicitly trusted for batch publication. Subdomains must be configured separately. A source type or model confidence label never creates trust. Manual intake does not fetch its pasted link. The optional discovery collector records fetched source evidence separately. Reviewers must still check supporting sources.
 
 A batch candidate must have all of the following:
 
-- An HTTPS link on a configured clinic host, with source type Clinic website.
+- An HTTPS source link (with `REQUIRE_TRUSTED_CLINIC_SOURCE=true`: on a configured clinic host, with source type Clinic website).
 - Clinic, area, supported postal area, provider type, languages and a ten-digit North American phone number.
 - High confidence in every extracted field, no uncertainty notes, and explicit acceptance of new patients.
 - Literal support in the pasted text for clinic, area, postal area, provider type, languages, phone, an ISO evidence date, and “accepting new patients”. Negative wording routes it to individual review. These conservative text checks do not establish semantic correctness; alternate wording also goes to individual review.
@@ -303,6 +305,7 @@ All three also have a "run now" button on the admin screens. Patients never see 
 - No patient accounts. No names, health card numbers or health information are asked for or stored.
 - The patient's plan (which clinics they opened and what they reported) lives in `sessionStorage` in their browser and is never sent to the server.
 - The only patient-side data stored is `daily_counts`: counters by date, postal area and language.
+- Machine translation sends Cohere only the language name the patient typed and the app's own fixed English lines. Nothing the patient wrote about themselves is sent, and nothing about the request is stored.
 - A full report or a language report stores a hash of (secret, date, network address) that changes daily and cannot be reversed. A language report keeps only the listing, the language and the answer. The address itself is never stored or logged. A listing is hidden after 2 separate reports, and the endpoint is limited to 10 reports an hour per token.
 - Staff can paste announcements. Optional discovery collects approved public HTML pages under robots.txt and network limits; source content and retrieval times are retained as evidence. No private groups or login-only content is collected.
 
@@ -317,7 +320,7 @@ npm run typecheck
 
 The spec is `.do/app.yaml`: one web service and a `PRE_DEPLOY` job that runs migrations and the seed, in the Toronto region, with deploy on push. For the demo there are no scheduled jobs: expiry, freshness, waitlist check-ins and discovery run from their buttons on the admin screens (or `npm run job:*`). To schedule them for a pilot, add `SCHEDULED` jobs to the spec that run those same commands. The database is a free [Neon](https://neon.tech) PostgreSQL project, connected through the `DATABASE_URL` secret, so there is no paid DigitalOcean database.
 
-**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`). The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the freshness check runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
+**Before the first deploy, check the spec's** `github.repo` and `branch` (it deploys `main`). The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the agents choose their own steps; set `AGENT_PLANNER=scripted` to run them in a fixed order instead. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
 This creates paid resources on DigitalOcean: the web service and job run time. Neon's free plan covers the database for a demo.
 

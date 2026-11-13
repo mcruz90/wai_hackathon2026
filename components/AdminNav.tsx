@@ -3,7 +3,7 @@ import { logout } from "@/app/admin/actions";
 export default function AdminNav() {
   return (
     <nav className="nav">
-      <a href="/admin">Intake and review</a>
+      <a href="/admin">Inbox</a>
       <a href="/admin/discovery">Discover clinics</a>
       <a href="/partner">Partner view</a>
       <a href="/admin/waitlist">Waitlist concept</a>

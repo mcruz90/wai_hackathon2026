@@ -5,7 +5,13 @@ import { config, DAY_MS } from "./config";
 export const REVIEW_POLICY = "new-listing-batch-v1";
 export const MAX_REVIEW_BATCH = 100;
 export type ReviewListing = Listing & { _count: { fullReports: number; proposals: number } };
-export type ReviewContext = { hosts: string[]; fsas: string[]; listings: ReviewListing[]; now: Date };
+/**
+ * requireTrustedSource: only notices from clinic websites a person marked as trusted can be batch-published.
+ * Off by default for the prototype (REQUIRE_TRUSTED_CLINIC_SOURCE=true turns it on, as a pilot should): then any notice
+ * with a public HTTPS source link can be batch-published, if every other check passes. A person still authorizes each batch.
+ */
+export type ReviewContext = { hosts: string[]; fsas: string[]; listings: ReviewListing[]; now: Date; requireTrustedSource?: boolean };
+export const requireTrustedSource = () => process.env.REQUIRE_TRUSTED_CLINIC_SOURCE === "true";
 
 /** Exact hostnames only. No implicit trust for subdomains, community posts, or pasted URLs. */
 export function clinicSourceHosts(value = process.env.CLINIC_SOURCE_HOSTS ?? ""): string[] {
@@ -42,7 +48,9 @@ export function batchEligibility(l: ReviewListing, ctx: ReviewContext): { eligib
   const host = sourceHost(l.sourceUrl), raw = l.rawText ?? "", text = textKey(raw);
   const confirmed = evidenceDate(c.date_read, ctx.now);
   if (l.status !== "pending") reasons.push("No longer pending");
-  if (l.sourceType !== "web" || !host || !ctx.hosts.includes(host)) reasons.push("Source is not a configured clinic website");
+  const trusted = ctx.requireTrustedSource ?? requireTrustedSource();
+  if (trusted && (l.sourceType !== "web" || !host || !ctx.hosts.includes(host))) reasons.push("Source is not a configured clinic website");
+  if (!trusted && !host) reasons.push("No public HTTPS source link to check");
   if (!l.clinic.trim() || !l.area.trim() || !l.fsa || !ctx.fsas.includes(l.fsa) || !l.languages.length || phoneKey(l.phone).length !== 10) reasons.push("Missing clinic, area, supported postal area, languages, or phone");
   if (c.provider_type_read !== l.providerType) reasons.push("Provider type needs checking");
   if (c.accepting !== "yes") reasons.push("Acceptance of new patients is unclear");

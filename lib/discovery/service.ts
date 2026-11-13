@@ -2,12 +2,12 @@ import type { PrismaClient, DiscoverySource } from "@prisma/client";
 import { runIntakeAgent } from "../agent/intake";
 import { DAY_MS } from "../config";
 import { canonicalSourceUrl, fetchClinicPage, type PageEvidence } from "./web";
-import { searchOntario, sourceKind, type SearchLead } from "./search";
+import { searchOntario, searchProvider, sourceKind, type SearchLead } from "./search";
 
-export async function addDiscoverySource(db: PrismaClient, input: { url: string; title?: string; foundBy?: string; query?: string; isSample?: boolean }) {
+export async function addDiscoverySource(db: PrismaClient, input: { url: string; title?: string; foundBy?: string; query?: string; snippet?: string; isSample?: boolean }) {
   const url = canonicalSourceUrl(input.url);
   return db.discoverySource.upsert({ where: { url }, update: {}, create: { url, host: new URL(url).hostname,
-    title: (input.title ?? "").slice(0,300), kind: sourceKind(url), foundBy: input.foundBy ?? "manual", query: input.query?.slice(0,500), isSample: input.isSample ?? false } });
+    title: (input.title ?? "").slice(0,300), kind: sourceKind(url), foundBy: input.foundBy ?? "manual", query: input.query?.slice(0,500), snippet: (input.snippet ?? "").slice(0,500), isSample: input.isSample ?? false } });
 }
 export type DiscoveryDependencies = {
   fetchPage?: (url: string) => Promise<PageEvidence>;
@@ -55,11 +55,13 @@ export async function collectSource(db: PrismaClient, source: DiscoverySource, d
   }
 }
 
-export async function runDiscoveryJob(db: PrismaClient, options: { manual?: boolean; maxSources?: number; maxQueries?: number; now?: Date; deps?: DiscoveryDependencies } = {}) {
+/** One discovery run: web search for new pages, then checks of approved pages. `search: false` or `monitor: false` runs only the other half. */
+export async function runDiscoveryJob(db: PrismaClient, options: { manual?: boolean; maxSources?: number; maxQueries?: number; now?: Date; deps?: DiscoveryDependencies; search?: boolean; monitor?: boolean } = {}) {
   if (!options.manual && process.env.DISCOVERY_ENABLED !== "true") return { enabled: false, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
   const now = options.now ?? new Date(), deps = options.deps ?? {};
   const result = { enabled: true, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
-  if (deps.search || process.env.DISCOVERY_SEARCH_PROVIDER === "tavily") {
+  const provider = searchProvider();
+  if (options.search !== false && (deps.search || provider !== "off")) {
     await db.discoverySearchState.upsert({ where: { id: "ontario" }, update: {}, create: { id: "ontario", nextSearchAt: now } });
     const searchLease = new Date(now.getTime()+10*60000);
     const claim = await db.discoverySearchState.updateMany({ where: { id: "ontario", nextSearchAt: { lte: now }, OR: [{ leaseUntil: null }, { leaseUntil: { lt: now } }] }, data: { leaseUntil: searchLease } });
@@ -70,13 +72,14 @@ export async function runDiscoveryJob(db: PrismaClient, options: { manual?: bool
           await addDiscoverySource(db, { ...lead, foundBy: "search" });
           if (!before) result.found++;
         }
-        await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { lastSearchedAt: now, nextSearchAt: new Date(now.getTime()+DAY_MS), lastError: null } });
+        await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { lastSearchedAt: now, nextSearchAt: new Date(now.getTime()+(provider === "mock" && !deps.search ? 0 : DAY_MS)), lastError: null } });
       } catch (error) {
         result.searchError = (error instanceof Error ? error.message : "Search failed.").slice(0,400);
         await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { nextSearchAt: new Date(now.getTime()+3600000), lastError: result.searchError } });
       } finally { await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { leaseUntil: null } }); }
     }
   }
+  if (options.monitor === false) return result;
   const sources = await db.discoverySource.findMany({ where: { status: "active", isSample: false, nextCheckAt: { lte: now } },
     orderBy: { nextCheckAt: "asc" }, take: Math.min(options.maxSources ?? 20,20) });
   // Sequential monitoring bounds load; each page also observes robots.txt and its crawl delay.

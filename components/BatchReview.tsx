@@ -11,7 +11,7 @@ export default function BatchReview({ rows, action }: { rows: Row[]; action: (fo
   const [selected, setSelected] = useState<string[]>([]);
   const [authorized, setAuthorized] = useState(false);
   return <form action={action} className="stack">
-    <p className="muted small">These new listings pass the batch checks: a configured clinic website, complete fields supported by the pasted text, a recent date, and no duplicate or conflict flags. Review the sources and evidence; remove any row that needs investigation. Pasted text has not been fetched or independently verified.</p>
+    <p className="muted small">Open the sources and leave out any row that looks wrong. The notices were not independently verified with the clinics.</p>
     <div className="row">
       <button className="btn ghost" type="button" onClick={() => { setSelected(rows.map((r) => r.id)); setAuthorized(false); }}>Select all {rows.length}</button>
       <button className="btn ghost" type="button" onClick={() => { setSelected([]); setAuthorized(false); }}>Clear selection</button>

@@ -63,3 +63,35 @@ test("search rotates across Ontario regions and treats social posts as untrusted
   assert.equal(sourceKind("https://www.reddit.com/r/ontario/"),"social");
   assert.equal(sourceKind("https://clinic.example/new-patients"),"unknown");
 });
+
+test("mock search returns sample leads on .example hosts without calling Tavily", async () => {
+  const { mockSearch, searchOntario, queriesForDay } = await import("../lib/discovery/search");
+  const before = { p: process.env.DISCOVERY_SEARCH_PROVIDER, k: process.env.TAVILY_API_KEY };
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (() => { throw new Error("mock search must not call the network"); }) as unknown as typeof fetch;
+  process.env.DISCOVERY_SEARCH_PROVIDER = "mock"; delete process.env.TAVILY_API_KEY;
+  try {
+    const now = new Date("2026-11-13T12:00:00Z");
+    const leads = await searchOntario(now, 3);
+    assert.deepEqual(leads, mockSearch(now, 3));
+    assert.equal(leads.length, queriesForDay(now, 3).length * 3);
+    assert.equal(new Set(leads.map((l) => l.url)).size, leads.length, "each query gets its own sample links");
+    for (const l of leads) {
+      assert.equal(l.isSample, true);
+      assert.match(new URL(l.url).hostname, /\.example$/);
+      assert.match(l.title, /^Sample search result/);
+    }
+  } finally {
+    globalThis.fetch = realFetch;
+    if (before.p === undefined) delete process.env.DISCOVERY_SEARCH_PROVIDER; else process.env.DISCOVERY_SEARCH_PROVIDER = before.p;
+    if (before.k !== undefined) process.env.TAVILY_API_KEY = before.k;
+  }
+});
+
+test("link titles never carry raw HTML from <noscript> image fallbacks", () => {
+  const html = `<html><body><a href="/new-patients"><noscript><img src="x.jpg" alt=""></noscript>New patients</a><a href="/clinic-info"><img src="y.jpg"><noscript>&lt;img src="y.jpg"&gt;</noscript></a></body></html>`;
+  const page = parsePage(html, "https://clinic-one.example/");
+  const titles = page.links.map((l) => l.title);
+  assert.ok(titles.includes("New patients"));
+  for (const t of titles) assert.ok(!/[<>]/.test(t), t);
+});

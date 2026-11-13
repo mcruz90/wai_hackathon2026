@@ -34,12 +34,16 @@ export type Strings = {
   mOffer: string; mReminder: string; mCheckin: string;
   // ---- languages not listed, patient language reports, appointment guide (draft) ----
   langUnknown: string; speaksRep: string; interpRep: string;
-  langQ: string; lSpoke: string; lInterp: string; lNeither: string; thLang: string;
+  langQ: string; lSpoke: string; lInterp: string; lNeither: string; thLang: string; thNeither: string; fullRep: string;
   guideLink: string; guideH: string; guideSub: string;
   /** Guide group titles, one per group in GUIDE. */
   gt: [string, string, string, string, string];
   /** Guide questions in this language, in GUIDE order. Empty for English, where the question itself is shown. */
   gq: string[];
+  // ---- read aloud, machine translation for other languages (draft) ----
+  speak: string; xlLabel: string; xlPlaceholder: string; xlButton: string; xlNote: string; xlFail: string; xlLink: string;
+  // ---- clinic instructions into the patient's language (draft) ----
+  clinicH: string; clinicNote: string; clinicOwn: string; clinicSpeak: string; clinicFail: string; clinicNums: string;
 };
 
 export const T: Record<Lang, Strings> = {
@@ -53,7 +57,7 @@ export const T: Record<Lang, Strings> = {
     today: "Confirmed today", day1: "Confirmed yesterday", days: "Confirmed {n} days ago", expires: "Expires in {n} days", exp1: "Expires tomorrow",
     speaks: "Speaks {lang}", km: "{n} km away", source: "Source", call: "Prepare your call", hint: "These are lines you can say on the phone.",
     phone: "Clinic phone", after: "After you call, tell us what you heard", open: "Still taking patients", full: "They are full",
-    thOpen: "Thank you. The date on this listing is now today.", thFull: "Thank you. Your report is recorded.",
+    thOpen: "Thank you. The date on this listing is now today.", thFull: "Thank you. We have asked a reviewer to call the clinic and check. Try the next clinic in My plan.",
     hcc: "Also register with Health Care Connect",
     what: "Health Care Connect is Ontario's official program. A nurse helps look for a doctor or nurse practitioner for you. It can take time, so keep looking on your own too.",
     need: "You need a valid Ontario health card (OHIP).", online: "Register online", callnum: "Or call 1-800-445-1822",
@@ -98,11 +102,25 @@ export const T: Record<Lang, Strings> = {
     lInterp: "They offered an interpreter",
     lNeither: "Neither",
     thLang: "Thank you. This tells the next person what to expect.",
+    thNeither: "Thank you. We have asked a reviewer to ask the clinic which languages it offers. Try the next clinic in My plan.", fullRep: "A patient recently said this clinic was full. Ask when you call.",
     guideLink: "Questions to bring to your appointment",
     guideH: "Questions for your appointment",
     guideSub: "Show these to the clinic. They are practical questions. For the health conversation itself, ask for a professional interpreter.",
     gt: ["Calling the clinic", "Booking your first appointment", "At your first visit", "Medications and records", "After the visit"],
     gq: ["", "", "", "", "", "", "", "", "", ""],
+    speak: "Read aloud in English",
+    xlLabel: "Another language? Type it, and we will machine-translate the phone script and these questions.",
+    xlPlaceholder: "For example: Somali, Farsi, Ukrainian",
+    xlButton: "Translate",
+    xlNote: "Machine translation into {lang}, not reviewed by a person. The English is what you show or play to the clinic.",
+    xlFail: "The translation is not available right now. The English below still works.",
+    xlLink: "Another language? Get the phone script and appointment questions machine-translated",
+    clinicH: "When the clinic gives you instructions",
+    clinicNote: "Machine translation, not checked by a person. Always confirm doses and dates with the pharmacist, or ask for a professional interpreter.",
+    clinicOwn: "In your language:",
+    clinicSpeak: "Read aloud in your language",
+    clinicFail: "The translation is not available right now. Ask for an interpreter.",
+    clinicNums: "Warning: the numbers in the translation do not match the English. Check them with the clinic.",
   },
   fr: {
     name: "Français", loc: "fr-CA", htmlLang: "fr", dir: "ltr", own: "français", match: ["French"],
@@ -114,7 +132,7 @@ export const T: Record<Lang, Strings> = {
     today: "Confirmé aujourd'hui", day1: "Confirmé hier", days: "Confirmé il y a {n} jours", expires: "Expire dans {n} jours", exp1: "Expire demain",
     speaks: "Parle {lang}", km: "À {n} km", source: "Source", call: "Préparez votre appel", hint: "Dites la phrase en anglais. La traduction est en dessous.",
     phone: "Téléphone de la clinique", after: "Après l'appel, dites-nous ce qu'on vous a répondu", open: "Ils prennent encore des patients", full: "C'est complet",
-    thOpen: "Merci. La date de cette fiche est maintenant celle d'aujourd'hui.", thFull: "Merci. Votre signalement est enregistré.",
+    thOpen: "Merci. La date de cette fiche est maintenant celle d'aujourd'hui.", thFull: "Merci. Nous avons demandé à un responsable d'appeler la clinique pour vérifier. Essayez la clinique suivante dans Mon plan.",
     hcc: "Inscrivez-vous aussi à Accès Soins (Health Care Connect)",
     what: "Accès Soins est le programme officiel de l'Ontario. Une infirmière vous aide à chercher un médecin ou une infirmière praticienne. Cela peut prendre du temps, alors continuez aussi à chercher de votre côté.",
     need: "Il faut une carte Santé de l'Ontario valide.", online: "S'inscrire en ligne", callnum: "Ou appelez le 1-800-445-1822",
@@ -159,11 +177,25 @@ export const T: Record<Lang, Strings> = {
     lInterp: "On m'a proposé un interprète",
     lNeither: "Ni l'un ni l'autre",
     thLang: "Merci. Cela aide la prochaine personne à savoir à quoi s'attendre.",
+    thNeither: "Merci. Nous avons demandé à un responsable de demander à la clinique quelles langues elle offre. Essayez la clinique suivante dans Mon plan.", fullRep: "Un patient a récemment signalé que cette clinique était complète. Posez la question quand vous appelez.",
     guideLink: "Questions à apporter à votre rendez-vous",
     guideH: "Questions pour votre rendez-vous",
     guideSub: "Montrez l'anglais à la clinique. Le français est en dessous. Ce sont des questions pratiques. Pour parler de votre santé, demandez un interprète professionnel.",
     gt: ["Quand vous appelez la clinique", "Pour prendre votre premier rendez-vous", "À votre première visite", "Médicaments et dossier médical", "Après la visite"],
     gq: ["Acceptez-vous les patients couverts par le Programme fédéral de santé intérimaire (PFSI) ?", "Quelles langues parlent vos médecins et votre personnel ?", "J'aimerais un interprète pour mon rendez-vous. Pouvez-vous en prévoir un ?", "Que dois-je apporter à mon premier rendez-vous ?", "Je suis nouveau en Ontario et c'est mon premier médecin de famille ici.", "Pouvez-vous parler lentement ? Pouvez-vous me l'écrire ?", "Je prends des médicaments régulièrement. Pouvez-vous les renouveler pour plus d'un mois ?", "Mon dossier médical peut-il vous être envoyé par mon ancien médecin ?", "Comment puis-je prendre mon prochain rendez-vous ?", "Que dois-je faire si je suis malade quand la clinique est fermée ?"],
+    speak: "Lire à voix haute en anglais",
+    xlLabel: "Une autre langue ? Écrivez-la et nous traduirons automatiquement le script d'appel et ces questions.",
+    xlPlaceholder: "Par exemple : somali, farsi, ukrainien",
+    xlButton: "Traduire",
+    xlNote: "Traduction automatique en {lang}, non vérifiée par une personne. C'est l'anglais que vous montrez ou faites écouter à la clinique.",
+    xlFail: "La traduction n'est pas disponible pour le moment. L'anglais ci-dessous fonctionne toujours.",
+    xlLink: "Une autre langue ? Obtenez une traduction automatique du script d'appel et des questions pour le rendez-vous",
+    clinicH: "Quand la clinique vous donne des instructions",
+    clinicNote: "Traduction automatique, non vérifiée par une personne. Confirmez toujours les doses et les dates avec le pharmacien, ou demandez un interprète professionnel.",
+    clinicOwn: "Dans votre langue :",
+    clinicSpeak: "Lire à voix haute dans votre langue",
+    clinicFail: "La traduction n'est pas disponible pour le moment. Demandez un interprète.",
+    clinicNums: "Attention : les nombres de la traduction ne correspondent pas à l'anglais. Vérifiez-les avec la clinique.",
   },
   zh: {
     name: "中文（普通话）", loc: "zh-CN", htmlLang: "zh", dir: "ltr", own: "普通话", match: ["Mandarin"],
@@ -175,7 +207,7 @@ export const T: Record<Lang, Strings> = {
     today: "今天已确认", day1: "昨天已确认", days: "{n} 天前确认", expires: "{n} 天后过期", exp1: "明天过期",
     speaks: "会说{lang}", km: "距离 {n} 公里", source: "来源", call: "准备打电话", hint: "请说英文句子，下面是中文意思。",
     phone: "诊所电话", after: "打完电话后，请告诉我们结果", open: "仍在接收新病人", full: "已经满了",
-    thOpen: "谢谢。这条信息的日期已更新为今天。", thFull: "谢谢。您的反馈已记录。",
+    thOpen: "谢谢。这条信息的日期已更新为今天。", thFull: "谢谢。我们已请审核人员致电诊所核实。请尝试“我的计划”中的下一家诊所。",
     hcc: "同时登记 Health Care Connect",
     what: "Health Care Connect 是安大略省的官方项目。会有一位护士帮您寻找家庭医生或执业护士。这可能需要一些时间，所以请同时继续自己寻找。",
     need: "您需要有效的安大略省健康卡（OHIP）。", online: "网上登记", callnum: "或致电 1-800-445-1822",
@@ -220,11 +252,25 @@ export const T: Record<Lang, Strings> = {
     lInterp: "他们提供了口译员",
     lNeither: "都没有",
     thLang: "谢谢。这能让下一位患者知道会遇到什么情况。",
+    thNeither: "谢谢。我们已请审核人员向诊所询问提供哪些语言服务。请尝试“我的计划”中的下一家诊所。", fullRep: "最近有患者反馈这家诊所已满。打电话时请询问。",
     guideLink: "就诊时可以问的问题",
     guideH: "就诊问题清单",
     guideSub: "把英文给诊所工作人员看。中文在下面。这些是日常事务问题。谈论健康状况时，请要求专业口译员。",
     gt: ["给诊所打电话时", "预约第一次就诊", "第一次就诊时", "药物和病历", "就诊之后"],
     gq: ["你们接受由临时联邦健康计划（IFHP）承保的患者吗？", "你们的医生和工作人员会说哪些语言？", "我希望就诊时有口译员。你们可以安排吗？", "第一次就诊我需要带什么？", "我刚来安大略省，这是我在这里的第一位家庭医生。", "请说慢一点。可以帮我写下来吗？", "我需要长期服药。可以给我开超过一个月的药量吗？", "可以把我以前医生的病历转给你们吗？", "我怎样预约下一次就诊？", "诊所关门时如果我生病了，该怎么办？"],
+    speak: "用英语朗读",
+    xlLabel: "需要其他语言？输入语言名称，我们会用机器翻译电话脚本和这些问题。",
+    xlPlaceholder: "例如：索马里语、波斯语、乌克兰语",
+    xlButton: "翻译",
+    xlNote: "机器翻译成{lang}，未经人工审核。给诊所看或播放的是英文。",
+    xlFail: "目前无法翻译。下面的英文仍然可以使用。",
+    xlLink: "需要其他语言？获取电话脚本和就诊问题的机器翻译",
+    clinicH: "诊所给您医嘱时",
+    clinicNote: "机器翻译，未经人工核对。剂量和日期请务必向药剂师确认，或要求专业口译员。",
+    clinicOwn: "您的语言：",
+    clinicSpeak: "用您的语言朗读",
+    clinicFail: "翻译暂时无法使用。请要求口译员。",
+    clinicNums: "注意：译文中的数字与英文不一致。请向诊所核对。",
   },
   ar: {
     name: "العربية", loc: "ar", htmlLang: "ar", dir: "rtl", own: "العربية", match: ["Arabic"],
@@ -236,7 +282,7 @@ export const T: Record<Lang, Strings> = {
     today: "تم التأكيد اليوم", day1: "تم التأكيد أمس", days: "تم التأكيد قبل {n} أيام", expires: "ينتهي خلال {n} أيام", exp1: "ينتهي غداً",
     speaks: "يتحدث {lang}", km: "على بُعد {n} كم", source: "المصدر", call: "حضّر مكالمتك", hint: "قل الجملة بالإنجليزية. الترجمة العربية تحتها.",
     phone: "هاتف العيادة", after: "بعد الاتصال، أخبرنا بما سمعته", open: "ما زالوا يقبلون مرضى", full: "لا توجد أماكن",
-    thOpen: "شكراً. أصبح تاريخ هذا الإعلان اليوم.", thFull: "شكراً. تم تسجيل بلاغك.",
+    thOpen: "شكراً. أصبح تاريخ هذا الإعلان اليوم.", thFull: "شكراً. طلبنا من أحد المراجعين الاتصال بالعيادة للتحقق. جرّب العيادة التالية في «خطتي».",
     hcc: "سجّل أيضاً في Health Care Connect",
     what: "Health Care Connect هو البرنامج الرسمي في أونتاريو. تساعدك ممرضة في البحث عن طبيب أو ممرض ممارس. قد يستغرق ذلك وقتاً، لذا استمر في البحث بنفسك أيضاً.",
     need: "تحتاج إلى بطاقة صحية سارية من أونتاريو (OHIP).", online: "سجّل عبر الإنترنت", callnum: "أو اتصل على 1-800-445-1822",
@@ -281,11 +327,25 @@ export const T: Record<Lang, Strings> = {
     lInterp: "عرضوا مترجماً",
     lNeither: "لا هذا ولا ذاك",
     thLang: "شكراً. هذا يساعد الشخص التالي على معرفة ما يتوقعه.",
+    thNeither: "شكراً. طلبنا من أحد المراجعين أن يسأل العيادة عن اللغات التي تقدّمها. جرّب العيادة التالية في «خطتي».", fullRep: "أفاد أحد المرضى مؤخراً بأنه لا توجد أماكن في هذه العيادة. اسأل عند الاتصال.",
     guideLink: "أسئلة تأخذها معك إلى موعدك",
     guideH: "أسئلة لموعدك",
     guideSub: "اعرض النص الإنجليزي على موظفي العيادة. الترجمة العربية تحته. هذه أسئلة عملية. للحديث عن صحتك نفسها، اطلب مترجماً محترفاً.",
     gt: ["عند الاتصال بالعيادة", "عند حجز موعدك الأول", "في زيارتك الأولى", "الأدوية والسجلات الطبية", "بعد الزيارة"],
     gq: ["هل تقبلون المرضى المشمولين بالبرنامج الفيدرالي المؤقت للصحة (IFHP)؟", "ما اللغات التي يتحدثها أطباؤكم وموظفوكم؟", "أرغب في وجود مترجم في موعدي. هل يمكنكم ترتيب ذلك؟", "ماذا يجب أن أحضر إلى موعدي الأول؟", "أنا جديد في أونتاريو وهذا أول طبيب عائلة لي هنا.", "من فضلك تحدث ببطء. هل يمكنك كتابة ذلك لي؟", "أتناول دواءً بانتظام. هل يمكنك تجديده لأكثر من شهر واحد؟", "هل يمكن إرسال سجلاتي الطبية من طبيبي السابق إليكم؟", "كيف أحجز موعدي القادم؟", "ماذا أفعل إذا مرضت والعيادة مغلقة؟"],
+    speak: "اقرأ بصوت عالٍ بالإنجليزية",
+    xlLabel: "لغة أخرى؟ اكتبها وسنترجم نص المكالمة وهذه الأسئلة ترجمة آلية.",
+    xlPlaceholder: "مثلاً: الصومالية، الفارسية، الأوكرانية",
+    xlButton: "ترجم",
+    xlNote: "ترجمة آلية إلى {lang}، لم يراجعها شخص. النص الإنجليزي هو ما تعرضه على العيادة أو تشغّله لها.",
+    xlFail: "الترجمة غير متاحة الآن. النص الإنجليزي أدناه ما زال صالحاً.",
+    xlLink: "لغة أخرى؟ احصل على ترجمة آلية لنص المكالمة وأسئلة الموعد",
+    clinicH: "عندما تعطيك العيادة تعليمات",
+    clinicNote: "ترجمة آلية لم يراجعها شخص. تأكد دائماً من الجرعات والمواعيد مع الصيدلي، أو اطلب مترجماً محترفاً.",
+    clinicOwn: "بلغتك:",
+    clinicSpeak: "اقرأ بصوت عالٍ بلغتك",
+    clinicFail: "الترجمة غير متاحة الآن. اطلب مترجماً.",
+    clinicNums: "تنبيه: الأرقام في الترجمة لا تطابق النص الإنجليزي. تحقق منها مع العيادة.",
   },
   pa: {
     name: "ਪੰਜਾਬੀ", loc: "pa", htmlLang: "pa", dir: "ltr", own: "ਪੰਜਾਬੀ", match: ["Punjabi"],
@@ -297,7 +357,7 @@ export const T: Record<Lang, Strings> = {
     today: "ਅੱਜ ਪੁਸ਼ਟੀ ਹੋਈ", day1: "ਕੱਲ੍ਹ ਪੁਸ਼ਟੀ ਹੋਈ", days: "{n} ਦਿਨ ਪਹਿਲਾਂ ਪੁਸ਼ਟੀ ਹੋਈ", expires: "{n} ਦਿਨਾਂ ਵਿੱਚ ਖ਼ਤਮ", exp1: "ਕੱਲ੍ਹ ਖ਼ਤਮ",
     speaks: "{lang} ਬੋਲਦੇ ਹਨ", km: "{n} ਕਿ.ਮੀ. ਦੂਰ", source: "ਸਰੋਤ", call: "ਆਪਣੀ ਕਾਲ ਦੀ ਤਿਆਰੀ ਕਰੋ", hint: "ਵਾਕ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਬੋਲੋ। ਹੇਠਾਂ ਪੰਜਾਬੀ ਵਿੱਚ ਹੈ।",
     phone: "ਕਲੀਨਿਕ ਦਾ ਫ਼ੋਨ", after: "ਕਾਲ ਕਰਨ ਤੋਂ ਬਾਅਦ, ਸਾਨੂੰ ਦੱਸੋ ਕਿ ਉਨ੍ਹਾਂ ਨੇ ਕੀ ਕਿਹਾ", open: "ਅਜੇ ਵੀ ਮਰੀਜ਼ ਲੈ ਰਹੇ ਹਨ", full: "ਉਹ ਭਰ ਗਏ ਹਨ",
-    thOpen: "ਧੰਨਵਾਦ। ਇਸ ਸੂਚੀ ਦੀ ਤਾਰੀਖ਼ ਹੁਣ ਅੱਜ ਦੀ ਹੈ।", thFull: "ਧੰਨਵਾਦ। ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਦਰਜ ਹੋ ਗਈ ਹੈ।",
+    thOpen: "ਧੰਨਵਾਦ। ਇਸ ਸੂਚੀ ਦੀ ਤਾਰੀਖ਼ ਹੁਣ ਅੱਜ ਦੀ ਹੈ।", thFull: "ਧੰਨਵਾਦ। ਅਸੀਂ ਇੱਕ ਸਮੀਖਿਅਕ ਨੂੰ ਕਲੀਨਿਕ ਨੂੰ ਫ਼ੋਨ ਕਰਕੇ ਪਤਾ ਕਰਨ ਲਈ ਕਿਹਾ ਹੈ। “ਮੇਰੀ ਯੋਜਨਾ” ਵਿੱਚ ਅਗਲਾ ਕਲੀਨਿਕ ਅਜ਼ਮਾਓ।",
     hcc: "Health Care Connect ਵਿੱਚ ਵੀ ਰਜਿਸਟਰ ਕਰੋ",
     what: "Health Care Connect ਓਨਟਾਰੀਓ ਦਾ ਅਧਿਕਾਰਤ ਪ੍ਰੋਗਰਾਮ ਹੈ। ਇੱਕ ਨਰਸ ਤੁਹਾਡੇ ਲਈ ਡਾਕਟਰ ਜਾਂ ਨਰਸ ਪ੍ਰੈਕਟੀਸ਼ਨਰ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦੀ ਹੈ। ਇਸ ਵਿੱਚ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ, ਇਸ ਲਈ ਆਪ ਵੀ ਲੱਭਦੇ ਰਹੋ।",
     need: "ਤੁਹਾਨੂੰ ਓਨਟਾਰੀਓ ਦੇ ਵੈਧ ਹੈਲਥ ਕਾਰਡ (OHIP) ਦੀ ਲੋੜ ਹੈ।", online: "ਔਨਲਾਈਨ ਰਜਿਸਟਰ ਕਰੋ", callnum: "ਜਾਂ 1-800-445-1822 'ਤੇ ਕਾਲ ਕਰੋ",
@@ -342,11 +402,25 @@ export const T: Record<Lang, Strings> = {
     lInterp: "ਉਨ੍ਹਾਂ ਨੇ ਦੁਭਾਸ਼ੀਏ ਦੀ ਪੇਸ਼ਕਸ਼ ਕੀਤੀ",
     lNeither: "ਦੋਵਾਂ ਵਿੱਚੋਂ ਕੋਈ ਨਹੀਂ",
     thLang: "ਧੰਨਵਾਦ। ਇਸ ਨਾਲ ਅਗਲੇ ਵਿਅਕਤੀ ਨੂੰ ਪਤਾ ਲੱਗਦਾ ਹੈ ਕਿ ਕੀ ਉਮੀਦ ਕਰਨੀ ਹੈ।",
+    thNeither: "ਧੰਨਵਾਦ। ਅਸੀਂ ਇੱਕ ਸਮੀਖਿਅਕ ਨੂੰ ਕਲੀਨਿਕ ਤੋਂ ਇਹ ਪੁੱਛਣ ਲਈ ਕਿਹਾ ਹੈ ਕਿ ਉਹ ਕਿਹੜੀਆਂ ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਸੇਵਾ ਦਿੰਦੇ ਹਨ। “ਮੇਰੀ ਯੋਜਨਾ” ਵਿੱਚ ਅਗਲਾ ਕਲੀਨਿਕ ਅਜ਼ਮਾਓ।", fullRep: "ਇੱਕ ਮਰੀਜ਼ ਨੇ ਹਾਲ ਹੀ ਵਿੱਚ ਦੱਸਿਆ ਕਿ ਇਹ ਕਲੀਨਿਕ ਭਰ ਗਿਆ ਹੈ। ਫ਼ੋਨ ਕਰਨ ਵੇਲੇ ਪੁੱਛੋ।",
     guideLink: "ਆਪਣੀ ਮੁਲਾਕਾਤ ਲਈ ਸਵਾਲ",
     guideH: "ਤੁਹਾਡੀ ਮੁਲਾਕਾਤ ਲਈ ਸਵਾਲ",
     guideSub: "ਕਲੀਨਿਕ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਦਿਖਾਓ। ਹੇਠਾਂ ਪੰਜਾਬੀ ਵਿੱਚ ਹੈ। ਇਹ ਵਿਹਾਰਕ ਸਵਾਲ ਹਨ। ਆਪਣੀ ਸਿਹਤ ਬਾਰੇ ਗੱਲਬਾਤ ਲਈ, ਪੇਸ਼ੇਵਰ ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
     gt: ["ਕਲੀਨਿਕ ਨੂੰ ਕਾਲ ਕਰਨ ਵੇਲੇ", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਬੁੱਕ ਕਰਨ ਵੇਲੇ", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਵੇਲੇ", "ਦਵਾਈਆਂ ਅਤੇ ਮੈਡੀਕਲ ਰਿਕਾਰਡ", "ਮੁਲਾਕਾਤ ਤੋਂ ਬਾਅਦ"],
     gq: ["ਕੀ ਤੁਸੀਂ ਅੰਤਰਿਮ ਫੈਡਰਲ ਹੈਲਥ ਪ੍ਰੋਗਰਾਮ (IFHP) ਵਾਲੇ ਮਰੀਜ਼ ਲੈਂਦੇ ਹੋ?", "ਤੁਹਾਡੇ ਡਾਕਟਰ ਅਤੇ ਸਟਾਫ਼ ਕਿਹੜੀਆਂ ਭਾਸ਼ਾਵਾਂ ਬੋਲਦੇ ਹਨ?", "ਮੈਨੂੰ ਆਪਣੀ ਮੁਲਾਕਾਤ ਲਈ ਦੁਭਾਸ਼ੀਆ ਚਾਹੀਦਾ ਹੈ। ਕੀ ਤੁਸੀਂ ਇਸ ਦਾ ਪ੍ਰਬੰਧ ਕਰ ਸਕਦੇ ਹੋ?", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਲਈ ਮੈਨੂੰ ਕੀ ਲੈ ਕੇ ਆਉਣਾ ਚਾਹੀਦਾ ਹੈ?", "ਮੈਂ ਓਨਟਾਰੀਓ ਵਿੱਚ ਨਵਾਂ/ਨਵੀਂ ਹਾਂ ਅਤੇ ਇਹ ਇੱਥੇ ਮੇਰਾ ਪਹਿਲਾ ਫੈਮਿਲੀ ਡਾਕਟਰ ਹੈ।", "ਕਿਰਪਾ ਕਰਕੇ ਹੌਲੀ ਬੋਲੋ। ਕੀ ਤੁਸੀਂ ਇਹ ਮੈਨੂੰ ਲਿਖ ਕੇ ਦੇ ਸਕਦੇ ਹੋ?", "ਮੈਂ ਨਿਯਮਿਤ ਤੌਰ 'ਤੇ ਦਵਾਈ ਲੈਂਦਾ/ਲੈਂਦੀ ਹਾਂ। ਕੀ ਤੁਸੀਂ ਇਸਨੂੰ ਇੱਕ ਮਹੀਨੇ ਤੋਂ ਵੱਧ ਲਈ ਦੁਬਾਰਾ ਲਿਖ ਸਕਦੇ ਹੋ?", "ਕੀ ਮੇਰੇ ਪਿਛਲੇ ਡਾਕਟਰ ਤੋਂ ਮੇਰੇ ਮੈਡੀਕਲ ਰਿਕਾਰਡ ਤੁਹਾਨੂੰ ਭੇਜੇ ਜਾ ਸਕਦੇ ਹਨ?", "ਮੈਂ ਆਪਣੀ ਅਗਲੀ ਮੁਲਾਕਾਤ ਕਿਵੇਂ ਬੁੱਕ ਕਰਾਂ?", "ਜੇ ਕਲੀਨਿਕ ਬੰਦ ਹੋਣ ਵੇਲੇ ਮੈਂ ਬੀਮਾਰ ਹੋ ਜਾਵਾਂ ਤਾਂ ਮੈਨੂੰ ਕੀ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ?"],
+    speak: "ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਉੱਚੀ ਪੜ੍ਹੋ",
+    xlLabel: "ਕੋਈ ਹੋਰ ਭਾਸ਼ਾ? ਉਸਦਾ ਨਾਮ ਲਿਖੋ, ਅਸੀਂ ਕਾਲ ਸਕ੍ਰਿਪਟ ਅਤੇ ਇਹ ਸਵਾਲ ਮਸ਼ੀਨ ਨਾਲ ਅਨੁਵਾਦ ਕਰਾਂਗੇ।",
+    xlPlaceholder: "ਜਿਵੇਂ: ਸੋਮਾਲੀ, ਫ਼ਾਰਸੀ, ਯੂਕਰੇਨੀ",
+    xlButton: "ਅਨੁਵਾਦ ਕਰੋ",
+    xlNote: "{lang} ਵਿੱਚ ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ, ਕਿਸੇ ਵਿਅਕਤੀ ਵੱਲੋਂ ਜਾਂਚਿਆ ਨਹੀਂ ਗਿਆ। ਕਲੀਨਿਕ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਹੀ ਦਿਖਾਓ ਜਾਂ ਸੁਣਾਓ।",
+    xlFail: "ਇਸ ਵੇਲੇ ਅਨੁਵਾਦ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਦਿੱਤੀ ਅੰਗਰੇਜ਼ੀ ਅਜੇ ਵੀ ਕੰਮ ਕਰਦੀ ਹੈ।",
+    xlLink: "ਕੋਈ ਹੋਰ ਭਾਸ਼ਾ? ਕਾਲ ਸਕ੍ਰਿਪਟ ਅਤੇ ਮੁਲਾਕਾਤ ਦੇ ਸਵਾਲਾਂ ਦਾ ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ ਲਓ",
+    clinicH: "ਜਦੋਂ ਕਲੀਨਿਕ ਤੁਹਾਨੂੰ ਹਦਾਇਤਾਂ ਦੇਵੇ",
+    clinicNote: "ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ, ਕਿਸੇ ਵਿਅਕਤੀ ਵੱਲੋਂ ਜਾਂਚਿਆ ਨਹੀਂ ਗਿਆ। ਖੁਰਾਕ ਅਤੇ ਤਾਰੀਖਾਂ ਹਮੇਸ਼ਾ ਫਾਰਮਾਸਿਸਟ ਤੋਂ ਪੱਕੀਆਂ ਕਰੋ, ਜਾਂ ਪੇਸ਼ੇਵਰ ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
+    clinicOwn: "ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ:",
+    clinicSpeak: "ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਉੱਚੀ ਪੜ੍ਹੋ",
+    clinicFail: "ਅਨੁਵਾਦ ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
+    clinicNums: "ਧਿਆਨ ਦਿਓ: ਅਨੁਵਾਦ ਵਿੱਚ ਨੰਬਰ ਅੰਗਰੇਜ਼ੀ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ। ਕਲੀਨਿਕ ਨਾਲ ਜਾਂਚ ਕਰੋ।",
   },
   tl: {
     name: "Tagalog", loc: "fil", htmlLang: "fil", dir: "ltr", own: "Tagalog", match: ["Tagalog"],
@@ -358,7 +432,7 @@ export const T: Record<Lang, Strings> = {
     today: "Nakumpirma ngayong araw", day1: "Nakumpirma kahapon", days: "Nakumpirma {n} araw na ang nakalipas", expires: "Mag-e-expire sa loob ng {n} araw", exp1: "Mag-e-expire bukas",
     speaks: "Nagsasalita ng {lang}", km: "{n} km ang layo", source: "Pinagmulan", call: "Ihanda ang iyong tawag", hint: "Sabihin ang pangungusap sa Ingles. Nasa ibaba ang Tagalog.",
     phone: "Telepono ng klinika", after: "Pagkatapos tumawag, sabihin sa amin ang sagot nila", open: "Tumatanggap pa sila", full: "Puno na sila",
-    thOpen: "Salamat. Ngayong araw na ang petsa ng listahang ito.", thFull: "Salamat. Naitala na ang iyong ulat.",
+    thOpen: "Salamat. Ngayong araw na ang petsa ng listahang ito.", thFull: "Salamat. Hiniling namin sa isang tagasuri na tawagan ang klinika para tiyakin. Subukan ang susunod na klinika sa “Ang plano ko”.",
     hcc: "Magparehistro rin sa Health Care Connect",
     what: "Ang Health Care Connect ay opisyal na programa ng Ontario. May nurse na tutulong maghanap ng doktor o nurse practitioner para sa iyo. Maaaring matagalan ito, kaya ituloy mo rin ang sarili mong paghahanap.",
     need: "Kailangan mo ng valid na Ontario health card (OHIP).", online: "Magparehistro online", callnum: "O tumawag sa 1-800-445-1822",
@@ -403,11 +477,25 @@ export const T: Record<Lang, Strings> = {
     lInterp: "Nag-alok sila ng interpreter",
     lNeither: "Wala sa dalawa",
     thLang: "Salamat. Makakatulong ito sa susunod na tao na malaman ang aasahan.",
+    thNeither: "Salamat. Hiniling namin sa isang tagasuri na itanong sa klinika kung anong mga wika ang inaalok nila. Subukan ang susunod na klinika sa “Ang plano ko”.", fullRep: "May pasyenteng nagsabi kamakailan na puno na ang klinikang ito. Itanong kapag tumawag ka.",
     guideLink: "Mga tanong na dadalhin sa iyong appointment",
     guideH: "Mga tanong para sa iyong appointment",
     guideSub: "Ipakita ang Ingles sa klinika. Nasa ibaba ang Tagalog. Mga praktikal na tanong ito. Para sa usapan tungkol sa iyong kalusugan, humingi ng propesyonal na interpreter.",
     gt: ["Kapag tumatawag sa klinika", "Kapag nagbu-book ng unang appointment", "Sa iyong unang pagbisita", "Mga gamot at medical record", "Pagkatapos ng pagbisita"],
     gq: ["Tumatanggap ba kayo ng mga pasyenteng sakop ng Interim Federal Health Program (IFHP)?", "Anong mga wika ang sinasalita ng inyong mga doktor at staff?", "Gusto ko sana ng interpreter para sa aking appointment. Maaari ba ninyong ayusin ito?", "Ano ang kailangan kong dalhin sa aking unang appointment?", "Bago ako sa Ontario at ito ang aking unang family doctor dito.", "Pakiusap, magsalita nang dahan-dahan. Maaari ba ninyong isulat iyon para sa akin?", "Regular akong umiinom ng gamot. Maaari ba ninyong i-renew ito nang higit sa isang buwan?", "Maaari bang ipadala sa inyo ang aking medical records mula sa dati kong doktor?", "Paano ko ibu-book ang susunod kong appointment?", "Ano ang dapat kong gawin kung magkasakit ako habang sarado ang klinika?"],
+    speak: "Basahin nang malakas sa Ingles",
+    xlLabel: "Ibang wika? I-type ito at isasalin namin gamit ang makina ang script sa pagtawag at ang mga tanong na ito.",
+    xlPlaceholder: "Halimbawa: Somali, Farsi, Ukrainian",
+    xlButton: "Isalin",
+    xlNote: "Salin ng makina sa {lang}, hindi pa nasusuri ng tao. Ang Ingles ang ipapakita o ipaparinig mo sa klinika.",
+    xlFail: "Hindi available ang salin sa ngayon. Magagamit pa rin ang Ingles sa ibaba.",
+    xlLink: "Ibang wika? Kumuha ng salin ng makina para sa script sa pagtawag at mga tanong sa appointment",
+    clinicH: "Kapag binigyan ka ng klinika ng mga tagubilin",
+    clinicNote: "Machine translation, hindi sinuri ng tao. Laging kumpirmahin ang dosis at mga petsa sa pharmacist, o humingi ng propesyonal na interpreter.",
+    clinicOwn: "Sa iyong wika:",
+    clinicSpeak: "Basahin nang malakas sa iyong wika",
+    clinicFail: "Hindi available ang pagsasalin ngayon. Humingi ng interpreter.",
+    clinicNums: "Babala: hindi tugma ang mga numero sa salin at sa Ingles. Suriin ito sa klinika.",
   },
 };
 
@@ -422,6 +510,31 @@ export const GUIDE: string[][] = [
   ["I take medication regularly. Can you renew it for longer than one month?", "Can my medical records from my previous doctor be sent to you?"],
   ["How do I book my next appointment?", "What should I do if I am sick when the clinic is closed?"],
 ];
+
+/** Example instructions clinic staff can tap to translate (English only; the translation is machine-made). */
+export const CLINIC_PRESETS: string[] = [
+  "Take 1 tablet 2 times a day with food, for 7 days.",
+  "Please go to the lab for a blood test. You do not need to fast.",
+  "Book a follow-up appointment in 2 weeks.",
+  "Your prescription was sent to your pharmacy.",
+  "If the pain gets worse or you have a fever, go to the emergency department.",
+];
+
+/** The language name sent to the translator for each reviewed language: the written form, not the spoken one. */
+export const MT_NAME: Record<Lang, string> = { ...EN_NAME, zh: "Simplified Chinese", pa: "Punjabi (Gurmukhi script)" };
+
+/** BCP-47 tags for read-aloud, for languages a patient may type. Unknown names get no read-aloud. */
+const SPEECH: Record<string, string> = {
+  english: "en-CA", french: "fr-CA", mandarin: "zh-CN", chinese: "zh-CN", "simplified chinese": "zh-CN", cantonese: "zh-HK",
+  arabic: "ar", punjabi: "pa-IN", tagalog: "fil-PH", filipino: "fil-PH", spanish: "es", portuguese: "pt-BR", italian: "it-IT",
+  german: "de-DE", japanese: "ja-JP", korean: "ko-KR", russian: "ru-RU", polish: "pl-PL", turkish: "tr-TR", vietnamese: "vi-VN",
+  dutch: "nl-NL", czech: "cs-CZ", indonesian: "id-ID", ukrainian: "uk-UA", romanian: "ro-RO", greek: "el-GR", hindi: "hi-IN",
+  hebrew: "he-IL", persian: "fa-IR", farsi: "fa-IR", urdu: "ur-PK", bengali: "bn-IN", tamil: "ta-IN", gujarati: "gu-IN",
+  somali: "so-SO", amharic: "am-ET", swahili: "sw-KE", haitian: "ht", "haitian creole": "ht", tigrinya: "ti", nepali: "ne-NP",
+};
+export function speechLangFor(name: string): string | null {
+  return SPEECH[name.replace(/\s*\(.*\)\s*$/, "").trim().toLowerCase()] ?? null;
+}
 
 /** The guide in one language: each group's title, and each question in English with this language underneath. */
 export function guide(lang: Lang): { title: string; items: { en: string; own: string }[] }[] {
@@ -439,14 +552,18 @@ export function asLang(v: string | null | undefined): Lang {
 }
 
 /** The four English lines of the call script. Line 3 is dropped for English speakers. */
-export function callScript(lang: Lang): { en: string; own: string }[] {
-  const L = EN_NAME[lang];
-  const lines = [
+/** The four English call-script lines for a patient who speaks `language` (null for English speakers). */
+export function englishCallLines(language: string | null): (string | null)[] {
+  return [
     "Hello. I am looking for a family doctor.",
     "I saw that your clinic is taking new patients. Is that still true?",
-    lang === "en" ? null : `I speak ${L}. Is there someone who speaks ${L}, or an interpreter?`,
+    language ? `I speak ${language}. Is there someone who speaks ${language}, or an interpreter?` : null,
     "What do I need to bring to register?",
   ];
+}
+
+export function callScript(lang: Lang): { en: string; own: string }[] {
+  const lines = englishCallLines(lang === "en" ? null : EN_NAME[lang]);
   return lines.flatMap((en, i) => (en ? [{ en, own: T[lang].s[i] }] : []));
 }
 

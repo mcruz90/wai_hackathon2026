@@ -1,5 +1,5 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
-import { batchEligibility, MAX_REVIEW_BATCH, REVIEW_POLICY, reviewSnapshot, reviewVersion } from "./review-policy";
+import { batchEligibility, MAX_REVIEW_BATCH, REVIEW_POLICY, requireTrustedSource, reviewSnapshot, reviewVersion } from "./review-policy";
 import { reviewedClinicHosts } from "./source-trust";
 import { config, DAY_MS } from "./config";
 
@@ -29,7 +29,7 @@ export async function publishReviewBatch(db: PrismaClient, selection: ReviewSele
       const listings = await tx.listing.findMany({ include: reviewInclude });
       const fsas = await tx.fsaCentroid.findMany({ select: { fsa: true } });
       const hosts = await reviewedClinicHosts(tx);
-      const ctx = { listings, fsas: fsas.map((f) => f.fsa), hosts, now };
+      const ctx = { listings, fsas: fsas.map((f) => f.fsa), hosts, now, requireTrustedSource: requireTrustedSource() };
       const items: Prisma.InputJsonObject[] = [];
       for (const selected of selection) {
         const listing = listings.find((l) => l.id === selected.id);
@@ -45,7 +45,7 @@ export async function publishReviewBatch(db: PrismaClient, selection: ReviewSele
           after: { status: "live", lastConfirmedAt: confirmed.toISOString(), expiresAt: expiresAt.toISOString() } });
       }
       return tx.reviewDecision.create({ data: { mode: "batch", action: "publish", policy: REVIEW_POLICY,
-        items: { listings: items, sourceHosts: hosts, attestation: "Human authorized publication of the selected versions after reviewing the evidence." } } });
+        items: { listings: items, sourceHosts: hosts, requireTrustedSource: requireTrustedSource(), attestation: "Human authorized publication of the selected versions after reviewing the evidence." } } });
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 15000 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") throw new ReviewError("The queue changed during approval. Nothing was published. Reload and review again.");

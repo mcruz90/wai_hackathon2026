@@ -10,7 +10,7 @@ export default function ListingClient({ lang, fsa, listing }: Props) {
   const w = T[lang];
   const [state, setState] = useState<"idle" | "busy" | "open" | "full">("idle");
   const [error, setError] = useState("");
-  const [langState, setLangState] = useState<"idle" | "busy" | "done">("idle");
+  const [langState, setLangState] = useState<"idle" | "busy" | "done" | "neither">("idle");
 
   useEffect(() => {
     rememberOpened(listing);
@@ -38,7 +38,7 @@ export default function ListingClient({ lang, fsa, listing }: Props) {
       const res = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ listingId: listing.id, kind: "lang", outcome, fsa, lang }) });
       if (res.status === 429) { setError(w.tooMany); setLangState("idle"); return; }
       if (!res.ok) throw new Error();
-      setLangState("done");
+      setLangState(outcome === "neither" ? "neither" : "done");
     } catch { setError(w.err); setLangState("idle"); }
   }
 
@@ -53,7 +53,7 @@ export default function ListingClient({ lang, fsa, listing }: Props) {
           <button className="btn bad" disabled={state === "busy"} onClick={() => report("full")}>{w.full}</button>
         </div>
       )}
-      {lang === "en" ? null : langState === "done" ? <p className="ok" role="status">{w.thLang}</p> : (
+      {lang === "en" ? null : langState === "done" || langState === "neither" ? <p className="ok" role="status">{langState === "neither" ? w.thNeither : w.thLang}</p> : (
         <div className="stack">
           <h3>{fill(w.langQ, { lang: w.own })}</h3>
           <div className="row">

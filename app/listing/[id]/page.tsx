@@ -1,5 +1,6 @@
 import { FreshLine, HtmlLang, SampleBanner, Steps } from "@/components/bits";
 import ListingClient from "@/components/ListingClient";
+import Speak from "@/components/Speak";
 import { prisma } from "@/lib/db";
 import { backArrow, callScript, fill, shortDate, T } from "@/lib/i18n";
 import { liveWhere, originFor, parseSearch, reportedLanguages, searchQuery, toPublic } from "@/lib/listings";
@@ -10,7 +11,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
   const { id } = await params;
   const s = parseSearch(await searchParams);
   const w = T[s.lang], q = searchQuery(s);
-  const row = await prisma.listing.findFirst({ where: { id, ...liveWhere() } });
+  const row = await prisma.listing.findFirst({ where: { id, ...liveWhere() }, include: { _count: { select: { fullReports: true } } } });
   const back = <a className="btn link" href={s.fsa ? `/results?${q}` : `/?${q}`}>{backArrow(s.lang)} {w.back}</a>;
   if (!row) {
     return (
@@ -40,6 +41,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
             {l.li ? <span className="pill partial">{w.interpRep}</span> : null}
           </div>
           {!l.languages.length && !l.byReport ? <p className="note">{w.langUnknown}</p> : null}
+          {l.fullReports ? <p className="note warn">{w.fullRep}</p> : null}
           <p className="small muted">
             {w.source}: {safeUrl ? <a href={safeUrl} rel="noopener noreferrer nofollow" target="_blank">{w.src[l.sourceType] ?? w.src.rev}</a> : (w.src[l.sourceType] ?? w.src.rev)}
           </p>
@@ -49,7 +51,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
           <p className="muted small">{w.hint}</p>
           <div className="script">
             {callScript(s.lang).map((line) => (
-              <div className="say" key={line.en}><b lang="en" dir="ltr">{line.en}</b>{line.own ? <span>{line.own}</span> : null}</div>
+              <div className="say" key={line.en}><b lang="en" dir="ltr">{line.en}</b>{line.own ? <span>{line.own}</span> : null}<Speak text={line.en} label={w.speak} /></div>
             ))}
           </div>
           <div>
