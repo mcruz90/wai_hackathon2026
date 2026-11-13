@@ -13,6 +13,8 @@ export type PublicListing = {
   /** Matched only because patients reported it; interpreter reported; languages not listed and unknown. */
   byReport: boolean; li: boolean; lu: boolean;
   reported: Reported;
+  /** Separate "they are full" reports from patients since the clinic was last confirmed by a reviewer. */
+  fullReports: number;
 };
 
 const NO_REPORTS: Reported = { spoke: [], interpreter: [] };
@@ -53,7 +55,7 @@ export async function originFor(fsa: string): Promise<{ at: [number, number] | n
 /** Patients only ever see listings that are live and not past their expiry date. */
 export const liveWhere = () => ({ status: "live" as const, expiresAt: { gt: new Date() }, lastConfirmedAt: { not: null } });
 
-export function toPublic(l: Listing, origin: [number, number] | null, matchLangs: string[], reported: Reported = NO_REPORTS): PublicListing {
+export function toPublic(l: Listing & { _count?: { fullReports: number } }, origin: [number, number] | null, matchLangs: string[], reported: Reported = NO_REPORTS): PublicListing {
   const now = new Date();
   const s = score({ lat: l.lat, lng: l.lng, languages: l.languages, lastConfirmedAt: l.lastConfirmedAt! }, origin, matchLangs, config.expiryDays, now, reported);
   return {
@@ -61,6 +63,7 @@ export function toPublic(l: Listing, origin: [number, number] | null, matchLangs
     sourceType: l.sourceType, sourceUrl: l.sourceUrl, confirmedAt: l.lastConfirmedAt!.toISOString(), age: s.age,
     daysLeft: Math.max(1, Math.ceil((l.expiresAt!.getTime() - now.getTime()) / DAY_MS)), isSample: l.isSample,
     d: s.d, lm: s.lm, fr: s.fr, score: s.score, byReport: s.byReport, li: s.li, lu: s.lu, reported,
+    fullReports: l._count?.fullReports ?? 0,
   };
 }
 
@@ -71,6 +74,7 @@ export async function rankedListings(s: Search, matchLangs: string[]): Promise<{
   const lngDelta = config.searchRadiusKm / (111.3 * Math.cos(at[0]*Math.PI/180));
   const rows = await prisma.listing.findMany({
     where: { ...liveWhere(), lat: { gte: at[0]-latDelta, lte: at[0]+latDelta }, lng: { gte: at[1]-lngDelta, lte: at[1]+lngDelta }, ...(s.type === "any" ? {} : { providerType: s.type === "np" ? "nurse_practitioner" : "family_doctor" }) },
+    include: { _count: { select: { fullReports: true } } },
   });
   const reports = await reportedLanguages(rows.map((r) => r.id));
   const listings = rows.map((l) => toPublic(l, at, matchLangs, reports.get(l.id))).filter((l) => l.d !== null && l.d <= config.searchRadiusKm).sort((a, b) => b.score - a.score);

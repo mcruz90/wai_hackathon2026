@@ -139,3 +139,13 @@ The guide page has a panel where clinic staff type an instruction in English, or
 | `clinicNums` | Warning: the numbers in the translation do not match the English. Check them with the clinic. |
 
 The instruction itself is translated by Cohere at the time of use and is never reviewed. Cohere's translation model (`command-a-translate-08-2025`) is used for the 23 languages it covers; Punjabi, Tagalog and other languages go to `LLM_MODEL`. Before a pilot, check the example instructions (`CLINIC_PRESETS` in `lib/i18n.ts`) in each language with a native speaker, especially doses and times.
+
+## Patient reports start a re-check
+
+When a patient reports a clinic full, or that nobody spoke their language, the freshness agent asks a reviewer to call the clinic, and the patient is told so. A single "full" report also shows a warning on the listing. These strings are new or changed in all six languages, drafted without a native speaker:
+
+| Key | English |
+| --- | --- |
+| `thFull` (changed) | Thank you. We have asked a reviewer to call the clinic and check. Try the next clinic in My plan. |
+| `thNeither` | Thank you. We have asked a reviewer to ask the clinic which languages it offers. Try the next clinic in My plan. |
+| `fullRep` | A patient recently said this clinic was full. Ask when you call. |

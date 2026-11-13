@@ -11,7 +11,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
   const { id } = await params;
   const s = parseSearch(await searchParams);
   const w = T[s.lang], q = searchQuery(s);
-  const row = await prisma.listing.findFirst({ where: { id, ...liveWhere() } });
+  const row = await prisma.listing.findFirst({ where: { id, ...liveWhere() }, include: { _count: { select: { fullReports: true } } } });
   const back = <a className="btn link" href={s.fsa ? `/results?${q}` : `/?${q}`}>{backArrow(s.lang)} {w.back}</a>;
   if (!row) {
     return (
@@ -41,6 +41,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
             {l.li ? <span className="pill partial">{w.interpRep}</span> : null}
           </div>
           {!l.languages.length && !l.byReport ? <p className="note">{w.langUnknown}</p> : null}
+          {l.fullReports ? <p className="note warn">{w.fullRep}</p> : null}
           <p className="small muted">
             {w.source}: {safeUrl ? <a href={safeUrl} rel="noopener noreferrer nofollow" target="_blank">{w.src[l.sourceType] ?? w.src.rev}</a> : (w.src[l.sourceType] ?? w.src.rev)}
           </p>

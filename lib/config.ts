@@ -14,8 +14,12 @@ export const config = {
 export const DAY_MS = 864e5;
 /** Distance at which the distance score reaches zero. Also the "nearby" radius for the no-language-match counter. */
 export const NEARBY_KM = 15;
-/** A listing is hidden after this many separate full reports. */
-export const FULL_REPORTS_TO_HIDE = 2;
+/**
+ * A listing is hidden after this many separate "they are full" reports (FULL_REPORTS_TO_HIDE, default 2).
+ * One report never hides a clinic on its own by default: it shows a warning and the freshness agent asks a reviewer
+ * to call. Set it to 1 for a demo where a single report hides the listing straight away.
+ */
+export const fullReportsToHide = () => Math.round(num("FULL_REPORTS_TO_HIDE", 2));
 /** Separate patient reports needed before a reported language or interpreter is shown on a listing. */
 export const LANGUAGE_REPORTS_TO_SHOW = 2;
 /** Partner view hides any count under this. */

@@ -54,6 +54,7 @@ export function ListingCard({ l, lang, href }: { l: PublicListing; lang: Lang; h
         {l.d === null ? null : <span className="pill">{fill(w.km, { n: l.d.toFixed(1) })}</span>}
         <span className="pill">{w.source}: {w.src[l.sourceType] ?? w.src.rev}</span>
       </div>
+      {l.fullReports ? <p className="small warn">{w.fullRep}</p> : null}
       <FreshLine l={l} lang={lang} />
     </a>
   );
