@@ -2,7 +2,7 @@ import { EnvHttpProxyAgent, fetch as request } from "undici";
 import { canonicalSourceUrl } from "./web";
 
 export const ONTARIO_REGIONS = ["Ontario", "Ottawa Kingston Eastern Ontario", "Toronto GTA", "Hamilton Niagara", "Kitchener Waterloo Guelph", "London Windsor Southwestern Ontario", "Barrie Simcoe Muskoka", "Peterborough Kawartha", "Sudbury North Bay Northeastern Ontario", "Thunder Bay Northwestern Ontario", "Timmins Sault Ste. Marie Northern Ontario"];
-export type SearchLead = { url: string; title: string; query: string; isSample?: boolean };
+export type SearchLead = { url: string; title: string; query: string; snippet?: string; isSample?: boolean };
 export function queriesForDay(now: Date, limit = 3): string[] {
   const day = Math.floor(now.getTime()/864e5);
   return Array.from({ length: Math.min(Math.max(1,limit), ONTARIO_REGIONS.length) }, (_, i) => {
@@ -33,8 +33,12 @@ export function mockSearch(now: Date, limit = 3): SearchLead[] {
     const slug = region.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const french = query.includes("nouveaux");
     return [
-      { url: `https://${slug}-family-health.example/${french ? "nouveaux-patients" : "new-patients"}`, title: `Sample search result: ${region} family health team ${french ? "accepte de nouveaux patients" : "accepting new patients"}`, query, isSample: true },
-      { url: `https://${slug}-np-clinic.example/accepting`, title: `Sample search result: ${region} nurse practitioner clinic`, query, isSample: true },
+      { url: `https://${slug}-family-health.example/${french ? "nouveaux-patients" : "new-patients"}`, title: `Sample search result: ${region} family health team ${french ? "accepte de nouveaux patients" : "accepting new patients"}`, query, isSample: true,
+        snippet: french ? "Notre équipe de santé familiale accepte de nouveaux patients. Inscription en ligne ou par téléphone." : "Our family health team is accepting new patients. Register online or by phone." },
+      { url: `https://${slug}-np-clinic.example/accepting`, title: `Sample search result: ${region} nurse practitioner clinic`, query, isSample: true,
+        snippet: "Nurse practitioner-led clinic. Hours, services and how to contact us." },
+      { url: `https://${slug}-news.example/health/doctor-shortage`, title: `Sample search result: ${region} residents still waiting for a family doctor`, query, isSample: true,
+        snippet: "A local news story about the family doctor shortage. Mentions one clinic that opened its list last month." },
     ];
   });
 }
@@ -60,10 +64,10 @@ export async function searchOntario(now: Date, limit = 3): Promise<SearchLead[]>
         if (size > 1000000) throw new Error("Web search response is too large.");
         chunks.push(chunk);
       }
-      const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { results?: { url?: string; title?: string }[] };
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { results?: { url?: string; title?: string; content?: string }[] };
       for (const result of body.results ?? []) try {
         const url = canonicalSourceUrl(result.url ?? "");
-        if (!leads.some((l) => l.url === url)) leads.push({ url, title: (result.title ?? "").slice(0,300), query });
+        if (!leads.some((l) => l.url === url)) leads.push({ url, title: (result.title ?? "").slice(0,300), query, snippet: (result.content ?? "").slice(0,500) });
       } catch { /* Invalid results are not sources. */ }
     }
   } finally { await dispatcher.close(); }

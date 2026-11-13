@@ -7,6 +7,14 @@ import { addDiscoverySource, runDiscoveryJob } from "@/lib/discovery/service";
 import { sourceKind } from "@/lib/discovery/search";
 import { seedDiscoverySources } from "@/lib/discovery/seeds";
 import { runDiscoveryDemo } from "@/lib/discovery/demo";
+import { runTriageAgent, type TriageOutcome } from "@/lib/agent/triage";
+
+/** Runs the triage agent on any unsorted pages. A failure leaves the pages for a person; it never blocks the step that found them. */
+async function triage(): Promise<TriageOutcome | null> {
+  try { return await runTriageAgent(); } catch (error) { console.error("Triage failed:", error instanceof Error ? error.message : error); return null; }
+}
+const sortedText = (t: TriageOutcome | null) => !t ? "The triage agent could not run, so the new pages wait for you in step 2."
+  : !t.pages ? "" : `The triage agent sorted ${t.pages} page${t.pages === 1 ? "" : "s"}: ${t.sorted.watch_clinic + t.sorted.watch_directory} now watched, ${t.sorted.dismiss} dismissed, ${t.sorted.ask_human} for you to decide.`;
 const value = (f: FormData,k: string) => String(f.get(k) ?? "").trim();
 /** Back to the discovery page with a message. `step` (find, review, check) shows the message inside that step and scrolls to it. */
 const go = (key: "msg"|"error", text: string, step = ""): never => redirect(`/admin/discovery?${key}=${encodeURIComponent(text.slice(0,600))}${step ? `&at=${step}#${step}` : ""}`);
@@ -55,7 +63,8 @@ export async function offlineDemo() {
 export async function addStarterSources() {
   await requireAdmin();
   const added = await seedDiscoverySources(prisma);
-  refresh(); go("msg", `Added ${added} Ontario starter pages to step 2. Nothing has been fetched yet.`, "review");
+  const t = await triage();
+  refresh(); go("msg", `Added ${added} Ontario starter pages. ${sortedText(t)}`.trim(), "review");
 }
 
 /** Step 1: web search only. New pages go to review; nothing is fetched. */
@@ -64,20 +73,39 @@ export async function searchNow() {
   const result = await runDiscoveryJob(prisma, { manual: true, maxQueries: 3, monitor: false });
   refresh();
   if (result.searchError) return go("error", `Search failed: ${result.searchError}`, "find");
-  go("msg", result.found ? `Found ${result.found} new page${result.found === 1 ? "" : "s"} to review in step 2.` : "Search ran (or is waiting for tomorrow's budget). No new pages this time.", "review");
+  const t = await triage();
+  refresh();
+  go("msg", result.found ? `Found ${result.found} new page${result.found === 1 ? "" : "s"}. ${sortedText(t)}` : "Search ran (or is waiting for tomorrow's budget). No new pages this time.", "review");
 }
 
 /** Step 3: check approved pages only. Changed pages go to the intake agent, which writes proposals for review. */
 export async function checkNow() {
   await requireAdmin();
   const r = await runDiscoveryJob(prisma, { manual: true, maxSources: 3, search: false });
+  // Directories add their links as new pages: sort those too.
+  const t = await triage();
   refresh();
   if (!r.checked) return go("msg", "No approved pages are due for a check. Approve a page in step 2, or wait until a checked page is due again.", "check");
   const parts = [`Checked ${r.checked} page${r.checked === 1 ? "" : "s"}`, `${r.proposed} new proposal${r.proposed === 1 ? "" : "s"} for review`];
   if (r.unchanged) parts.push(`${r.unchanged} unchanged`);
   if (r.errors) parts.push(`${r.errors} could not be read`);
   const other = r.checked - r.proposed - r.unchanged - r.errors;
-  if (other) parts.push(`${other} had no new-patient notice (or were directories whose links went to step 2)`);
-  go("msg", `${parts.join(" · ")}.`, "check");
+  if (other) parts.push(`${other} had no new-patient notice (or were directories, whose links were sorted)`);
+  go("msg", `${parts.join(" · ")}.${t?.pages ? ` ${sortedText(t)}` : ""}`, "check");
 }
 
+
+/** Step 2: sort any pages nobody has sorted yet (for example pages added before the triage agent existed). */
+export async function sortNow() {
+  await requireAdmin();
+  const t = await triage();
+  refresh(); go(t ? "msg" : "error", sortedText(t) || "No new pages to sort.", "review");
+}
+
+/** Undo the triage agent's choice for one page: it goes back to step 2 for a person to decide. */
+export async function undoTriage(form: FormData) {
+  await requireAdmin();
+  const done = await prisma.discoverySource.updateMany({ where: { id: value(form,"id"), triageDecision: { in: ["watch_clinic","watch_directory","dismiss"] }, reviewedAt: null },
+    data: { status: "pending", triageDecision: "ask_human", triageReason: "You undid the agent's choice.", leaseUntil: null } });
+  refresh(); go(done.count ? "msg" : "error", done.count ? "Undone. The page is back in step 2 for you to decide." : "That page changed. Reload the page.", "review");
+}

@@ -74,7 +74,7 @@ test("mock search returns sample leads on .example hosts without calling Tavily"
     const now = new Date("2026-11-13T12:00:00Z");
     const leads = await searchOntario(now, 3);
     assert.deepEqual(leads, mockSearch(now, 3));
-    assert.equal(leads.length, queriesForDay(now, 3).length * 2);
+    assert.equal(leads.length, queriesForDay(now, 3).length * 3);
     assert.equal(new Set(leads.map((l) => l.url)).size, leads.length, "each query gets its own sample links");
     for (const l of leads) {
       assert.equal(l.isSample, true);

@@ -217,6 +217,12 @@ model DiscoverySource {
   trustedClinic Boolean  @default(false) @map("trusted_clinic")
   foundBy       String   @default("manual") @map("found_by")
   query         String?
+  /// The search result's short description, when the search gave one. Shown to the triage agent; never fetched.
+  snippet       String   @default("")
+  /// What the triage agent chose: watch_clinic, watch_directory, dismiss or ask_human. Null until it sorts the page.
+  triageDecision String? @map("triage_decision")
+  triageReason  String?  @map("triage_reason")
+  triagedAt     DateTime? @map("triaged_at")
   isSample      Boolean  @default(false) @map("is_sample")
   lastCheckedAt DateTime? @map("last_checked_at")
   nextCheckAt   DateTime @default(now()) @map("next_check_at")
@@ -259,6 +265,8 @@ model DiscoverySearchState {
   nextSearchAt   DateTime   @default(now()) @map("next_search_at")
   leaseUntil     DateTime?  @map("lease_until")
   lastError      String?    @map("last_error")
+  /// The triage agent's last run (planner, model, steps), shown on the discovery page.
+  lastTriage     Json?      @map("last_triage")
 
   @@map("discovery_search_state")
 }

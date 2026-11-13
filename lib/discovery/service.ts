@@ -4,10 +4,10 @@ import { DAY_MS } from "../config";
 import { canonicalSourceUrl, fetchClinicPage, type PageEvidence } from "./web";
 import { searchOntario, searchProvider, sourceKind, type SearchLead } from "./search";
 
-export async function addDiscoverySource(db: PrismaClient, input: { url: string; title?: string; foundBy?: string; query?: string; isSample?: boolean }) {
+export async function addDiscoverySource(db: PrismaClient, input: { url: string; title?: string; foundBy?: string; query?: string; snippet?: string; isSample?: boolean }) {
   const url = canonicalSourceUrl(input.url);
   return db.discoverySource.upsert({ where: { url }, update: {}, create: { url, host: new URL(url).hostname,
-    title: (input.title ?? "").slice(0,300), kind: sourceKind(url), foundBy: input.foundBy ?? "manual", query: input.query?.slice(0,500), isSample: input.isSample ?? false } });
+    title: (input.title ?? "").slice(0,300), kind: sourceKind(url), foundBy: input.foundBy ?? "manual", query: input.query?.slice(0,500), snippet: (input.snippet ?? "").slice(0,500), isSample: input.isSample ?? false } });
 }
 export type DiscoveryDependencies = {
   fetchPage?: (url: string) => Promise<PageEvidence>;
