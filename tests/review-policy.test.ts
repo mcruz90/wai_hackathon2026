@@ -78,3 +78,34 @@ test("approved version covers evidence, extracted fields, status, and conflict c
   }
   assert.equal(reviewVersion({ ...l, confidence: Object.fromEntries(Object.entries(l.confidence as object).reverse()) }), version);
 });
+
+test("a discovered page without a date uses the day discovery read it", () => {
+  const base = fixture(), c = base.confidence as Record<string, unknown>;
+  const l = { ...base, rawText: base.rawText!.replace("2026-11-10: ", ""),
+    confidence: { ...c, date: "low", date_read: null, discovery: { check_id: "k", retrieved_at: "2026-11-09T15:00:00.000Z" } } } as ReviewListing;
+  const r = batchEligibility(l, ctx(l));
+  assert.deepEqual(r.reasons, []);
+  assert.equal(r.confirmed?.toISOString(), "2026-11-09T00:00:00.000Z");
+  // Pasted by hand, the same notice still needs a person to enter a date.
+  const pasted = { ...l, confidence: { ...(l.confidence as object), discovery: null } } as ReviewListing;
+  assert.equal(batchEligibility(pasted, ctx(pasted)).eligible, false);
+  // An old read is still too old.
+  const old = { ...l, confidence: { ...(l.confidence as object), discovery: { retrieved_at: "2026-10-01T00:00:00.000Z" } } } as ReviewListing;
+  assert.equal(batchEligibility(old, ctx(old)).eligible, false);
+});
+
+test("no languages is fine only when the notice names none", () => {
+  const base = fixture(), c = base.confidence as Record<string, unknown>;
+  const none = { ...base, languages: [], rawText: base.rawText!.replace(" Care in English and Tagalog.", ""), confidence: { ...c, languages: "low", notes: "No languages stated." } } as ReviewListing;
+  assert.deepEqual(batchEligibility(none, ctx(none)).reasons, []);
+  const missed = { ...base, languages: [] } as ReviewListing;
+  assert.equal(batchEligibility(missed, ctx(missed)).eligible, false, "the notice names Tagalog, so an empty field is a miss");
+});
+
+test("a 'not' elsewhere on a web page does not block it; a negated claim does", () => {
+  const base = fixture();
+  const page = { ...base, rawText: `${base.rawText} Do not use this form for emergencies. We cannot take walk-ins.` } as ReviewListing;
+  assert.deepEqual(batchEligibility(page, ctx(page)).reasons, []);
+  const negated = { ...base, rawText: `${base.rawText} Update: we are no longer accepting new patients.` } as ReviewListing;
+  assert.equal(batchEligibility(negated, ctx(negated)).eligible, false);
+});

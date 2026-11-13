@@ -4,6 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AgentTrace from "@/components/AgentTrace";
 import { requireTrustedSource } from "@/lib/review-policy";
+import { after } from "next/server";
+import { sortQueueInBackground, triageRunning } from "@/lib/agent/triage";
 import { addSource, addStarterSources, approveSource, checkNow, offlineDemo, pauseSource, rejectSource, searchNow, sortNow, undoTriage } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -36,8 +38,9 @@ export default async function Discovery({ searchParams }: { searchParams: Promis
   await requireAdmin("/admin/discovery");
   const sp = await searchParams;
   const now = new Date();
-  const [pending, active, counts, checks, searchState, proposalsWaiting, listingsWaiting, dismissed] = await Promise.all([
-    prisma.discoverySource.findMany({ where: { status: "pending" }, orderBy: [{ isSample: "asc" }, { createdAt: "desc" }], take: 60 }),
+  const [pending, active, counts, checks, searchState, proposalsWaiting, listingsWaiting, dismissed, unsortedTotal, askTotal, dismissedTotal] = await Promise.all([
+    // Pages the agent asked about come before unsorted ones, so the 60-row limit never hides a question for you.
+    prisma.discoverySource.findMany({ where: { status: "pending" }, orderBy: [{ isSample: "asc" }, { triageDecision: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }], take: 60 }),
     prisma.discoverySource.findMany({ where: { status: "active" }, orderBy: { reviewedAt: "desc" }, take: 60 }),
     prisma.discoverySource.groupBy({ by: ["status"], _count: true }),
     prisma.discoveryCheck.findMany({ include: { source: true }, orderBy: { retrievedAt: "desc" }, take: 15 }),
@@ -45,7 +48,14 @@ export default async function Discovery({ searchParams }: { searchParams: Promis
     prisma.agentProposal.count({ where: { status: "pending" } }),
     prisma.listing.count({ where: { status: "pending" } }),
     prisma.discoverySource.findMany({ where: { status: "rejected", triageDecision: "dismiss", reviewedAt: null }, orderBy: { triagedAt: "desc" }, take: 60 }),
+    // Real totals: the lists above stop at 60 rows, so counting the lists would cap every number at 60.
+    prisma.discoverySource.count({ where: { status: "pending", triageDecision: null } }),
+    prisma.discoverySource.count({ where: { status: "pending", triageDecision: "ask_human" } }),
+    prisma.discoverySource.count({ where: { status: "rejected", triageDecision: "dismiss", reviewedAt: null } }),
   ]);
+  // Unsorted pages are the agent's work, not yours: opening this page starts sorting them in the background.
+  const sorting = unsortedTotal > 0 && (triageRunning() || (after(() => sortQueueInBackground()), true));
+  const needYou = askTotal;
   const waiting = proposalsWaiting + listingsWaiting;
   const count = (s: string) => counts.find((c) => c.status === s)?._count ?? 0;
   const unsorted = pending.filter((s) => !s.triageDecision);
@@ -91,30 +101,32 @@ export default async function Discovery({ searchParams }: { searchParams: Promis
     </section>
 
     <section className="card step stack" id="review">
-      <h2><span className="stepnum">2</span> The agent sorts what was found <span className="muted small">({askYou.length + unsorted.length} need you)</span></h2>
+      <h2><span className="stepnum">2</span> The agent sorts what was found <span className="muted small">({needYou} need you)</span></h2>
       {sp.at === "review" ? <Flash sp={sp} /> : null}
       <p className="small muted">The <b>triage agent</b> looks at each page&apos;s link, title and search description (it fetches nothing). It watches clear clinic and directory pages, dismisses clearly useless ones, and leaves the rest for you. Watching only means reading that public page once a day. You can undo any choice.</p>
       <div className="tiles">
         <a className="tile" href="#agent-watched"><b>{agentWatched.length}</b>Watched by the agent</a>
-        <a className="tile" href="#agent-dismissed"><b>{dismissed.length}</b>Dismissed by the agent</a>
-        <a className={`tile ${askYou.length + unsorted.length ? "hot" : ""}`} href="#ask-you"><b>{askYou.length + unsorted.length}</b>Need you</a>
+        <a className="tile" href="#agent-dismissed"><b>{dismissedTotal}</b>Dismissed by the agent</a>
+        <a className={`tile ${needYou ? "hot" : ""}`} href="#ask-you"><b>{needYou}</b>Need you<span className="small muted">The agent was not sure</span></a>
       </div>
       {lastTriage?.at ? <div><p className="small muted">Last sorted: {when(new Date(lastTriage.at))}</p><AgentTrace trace={searchState?.lastTriage} /></div> : null}
-      {unsorted.length ? <div className="row"><span className="small">{unsorted.length} page{unsorted.length === 1 ? " has" : "s have"} not been sorted yet.</span>
-        <form action={sortNow}><SubmitButton className="btn ghost" pendingText="Sorting…">Let the agent sort them</SubmitButton></form></div> : null}
+      {unsortedTotal ? <p className="note small" role="status"><b>The agent is sorting {unsortedTotal} new page{unsortedTotal === 1 ? "" : "s"}.</b> {sorting ? "It started on its own, so there is nothing to click. Reload this page in a minute to see its choices." : null}</p> : null}
       <div id="ask-you">
-        {!askYou.length && !unsorted.length ? <p className="muted">Nothing needs you. Use step 1 to find more pages.</p> : null}
-        <ul className="srclist">
-          {askYou.map((s) => <SourceRow key={s.id} s={s} />)}
-          {unsorted.map((s) => <SourceRow key={s.id} s={s} />)}
-        </ul>
+        {!askYou.length ? <p className="muted">Nothing needs you{unsortedTotal ? " yet" : ""}.{unsortedTotal ? "" : " Use step 1 to find more pages."}</p> : null}
+        <ul className="srclist">{askYou.map((s) => <SourceRow key={s.id} s={s} />)}</ul>
+        {askTotal > askYou.length ? <p className="small muted">Showing {askYou.length} of {askTotal}.</p> : null}
       </div>
+      {unsorted.length ? <details>
+        <summary className="small">Waiting for the agent ({unsortedTotal}) · you can decide one yourself</summary>
+        <ul className="srclist">{unsorted.map((s) => <SourceRow key={s.id} s={s} />)}</ul>
+        <form action={sortNow}><SubmitButton className="btn ghost" pendingText="Sorting…">Sort now and show me the result</SubmitButton></form>
+      </details> : null}
       {agentWatched.length ? <details id="agent-watched">
         <summary className="small">Pages the agent chose to watch ({agentWatched.length})</summary>
         <ul className="srclist">{agentWatched.map((s) => <AgentChoice key={s.id} s={s} />)}</ul>
       </details> : null}
       {dismissed.length ? <details id="agent-dismissed">
-        <summary className="small">Pages the agent dismissed ({dismissed.length})</summary>
+        <summary className="small">Pages the agent dismissed ({dismissedTotal > dismissed.length ? `latest ${dismissed.length} of ${dismissedTotal}` : dismissedTotal})</summary>
         <ul className="srclist">{dismissed.map((s) => <AgentChoice key={s.id} s={s} />)}</ul>
       </details> : null}
     </section>

@@ -7,14 +7,25 @@ import { addDiscoverySource, runDiscoveryJob } from "@/lib/discovery/service";
 import { sourceKind } from "@/lib/discovery/search";
 import { seedDiscoverySources } from "@/lib/discovery/seeds";
 import { runDiscoveryDemo } from "@/lib/discovery/demo";
-import { runTriageAgent, type TriageOutcome } from "@/lib/agent/triage";
+import { after } from "next/server";
+import { runTriageAgent, sortQueueInBackground, unsortedCount, type TriageOutcome } from "@/lib/agent/triage";
 
-/** Runs the triage agent on any unsorted pages. A failure leaves the pages for a person; it never blocks the step that found them. */
-async function triage(): Promise<TriageOutcome | null> {
-  try { return await runTriageAgent(); } catch (error) { console.error("Triage failed:", error instanceof Error ? error.message : error); return null; }
+type Sorted = (TriageOutcome & { left: number }) | null;
+/**
+ * Runs the triage agent once (up to MAX_PAGES pages) so the message can say what it did, then sorts the rest of the
+ * queue in the background after the response. A failure leaves the pages unsorted; it never blocks the step that found them.
+ */
+async function triage(): Promise<Sorted> {
+  try {
+    const t = await runTriageAgent();
+    const left = await unsortedCount();
+    if (left && t.pages) after(() => sortQueueInBackground());
+    return { ...t, left };
+  } catch (error) { console.error("Triage failed:", error instanceof Error ? error.message : error); return null; }
 }
-const sortedText = (t: TriageOutcome | null) => !t ? "The triage agent could not run, so the new pages wait for you in step 2."
-  : !t.pages ? "" : `The triage agent sorted ${t.pages} page${t.pages === 1 ? "" : "s"}: ${t.sorted.watch_clinic + t.sorted.watch_directory} now watched, ${t.sorted.dismiss} dismissed, ${t.sorted.ask_human} for you to decide.`;
+const sortedText = (t: Sorted) => !t ? "The triage agent could not run. The new pages stay unsorted; try again later."
+  : !t.pages ? "" : `The triage agent sorted ${t.pages} page${t.pages === 1 ? "" : "s"}: ${t.sorted.watch_clinic + t.sorted.watch_directory} now watched, ${t.sorted.dismiss} dismissed, ${t.sorted.ask_human} for you to decide.`
+    + (t.left ? ` It keeps sorting the other ${t.left} in the background. Reload this page in a minute to see them.` : "");
 const value = (f: FormData,k: string) => String(f.get(k) ?? "").trim();
 /** Back to the discovery page with a message. `step` (find, review, check) shows the message inside that step and scrolls to it. */
 const go = (key: "msg"|"error", text: string, step = ""): never => redirect(`/admin/discovery?${key}=${encodeURIComponent(text.slice(0,600))}${step ? `&at=${step}#${step}` : ""}`);

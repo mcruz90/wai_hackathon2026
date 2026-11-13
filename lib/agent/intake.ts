@@ -11,6 +11,7 @@ import { prisma } from "../db";
 import { extractListing, needsReview, type Extraction } from "../extract";
 import { DOWNTOWN } from "../fsa";
 import { AgentError, compactTrace, runAgent, type AgentResult, type AgentTool } from "./runtime";
+import { contactCandidates, phoneDigits } from "./contacts";
 
 const SOURCE_TYPES = ["web", "post", "list", "news", "rev"];
 
@@ -18,6 +19,8 @@ type Ctx = {
   db: PrismaClient; isSample: boolean; offline?: boolean; discovery?: Record<string, string>;
   text: string; sourceUrl: string | null; sourceType: string; today: string;
   extraction: Extraction | null;
+  /** Fields fill_missing_fields set from the page's contact details, shown to the reviewer. */
+  filled: string[];
   created: { kind: "listing" | "proposal"; id: string } | null;
 };
 
@@ -35,14 +38,14 @@ async function createPendingListing(ctx: Ctx, rationale: string) {
       providerType: x.provider_type === "nurse_practitioner" ? "nurse_practitioner" : "family_doctor",
       languages: x.languages, phone: x.phone, sourceType: SOURCE_TYPES.includes(ctx.sourceType) ? ctx.sourceType : "rev", sourceUrl: ctx.sourceUrl,
       rawText: ctx.text, status: "pending", isSample: ctx.isSample,
-      confidence: { ...x.confidence, provider_type_read: x.provider_type, accepting: x.accepting, date_read: x.date, notes: x.notes, needs_review: needsReview(x), discovery: ctx.discovery ?? null, agent_rationale: rationale },
+      confidence: { ...x.confidence, provider_type_read: x.provider_type, accepting: x.accepting, date_read: x.date, notes: x.notes, needs_review: needsReview(x), discovery: ctx.discovery ?? null, agent_rationale: rationale, filled_from_page: ctx.filled },
     },
   });
   ctx.created = { kind: "listing", id: listing.id };
   return listing;
 }
 
-const tools: AgentTool<Ctx>[] = [
+export const intakeTools: AgentTool<Ctx>[] = [
   {
     name: "read_announcement",
     description: "Read the pasted announcement into structured fields (clinic, area, postal area, provider type, languages, date, accepting, phone) with a confidence for each. Call this first. It reads the text exactly as pasted; you do not pass the text.",
@@ -50,6 +53,39 @@ const tools: AgentTool<Ctx>[] = [
     async run(_input, ctx) {
       ctx.extraction = await extractListing(ctx.text, { today: ctx.today, offline: ctx.offline });
       return { ...ctx.extraction, needs_review: needsReview(ctx.extraction) };
+    },
+  },
+  {
+    name: "find_contact_details",
+    description: "List every postal code, phone number and 'City, ON' place written anywhere in the announcement, each with the text around it. Call this when read_announcement left area, fsa or phone empty. It only lists candidates: you decide which belong to this clinic.",
+    schema: obj({}),
+    async run(_input, ctx) {
+      const x = ctx.extraction;
+      return { already_read: { area: x?.area ?? null, fsa: x?.fsa ?? null, phone: x?.phone ?? null }, ...contactCandidates(ctx.text) };
+    },
+  },
+  {
+    name: "fill_missing_fields",
+    description: "Fill fields that read_announcement left empty, using values from find_contact_details that belong to this clinic. Pass null for a field you cannot settle (for example, a page that lists several clinics without saying which one is meant). Only empty fields change, and only to a value the text contains. confidence is for the location you filled: 'high' only when the page has one address and it is clearly this clinic's. notes: what is still uncertain after this, in one short sentence, or an empty string.",
+    schema: obj({ area: nullableString, fsa: nullableString, phone: nullableString, confidence: { type: "string", enum: ["high", "medium", "low"] }, notes: { type: "string" } }),
+    async run(input, ctx) {
+      const x = ctx.extraction;
+      if (!x) throw new AgentError("Read the announcement first (read_announcement).");
+      const c = contactCandidates(ctx.text), filled: string[] = [], refused: string[] = [];
+      const want = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+      const area = want(input.area), fsa = want(input.fsa)?.toUpperCase() ?? null, phone = want(input.phone);
+      if (area && !x.area) { if (ctx.text.toLowerCase().includes(area.toLowerCase())) { x.area = area; filled.push("area"); } else refused.push(`area "${area}" is not in the text`); }
+      if (fsa && !x.fsa) { if (c.postal_areas.some((p) => p.value === fsa && p.supported)) { x.fsa = fsa; filled.push("postal area"); } else refused.push(`postal area ${fsa} is not a supported postal code in the text`); }
+      if (phone && !x.phone) { const p = c.phones.find((q) => phoneDigits(q.value) === phoneDigits(phone)); if (p) { x.phone = p.value; filled.push("phone"); } else refused.push(`phone ${phone} is not in the text`); }
+      if (filled.includes("area") || filled.includes("postal area")) {
+        // More than one address on the page means the choice was a judgment: never "high".
+        const several = c.postal_areas.length > 1 || c.places.length > 1;
+        const asked = input.confidence === "high" || input.confidence === "medium" ? input.confidence : "low";
+        x.confidence.location = x.area && x.fsa ? (several && asked === "high" ? "medium" : asked) : "low";
+      }
+      // notes is what is still uncertain (it keeps a listing out of the batch); which fields were filled is kept apart.
+      if (filled.length) { x.notes = String(input.notes ?? "").trim(); ctx.filled = [...new Set([...ctx.filled, ...filled])]; }
+      return { filled, refused, now: { area: x.area, fsa: x.fsa, phone: x.phone, location_confidence: x.confidence.location } };
     },
   },
   {
@@ -134,6 +170,7 @@ A reviewer pasted one public announcement. Your job is to prepare one proposal f
 
 Work in this order:
 1. Call read_announcement.
+   If it left area, fsa or phone empty, call find_contact_details, then fill_missing_fields with the values that belong to this clinic. Use null for a field when the page lists several clinics or addresses and you cannot tell which is this clinic's. Skip both calls when nothing is empty.
 2. Call find_matching_listings with the clinic name and phone you read (use null for any you do not have).
 3. Finish with exactly one of:
    - no_listing, when a matching clinic is already pending review. Explain the duplicate so a reviewer can inspect the existing candidate.
@@ -147,6 +184,16 @@ Do not guess facts the text does not state. Keep each rationale to one or two pl
 /** The same steps, in a fixed order, for when no Claude key is in use. */
 async function scripted(call: (name: string, input: Record<string, unknown>) => Promise<unknown>) {
   const x = (await call("read_announcement", {})) as Extraction;
+  if (!x.area || !x.fsa || !x.phone) {
+    // Without a model, fill a field only when the text has exactly one candidate for it.
+    const c = (await call("find_contact_details", {})) as ReturnType<typeof contactCandidates>;
+    const one = <T extends { value: string }>(xs: T[]) => (xs.length === 1 ? xs[0].value : null);
+    const fill = { area: x.area ? null : one(c.places), fsa: x.fsa ? null : one(c.postal_areas.filter((p) => p.supported)), phone: x.phone ? null : one(c.phones) };
+    if (fill.area || fill.fsa || fill.phone) {
+      const r = (await call("fill_missing_fields", { ...fill, confidence: "medium", notes: x.notes })) as { now: Pick<Extraction, "area" | "fsa" | "phone"> };
+      Object.assign(x, r.now);
+    }
+  }
   const { matches } = (await call("find_matching_listings", { clinic: x.clinic, phone: x.phone })) as { matches: { listing_id: string; clinic: string; matched_by: string; fsa: string | null }[] };
   const match = matches.find((m) => m.matched_by === "phone") ?? matches.find((m) => !x.fsa || m.fsa === x.fsa);
   if (matches.some((m) => (m as { status?: string }).status === "pending")) {
@@ -165,13 +212,13 @@ async function scripted(call: (name: string, input: Record<string, unknown>) => 
 export type IntakeOutcome = { kind: "listing" | "proposal"; id: string; result: AgentResult };
 
 export async function runIntakeAgent(input: { text: string; sourceUrl: string | null; sourceType: string; today?: string; db?: PrismaClient; isSample?: boolean; offline?: boolean; discovery?: Record<string, string> }): Promise<IntakeOutcome> {
-  const ctx: Ctx = { ...input, db: input.db ?? prisma, isSample: input.isSample ?? false, today: input.today ?? new Date().toISOString().slice(0, 10), extraction: null, created: null };
+  const ctx: Ctx = { ...input, db: input.db ?? prisma, isSample: input.isSample ?? false, today: input.today ?? new Date().toISOString().slice(0, 10), extraction: null, filled: [], created: null };
   const task = `Today is ${ctx.today}. Source type: ${ctx.sourceType}. Source link: ${ctx.sourceUrl ?? "none"}.
 
 <announcement>
 ${ctx.text}
 </announcement>`;
-  const result = await runAgent({ system: SYSTEM, task, tools, ctx, planner: scripted, offline: ctx.offline });
+  const result = await runAgent({ system: SYSTEM, task, tools: intakeTools, ctx, planner: scripted, offline: ctx.offline });
   // If the agent stopped without finishing but did read the text, nothing is lost: it goes to review as a new listing.
   if (!ctx.created && ctx.extraction) await createPendingListing(ctx, `The agent stopped before proposing (${result.note || "no reason given"}). Review as a new listing.`);
   if (!ctx.created) throw new AgentError(result.note || "The agent could not read the announcement.");

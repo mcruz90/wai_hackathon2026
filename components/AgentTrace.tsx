@@ -9,6 +9,8 @@ type Obj = Record<string, unknown>;
 
 const LABELS: Record<string, string> = {
   read_announcement: "Read the notice",
+  find_contact_details: "Looked for addresses and phone numbers on the page",
+  fill_missing_fields: "Filled empty fields from the page's contact details",
   find_matching_listings: "Checked the directory for the same clinic",
   submit_new_listing: "Sent it for review as a new listing",
   propose_update: "Proposed a change to an existing listing",
@@ -46,6 +48,15 @@ export function describeStep(s: Step): string {
       ];
       const accepting = ACCEPTING[str(result.accepting)] ?? "";
       return `Read the notice: ${parts.join(" · ")}. It ${accepting || "is unclear about new patients"}. ${unsure.length ? `Less sure about: ${unsure.join(", ").replace("_", " ")}.` : "Every field read with high confidence."}`;
+    }
+    case "find_contact_details": {
+      const n = (k: string) => (Array.isArray(result[k]) ? (result[k] as unknown[]).length : 0);
+      return `Looked for contact details on the page: ${n("postal_areas")} postal code${n("postal_areas") === 1 ? "" : "s"}, ${n("phones")} phone number${n("phones") === 1 ? "" : "s"}, ${n("places")} place name${n("places") === 1 ? "" : "s"}.`;
+    }
+    case "fill_missing_fields": {
+      const filled = list(result.filled), refused = list(result.refused);
+      return (filled.length ? `Filled ${filled.join(", ")} from the page's contact details.` : "Filled nothing: the page did not settle the empty fields.")
+        + (refused.length ? ` Refused: ${refused.join("; ")}.` : "");
     }
     case "find_matching_listings": {
       const matches = Array.isArray(result.matches) ? result.matches.map(asObj) : [];
