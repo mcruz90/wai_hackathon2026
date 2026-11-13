@@ -102,7 +102,7 @@ These screenshots show the running application with invented review fixtures fro
 
 ## Built with
 
-Next.js 15, React 19, TypeScript and PostgreSQL with Prisma. Announcements are read by Cohere Command A+ (`command-a-plus-05-2026`) through the Cohere v2 Chat API with a JSON schema. The reading step also works with the Anthropic API (Claude) and OpenAI. The agent loop lets the model choose its own tool calls only with `LLM_PROVIDER=anthropic`. With Cohere, a scripted planner calls the same tools in a fixed order, and every run is still stored as a trace for the reviewer. It is set up to deploy to DigitalOcean App Platform.
+Next.js 15, React 19, TypeScript and PostgreSQL with Prisma. Announcements are read by Cohere Command A+ (`command-a-plus-05-2026`) through the Cohere v2 Chat API with a JSON schema. The reading step also works with the Anthropic API (Claude) and OpenAI. The agents use Cohere tool calling: Command A+ reads the task, writes a short plan, and chooses which tool to call next until it writes a proposal. Claude does the same with `LLM_PROVIDER=anthropic`. Every run, including the model's plan before each step, is stored as a trace for the reviewer. It is set up to deploy to DigitalOcean App Platform.
 
 Planned: Cohere's open Aya models for translating listings and call scripts into more languages. The prototype uses hand-written translations for now.
 
@@ -169,7 +169,7 @@ Secrets never go in the repo. `.env` is git-ignored.
 
 The agents are in `lib/agent/`:
 
-- `runtime.ts` is a small tool-use loop. With `LLM_PROVIDER=anthropic`, Claude chooses which tool to call next, up to 8 turns. It uses strict tool schemas and the API's server-side refusal fallback. With any other provider, a scripted planner calls the same tools in a fixed order, so the pipeline works offline and in tests. Every run is stored as a trace and shown to the reviewer.
+- `runtime.ts` is a small tool-use loop, up to 8 turns. With `LLM_PROVIDER=cohere`, Cohere's tool calling chooses the next tool, and its `tool_plan` (the model's reasoning before each call) is kept in the trace. If Cohere errors or stops without a proposal, a scripted planner finishes the run with the same tools, and the trace says so. With `LLM_PROVIDER=anthropic`, Claude chooses the steps with strict tool schemas and the API's server-side refusal fallback. With any other provider, or with `AGENT_PLANNER=scripted` (a switch to turn the model's choices off, for example on a demo day), the scripted planner calls the same tools in a fixed order, so the pipeline works offline and in tests. Every run is stored as a trace and shown to the reviewer.
 - `intake.ts` has the tools `read_announcement` (the extraction module below), `find_matching_listings`, and three tools that end the run: `submit_new_listing`, `propose_update` (re-confirm or mark full) and `no_listing`. Each of those three only writes a pending listing or a proposal.
 - `freshness.ts` has the tools `find_listings_needing_attention` (live listings expiring within 10 days, or with a "full" report), `propose_recheck` (with a priority and a call script) and `finish`.
 
@@ -319,7 +319,7 @@ npm run typecheck
 
 The spec is `.do/app.yaml`: one web service and a `PRE_DEPLOY` job that runs migrations and the seed, in the Toronto region, with deploy on push. For the demo there are no scheduled jobs: expiry, freshness, waitlist check-ins and discovery run from their buttons on the admin screens (or `npm run job:*`). To schedule them for a pilot, add `SCHEDULED` jobs to the spec that run those same commands. The database is a free [Neon](https://neon.tech) PostgreSQL project, connected through the `DATABASE_URL` secret, so there is no paid DigitalOcean database.
 
-**Before the first deploy, check three things in the spec:** the `github.repo` and `branch` (it deploys `main`). The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the freshness check runs its tools in a fixed order. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
+**Before the first deploy, check the spec's** `github.repo` and `branch` (it deploys `main`). The spec sets `LLM_PROVIDER=cohere` and `LLM_MODEL=command-a-plus-05-2026`, so `LLM_API_KEY` must be a Cohere key. With Cohere the agents choose their own steps; set `AGENT_PLANNER=scripted` to run them in a fixed order instead. The spec was written without access to DigitalOcean's docs or an account, so `doctl apps spec validate .do/app.yaml` should be the first command you run.
 
 This creates paid resources on DigitalOcean: the web service and job run time. Neon's free plan covers the database for a demo.
 

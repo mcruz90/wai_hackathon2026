@@ -57,7 +57,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       <form className="card" action={intake}>
         <h2>Intake</h2>
         <p className="muted small">Paste one public announcement and its link. The intake agent reads it into fields, checks whether the clinic is already listed, and proposes a new listing, an update, or not listing it. Nothing is published until a reviewer approves it below. The demo text is invented.</p>
-        {provider === "mock" ? <p className="banner">LLM_PROVIDER is "mock": an offline keyword reader stands in for the AI, and a scripted planner runs the agent's steps. Set a real provider and key for real reads.</p> : provider !== "anthropic" ? <p className="banner">The agent's steps are scripted with this provider. Claude chooses the steps when LLM_PROVIDER is anthropic.</p> : null}
+        {provider === "mock" ? <p className="banner">LLM_PROVIDER is "mock": an offline keyword reader stands in for the AI, and a scripted planner runs the agent's steps. Set a real provider and key for real reads.</p> : process.env.AGENT_PLANNER === "scripted" ? <p className="banner">AGENT_PLANNER is "scripted": the agent's steps run in a fixed order. Remove it to let the model choose the steps.</p>
+          : provider !== "anthropic" && provider !== "cohere" ? <p className="banner">The agent's steps are scripted with this provider. The model chooses the steps when LLM_PROVIDER is anthropic or cohere.</p> : null}
         <div><label className="lbl" htmlFor="text">Announcement text</label><textarea id="text" name="text" rows={6} required maxLength={6000} defaultValue={SAMPLE_ANN} /></div>
         <div className="grid2">
           <div><label className="lbl" htmlFor="sourceUrl">Source link</label><input type="text" id="sourceUrl" name="sourceUrl" inputMode="url" placeholder="https://" /></div>
