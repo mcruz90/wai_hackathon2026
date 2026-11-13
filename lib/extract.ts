@@ -60,13 +60,13 @@ Return null rather than guess. If the text does not state a field, use null (or 
 
 Fields:
 - clinic: the clinic's name as written, or null.
-- area: a short neighbourhood or intersection as written, or null.
+- area: where the clinic is, as written: a neighbourhood, an intersection, or the city or town in the clinic's own address (for example "London" from "London, ON N6H 0G6"). null if the text gives none, or if it lists several clinics in different places and does not say which one is meant.
 - fsa: the first three characters of an Ontario postal code explicitly stated in the text, from the allowed list. Ontario postal districts start K, L, M, N or P. Return null when the code is missing, outside Ontario, or unsupported; do not guess a postal area from a city or street.
 - provider_type: "family_doctor", "nurse_practitioner", or "unknown".
 - languages: English names of the languages care is offered in, exactly those the text states. Empty list if none are stated.
 - date: YYYY-MM-DD. The date the announcement was posted, or the date it says new patients are accepted from. Work out relative dates ("next month") only when the text itself carries a date to anchor them. Today's date is for reference only; do not assume the announcement was written today. null if the text alone does not settle it.
 - accepting: "yes" only if the text clearly says new patients are being accepted, "no" if it says they are not, otherwise "unclear".
-- phone: as written, or null.
+- phone: the clinic's phone number as written, or null. A block labelled [Contact details elsewhere on the same page] holds address and phone lines from the rest of the page: use it for area, fsa and phone when it clearly belongs to this clinic.
 - confidence: "high", "medium" or "low" for location, provider_type, languages and date.
 - notes: one short sentence on what you were unsure about, or an empty string.`;
   const user = `Today is ${today}.

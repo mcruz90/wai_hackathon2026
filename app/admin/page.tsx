@@ -1,7 +1,7 @@
 import type { AgentProposal, Listing } from "@prisma/client";
 import { reviewedClinicHosts } from "@/lib/source-trust";
 import BatchReview from "@/components/BatchReview";
-import { batchEligibility, MAX_REVIEW_BATCH, requireTrustedSource, reviewVersion, type ReviewListing } from "@/lib/review-policy";
+import { batchEligibility, MAX_REVIEW_BATCH, requireTrustedSource, retrievedDate, sourceHost, reviewVersion, type ReviewListing } from "@/lib/review-policy";
 import { reviewInclude } from "@/lib/batch-review";
 import AdminNav from "@/components/AdminNav";
 import SubmitButton from "@/components/SubmitButton";
@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { FSA_CODES } from "@/lib/fsa";
 import { ageDays } from "@/lib/ranking";
 import AgentTrace from "@/components/AgentTrace";
+import { noticeMarks, reviewGuide, type Field } from "@/lib/review-guide";
 import { approve, approveBatch, intake, listingMarkFull, listingReopen, proposalApprove, proposalFull, proposalReject, proposalReviewAsNew, proposalStillOpen, reject, runExpiry, runFreshness } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -88,7 +89,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
           }))} />
           <details>
             <summary className="small">Edit or reject one of these instead</summary>
-            <div className="stack">{shown.map((l) => <ListingReview key={l.id} l={l} check={checks.get(l.id)!} today={today} />)}</div>
+            <div className="stack">{shown.map((l) => <ListingReview key={l.id} l={l} check={checks.get(l.id)!} today={today} fsas={ctx.fsas} />)}</div>
           </details>
         </> : <p className="muted">Nothing is ready right now.</p>}
       </section>
@@ -97,7 +98,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
         <h2><span className="stepnum">2</span> Needs you <span className="muted small">({needs})</span></h2>
         <p className="small muted">The agent could not settle these alone. Each one says why. Open it, check the notice, then decide.</p>
         {needs ? null : <p className="muted">Nothing needs you right now.</p>}
-        {unsure.map((l) => <ListingReview key={l.id} l={l} check={checks.get(l.id)!} today={today} />)}
+        {unsure.map((l) => <ListingReview key={l.id} l={l} check={checks.get(l.id)!} today={today} fsas={ctx.fsas} />)}
         {updates.map((p) => <ProposalCard key={p.id} p={p} today={today} />)}
       </section>
 
@@ -164,49 +165,76 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   );
 }
 
-/** One pending listing: a one-line summary with the reason, then the full form to check, edit, approve or reject. */
-function ListingReview({ l, check, today }: { l: ReviewListing; check: Check; today: string }) {
+/** The notice text in a scroll box, with "new patients" wording, phone numbers and the clinic name marked. */
+function Notice({ text, clinic }: { text: string; clinic: string }) {
+  return <pre className="raw notice">{noticeMarks(text, clinic).map((p, i) => (p.mark ? <mark key={i}>{p.t}</mark> : p.t))}</pre>;
+}
+
+/**
+ * One pending listing. Collapsed: the clinic and a short "To check" list. Open: the decision on the left (what to check,
+ * the fields with the doubtful ones marked, the buttons) and the evidence on the right (the notice, then the agent's notes).
+ */
+function ListingReview({ l, check, today, fsas }: { l: ReviewListing; check: Check; today: string; fsas: string[] }) {
   const c = (l.confidence ?? {}) as Conf;
+  const { todo, flagged, missing } = reviewGuide(l, check.reasons, fsas);
   const unclearProvider = c.provider_type_read === "unknown";
-  const notAccepting = c.accepting !== "yes";
-  const why = notAccepting ? `The notice does not clearly say the clinic is taking new patients (the agent read: ${String(c.accepting ?? "unclear")}).` : check.reasons[0];
-  const more = check.reasons.length - (notAccepting ? 0 : 1);
   const discovery = c.discovery as Conf | null | undefined;
+  const f = (name: Field) => `field${flagged.has(name) ? " flag" : ""}`;
+  // An empty field gets "missing", not the agent's confidence: "high" on a blank box reads as a contradiction.
+  const conf = (name: Field, v: unknown) => (missing.has(name) ? <span className="conf low">missing</span> : flagged.has(name) ? pill(v) : null);
+  const ready = !check.reasons.length;
+  const fetched = retrievedDate(c, new Date())?.toISOString().slice(0, 10);
   return (
-    <details className="card" id={`individual-${l.id}`}>
+    <details className="card review-item" id={`individual-${l.id}`}>
       <summary>
-        <b>{l.clinic || "Unnamed clinic"}</b> {l.isSample ? <span className="tag">Sample</span> : null} <Origin discovery={discovery} />
-        <span className="small muted"> · {l.area || "no area"}</span>
-        {why ? <span className="small why-line">Why it&apos;s here: {why}{more > 0 ? ` (+${more} more)` : ""}</span> : <span className="small muted" style={{ display: "block" }}>Ready to publish. Edit or reject it here if something is off.</span>}
+        <span className="review-head"><b>{l.clinic || "Unnamed clinic"}</b> <span className="small muted">{l.area || "no area"}</span>
+          {l.isSample ? <span className="tag">Sample</span> : null} <Origin discovery={discovery} /></span>
+        {ready ? <span className="small muted" style={{ display: "block" }}>Ready to publish. Edit or reject it here if something is off.</span>
+          : <span className="small why-line">To check: {todo.map((t) => t.label).join(" · ")}</span>}
       </summary>
-      <form className="stack" action={approve}>
+      <form className="review-grid" action={approve}>
         <input type="hidden" name="id" value={l.id} />
         <input type="hidden" name="version" value={reviewVersion(l)} />
-        {check.reasons.length > 1 || notAccepting ? <ul className="small">{[...(notAccepting ? [why] : []), ...check.reasons].map((r) => <li key={r}>{r}</li>)}</ul> : null}
-        {c.agent_rationale ? <p className="small muted">Agent: {String(c.agent_rationale)}</p> : null}
-        {c.notes ? <p className="small muted">AI note: {String(c.notes)}</p> : null}
-        {discovery && typeof discovery.check_id === "string" ? <a className="small" href={`/admin/discovery?check=${discovery.check_id}#evidence-${discovery.check_id}`}>See the page discovery collected, and when</a> : null}
-        <AgentTrace trace={c.agent_trace} />
-        <details open><summary className="small muted">The notice</summary><pre className="raw">{l.rawText}</pre></details>
-        <div className="grid2">
-          <div><label className="lbl">Clinic<input type="text" name="clinic" defaultValue={l.clinic} required /></label></div>
-          <div><label className="lbl">Area {pill(c.location)}<input type="text" name="area" defaultValue={l.area} required /></label></div>
-          <div><label className="lbl">Postal area {pill(c.location)}
-            <select name="fsa" defaultValue={l.fsa ?? ""} required><option value="">Choose</option>{FSA_CODES.map((f) => <option key={f}>{f}</option>)}</select></label></div>
-          <div><label className="lbl">Provider type {pill(unclearProvider ? "low" : c.provider_type)}
-            <select name="providerType" defaultValue={unclearProvider ? "" : l.providerType} required><option value="">Choose</option><option value="family_doctor">Family doctor</option><option value="nurse_practitioner">Nurse practitioner</option></select></label></div>
-          <div><label className="lbl">Languages, comma separated {pill(c.languages)} (leave empty if not stated: patients see “Languages not listed. Ask when you call.”)<input type="text" name="languages" defaultValue={l.languages.join(", ")} /></label></div>
-          <div><label className="lbl">Phone<input type="text" name="phone" defaultValue={l.phone ?? ""} /></label></div>
-          <div><label className="lbl">Date you confirm {pill(c.date_read ? c.date : "low")}
-            <input type="date" name="date" defaultValue={typeof c.date_read === "string" ? c.date_read : ""} max={today} required /></label>
-            <span className="small muted">{c.date_read ? "Read from the text." : "The agent found no date. Enter the date you checked it."}</span></div>
-          <div><label className="lbl">Source type<select name="sourceType" defaultValue={l.sourceType}>{SOURCES.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label></div>
-          <div><label className="lbl">Source link<input type="text" name="sourceUrl" defaultValue={l.sourceUrl ?? ""} /></label></div>
+        <div className="stack">
+          {todo.length ? <div className="todo"><h3 className="small">What to check</h3><ol>{todo.map((t) => <li key={t.label}>{t.text}</li>)}</ol></div> : null}
+          <fieldset className="group"><legend className="small">What patients will see</legend>
+            <div className="grid2">
+              <div className={f("clinic")}><label className="lbl">Clinic<input type="text" name="clinic" defaultValue={l.clinic} required /></label></div>
+              <div className={f("phone")}><label className="lbl">Phone<input type="text" name="phone" defaultValue={l.phone ?? ""} /></label></div>
+              <div className={f("area")}><label className="lbl">Area {conf("area", c.location)}<input type="text" name="area" defaultValue={l.area} required /></label></div>
+              <div className={f("fsa")}><label className="lbl">Postal area {conf("fsa", c.location)}
+                <select name="fsa" defaultValue={l.fsa ?? ""} required><option value="">Choose</option>{FSA_CODES.map((x) => <option key={x}>{x}</option>)}</select></label></div>
+              <div className={f("providerType")}><label className="lbl">Provider type {conf("providerType", unclearProvider ? "low" : c.provider_type)}
+                <select name="providerType" defaultValue={unclearProvider ? "" : l.providerType} required><option value="">Choose</option><option value="family_doctor">Family doctor</option><option value="nurse_practitioner">Nurse practitioner</option></select></label></div>
+              <div className={f("languages")}><label className="lbl">Languages {conf("languages", c.languages)}<input type="text" name="languages" defaultValue={l.languages.join(", ")} placeholder="English, French" /></label>
+                <span className="small muted">Comma separated. Leave empty if not stated: patients see “Languages not listed. Ask when you call.”</span></div>
+            </div>
+          </fieldset>
+          <fieldset className="group"><legend className="small">Evidence</legend>
+            <div className="grid2">
+              <div className={f("date")}><label className="lbl">Date you confirm {conf("date", c.date_read ? c.date : "low")}
+                <input type="date" name="date" defaultValue={typeof c.date_read === "string" ? c.date_read : fetched ?? ""} max={today} required /></label>
+                <span className="small muted">{c.date_read ? "Read from the notice." : fetched ? "The day discovery read the clinic's page. The notice itself has no date." : "No date in the notice. Enter the date you checked."}</span></div>
+              <div><label className="lbl">Source type<select name="sourceType" defaultValue={l.sourceType}>{SOURCES.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label></div>
+              <div className={`${f("sourceUrl")} span2`}><label className="lbl">Source link<input type="text" name="sourceUrl" defaultValue={l.sourceUrl ?? ""} /></label></div>
+            </div>
+          </fieldset>
+          <div className="row">
+            <button className="btn" type="submit">Approve and publish</button>
+            <button className="btn bad" type="submit" formAction={reject} formNoValidate>Reject</button>
+          </div>
         </div>
-        <div className="row">
-          <button className="btn" type="submit">Approve and publish</button>
-          <button className="btn bad" type="submit" formAction={reject} formNoValidate>Reject</button>
-        </div>
+        <aside className="stack evidence-col" aria-label="Evidence">
+          <div className="row small">
+            <b>The notice</b>
+            {sourceHost(l.sourceUrl) ? <a href={l.sourceUrl!} target="_blank" rel="noreferrer noopener">Open the source page</a> : null}
+            {discovery && typeof discovery.check_id === "string" ? <a href={`/admin/discovery?check=${discovery.check_id}#evidence-${discovery.check_id}`}>When discovery read it</a> : null}
+          </div>
+          <Notice text={l.rawText ?? ""} clinic={l.clinic} />
+          {Array.isArray(c.filled_from_page) && c.filled_from_page.length ? <p className="small">The agent filled <b>{c.filled_from_page.join(", ")}</b> from the page&apos;s contact details. Check them against the notice.</p> : null}
+          {c.agent_rationale || c.notes ? <p className="small muted">{c.agent_rationale ? <>Agent: {String(c.agent_rationale)} </> : null}{c.notes ? <>Note: {String(c.notes)}</> : null}</p> : null}
+          <AgentTrace trace={c.agent_trace} />
+        </aside>
       </form>
     </details>
   );
@@ -236,7 +264,7 @@ function ProposalCard({ p, today }: { p: Proposal; today: string }) {
         ) : null}
         {recheck && l?.status === "full" ? <p className="note warn small">Hidden from patients right now because of their reports. If the clinic says it is taking patients, choose “They are still taking patients” and it goes back live from today.</p> : null}
         {pl.call_script ? <div><span className="lbl">Call script</span><pre className="raw">{pl.call_script}</pre></div> : null}
-        {p.rawText ? <details><summary className="small muted">The notice</summary><pre className="raw">{p.rawText}</pre></details> : null}
+        {p.rawText ? <details><summary className="small muted">The notice</summary><Notice text={p.rawText} clinic={l?.clinic ?? ""} /></details> : null}
         {p.action === "reconfirm_listing" ? (
           <div><label className="lbl">Date you confirm<input type="date" name="date" defaultValue={pl.confirmed_date ?? ""} required max={today} /></label></div>
         ) : null}

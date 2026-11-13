@@ -32,6 +32,9 @@ envs:
     value: cohere
   - key: LLM_MODEL
     value: command-a-plus-05-2026
+  # Pause between background triage runs, in milliseconds. Larger = fewer Cohere calls per minute.
+  - key: TRIAGE_PAUSE_MS
+    value: "20000"
   - key: LLM_API_KEY
     type: SECRET
   - key: ADMIN_PASSWORD

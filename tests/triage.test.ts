@@ -12,7 +12,10 @@ test("triage rules: clear clinic and directory pages are watched; unclear pages 
   assert.equal(ruleDecision(page({ title: "Clinique Rideau", snippet: "Nous acceptons de nouveaux patients" })).decision, "watch_clinic");
   assert.equal(ruleDecision(page({ title: "Find a family doctor in Peel: clinic directory" })).decision, "watch_directory");
   assert.equal(ruleDecision(page({ title: "Residents still waiting for a doctor", url: "https://www.cbc.ca/news/x" })).decision, "dismiss");
-  assert.equal(ruleDecision(page({ title: "Maple Medical Clinic hours" })).decision, "ask_human");
+  assert.equal(ruleDecision(page({ title: "Maple Medical Clinic hours" })).decision, "watch_clinic", "a clinic page is watched even without new-patient words");
+  assert.equal(ruleDecision(page({ title: "Something else" })).decision, "ask_human");
+  assert.equal(ruleDecision(page({ title: "Careers", same_site_as_watched_clinic: true })).decision, "dismiss", "other pages of a watched clinic site are not watched twice");
+  assert.equal(ruleDecision(page({ title: "Register as a new patient", same_site_as_watched_clinic: true })).decision, "watch_clinic");
   assert.equal(ruleDecision(page({ title: "We are accepting new patients!", social: true })).decision, "dismiss");
 });
 
@@ -65,6 +68,15 @@ test("triage agent with PostgreSQL", { skip: !process.env.REVIEW_TEST_DATABASE_U
       const lists = r.result.steps.filter((s) => s.tool === "list_new_pages").map((s) => (s.result as { pages: { page: string }[] }).pages.length);
       assert.deepEqual(lists, [10, 10, 3]);
       assert.equal((r.result.steps.find((s) => s.tool === "list_new_pages")!.result as { pages: { page: string }[] }).pages[0].page, "p1");
+    });
+
+    await t.test("the background loop sorts the whole queue, more than one run's cap, without clicks", async () => {
+      const { sortQueueInBackground, unsortedCount, MAX_PAGES } = await import("../lib/agent/triage");
+      for (let i = 0; i < MAX_PAGES + 15; i++) await db.discoverySource.create({ data: { url: `https://queue${i}.example/`, host: `queue${i}.example`, title: `Queue ${i} Medical Clinic`, foundBy: "search" } });
+      const first = sortQueueInBackground({ db, pauseMs: 0 });
+      assert.equal(sortQueueInBackground({ db, pauseMs: 0 }), first, "a second call joins the running loop");
+      assert.equal(await first, MAX_PAGES + 15);
+      assert.equal(await unsortedCount(db), 0);
     });
 
     await t.test("with Cohere, the model's decisions use page handles, and pages it skips go to a person", async () => {

@@ -68,7 +68,28 @@ async function smallGet(value: string, limit: number, signal: AbortSignal, allow
   }
   throw new Error("Too many redirects.");
 }
-export type PageEvidence = { url: string; title: string; excerpt: string; publishedDate: string | null; contentHash: string; links: { url: string; title: string }[] };
+const POSTAL = /\b[KLMNP]\d[A-Z] ?\d[A-Z]\d\b/i, PHONE = /\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b/;
+/**
+ * The excerpt keeps 6000 characters around the new-patient wording, which often cuts off the footer with the clinic's
+ * address and phone. This adds those lines back, labelled, so the intake model can read them: lines from the whole page
+ * with a postal code or a phone number (and the line before a postal code, which is usually the street), plus tel: links.
+ * Only what the excerpt does not already contain. Short, so a page of many clinics cannot flood the notice.
+ */
+export function contactBlock(excerpt: string, text: string, tels: string[] = []): string {
+  const lines = text.split("\n").map((l) => l.trim());
+  const picked: string[] = [];
+  lines.forEach((l, i) => {
+    if (l.length > 200 || !(POSTAL.test(l) || PHONE.test(l))) return;
+    if (POSTAL.test(l) && i > 0 && lines[i - 1] && lines[i - 1].length <= 120 && !PHONE.test(lines[i - 1])) picked.push(lines[i - 1]);
+    picked.push(l);
+  });
+  for (const t of tels) picked.push(`Phone (from a call link): ${t}`);
+  const fresh = [...new Set(picked)].filter((l) => !excerpt.includes(l.replace(/^Phone \(from a call link\): /, ""))).slice(0, 12);
+  const block = fresh.join("\n").slice(0, 1200);
+  return block ? `\n\n[Contact details elsewhere on the same page]\n${block}` : "";
+}
+
+export type PageEvidence ={ url: string; title: string; excerpt: string; publishedDate: string | null; contentHash: string; links: { url: string; title: string }[] };
 export function parsePage(html: string, url: string): PageEvidence {
   const $ = load(html);
   const title = $("title").first().text().trim().slice(0, 300);
@@ -85,12 +106,14 @@ export function parsePage(html: string, url: string): PageEvidence {
     .filter((a) => /clinic|family|patients?|register|registration|accepting|médecin|inscription/i.test(a.title+" "+a.href))
     .flatMap((a) => { try { return [{ url: canonicalSourceUrl(new URL(a.href,url).toString()), title: a.title }]; } catch { return []; } })
     .filter((a, i, all) => a.url !== url && all.findIndex((b) => b.url === a.url) === i).slice(0,10);
+  // tel: links, read before <nav> is removed: many clinic sites show their phone only as a header or menu button.
+  const tels = [...new Set($('a[href^="tel:"]').toArray().map((a) => decodeURIComponent($(a).attr("href")!.slice(4)).replace(/[^\d+()\-. ]/g, "").trim()).filter((t) => t.replace(/\D/g, "").length >= 10))].slice(0, 5);
   $("script,style,noscript,nav,form,svg,iframe,[hidden],[aria-hidden=true],[style*=\"display:none\"],[style*=\"display: none\"]").remove();
   $("p,div,section,article,h1,h2,h3,h4,li,br,footer,address").append("\n");
   const text = $("body").text().replace(/[\t\r ]+/g, " ").replace(/ *\n */g,"\n").replace(/\n{3,}/g,"\n\n").trim();
   const position = text.search(/accepting|new patients|taking patients|registration|nouveaux patients|inscription/i);
   const start = position > 1800 ? position-1800 : 0;
-  const excerpt = text.slice(start,start+6000);
+  const excerpt = text.slice(start,start+6000) + contactBlock(text.slice(start,start+6000), text, tels);
   const contentHash = createHash("sha256").update(JSON.stringify({ title, excerpt, publishedDate, links: links.map((link) => link.url).sort() })).digest("hex");
   return { url, title, excerpt, publishedDate, contentHash, links };
 }
