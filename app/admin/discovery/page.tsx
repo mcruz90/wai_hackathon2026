@@ -2,7 +2,7 @@ import SubmitButton from "@/components/SubmitButton";
 import AdminNav from "@/components/AdminNav";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { addSource, addStarterSources, approveSource, offlineDemo, runNow, stopSource } from "./actions";
+import { addSource, addStarterSources, approveSource, offlineDemo, runNow, pauseSource, rejectSource } from "./actions";
 export const dynamic = "force-dynamic";
 export default async function Discovery({ searchParams }: { searchParams: Promise<{ status?: string; page?: string; msg?: string; error?: string; check?: string }> }) {
   await requireAdmin("/admin/discovery");
@@ -58,7 +58,7 @@ export default async function Discovery({ searchParams }: { searchParams: Promis
           <label className="checkline"><input type="checkbox" name="trustedClinic" value="yes" disabled={s.isSample} />I verified this is the clinic's own dedicated website host. Allow its qualifying new listings into batch review. Shared directories and social hosts do not qualify.</label>
           <button className="btn" type="submit">Approve source monitoring</button>
         </form> : s.kind === "social" ? <p className="note">Social post found. Review its linked clinic page and add that public URL for monitoring. Direct social-platform crawling is not supported.</p> : null}
-        <form className="row" action={stopSource}><input type="hidden" name="id" value={s.id} /><button className="btn ghost" name="decision" value="pause" type="submit">Pause source</button><button className="btn bad" name="decision" value="reject" type="submit">Reject source</button></form>
+        <form className="row" action={pauseSource}><input type="hidden" name="id" value={s.id} /><button className="btn ghost" type="submit" formAction={pauseSource}>Pause source</button><button className="btn bad" type="submit" formAction={rejectSource}>Reject source</button></form>
       </article>)}
       <div className="row">{page>0 ? <a href={`?status=${status}&page=${page-1}`}>Previous sources</a> : null}{(page+1)*30<total ? <a href={`?status=${status}&page=${page+1}`}>Next sources</a> : null}</div>
     </section>

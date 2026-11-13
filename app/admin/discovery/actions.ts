@@ -30,12 +30,14 @@ export async function approveSource(form: FormData) {
   if (!updated.count) return go("error", "Source changed. Reload and review it again.");
   refresh(); go("msg", "Source approved for monitoring. Listing publication still requires human approval.");
 }
-export async function stopSource(form: FormData) {
+async function stopSource(form: FormData, status: "paused" | "rejected") {
   await requireAdmin();
-  const status = value(form,"decision") === "reject" ? "rejected" : "paused";
   await prisma.discoverySource.updateMany({ where: { id: value(form,"id") }, data: { status, trustedClinic: false, reviewedAt: new Date() } });
   refresh(); go("msg", `Source ${status}. No future collections are scheduled while it has this status.`);
 }
+// One server action per button, so the decision never depends on which button the browser reports.
+export async function pauseSource(form: FormData) { return stopSource(form, "paused"); }
+export async function rejectSource(form: FormData) { return stopSource(form, "rejected"); }
 export async function runNow() {
   await requireAdmin();
   const result = await runDiscoveryJob(prisma, { manual: true, maxSources: 3, maxQueries: 3 });
