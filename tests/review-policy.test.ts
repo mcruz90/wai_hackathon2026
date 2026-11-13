@@ -10,7 +10,7 @@ function fixture(): ReviewListing {
     confidence: { location: "high", provider_type: "high", provider_type_read: "family_doctor", languages: "high", date: "high", date_read: "2026-11-10", accepting: "yes", notes: "" },
     status: "pending", lastConfirmedAt: null, expiresAt: null, isSample: false, createdAt: now, _count: { fullReports: 0, proposals: 0 } };
 }
-const ctx = (l: ReviewListing): ReviewContext => ({ now, hosts: ["fernleaf.example"], fsas: ["M1P"], listings: [l] });
+const ctx = (l: ReviewListing): ReviewContext => ({ now, hosts: ["fernleaf.example"], fsas: ["M1P"], listings: [l], requireTrustedSource: true });
 
 test("complete, recent, supported clinic evidence qualifies with its original date", () => {
   const l = fixture(), result = batchEligibility(l, ctx(l));
@@ -28,6 +28,16 @@ test("source trust is explicit, HTTPS, exact-host, and not inferred from source 
   const l = fixture();
   assert.equal(batchEligibility(l, { ...ctx(l), hosts: [] }).eligible, false);
   assert.equal(batchEligibility({ ...l, sourceType: "post" }, ctx(l)).eligible, false);
+});
+
+test("with trusted sources switched off, any public HTTPS source can qualify, but a link is still required", () => {
+  const l = { ...fixture(), sourceType: "post", sourceUrl: "https://community.example/post/1" };
+  const open = (x: ReviewListing) => ({ ...ctx(x), hosts: [], requireTrustedSource: false });
+  assert.equal(batchEligibility(l, open(l)).eligible, true);
+  for (const sourceUrl of [null, "http://community.example/post/1", "https://user@community.example/x"]) {
+    const x = { ...l, sourceUrl };
+    assert.equal(batchEligibility(x, open(x)).eligible, false, String(sourceUrl));
+  }
 });
 
 test("high model confidence alone cannot bypass missing evidence, uncertainty, or invalid dates", () => {

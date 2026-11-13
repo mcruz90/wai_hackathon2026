@@ -16,6 +16,8 @@ test("batch publishing with PostgreSQL", { skip: !process.env.REVIEW_TEST_DATABA
   const db = new PrismaClient({ datasourceUrl: url.toString() });
   const previousHosts = process.env.CLINIC_SOURCE_HOSTS;
   process.env.CLINIC_SOURCE_HOSTS = "clinic.example";
+  const previousTrust = process.env.REQUIRE_TRUSTED_CLINIC_SOURCE;
+  process.env.REQUIRE_TRUSTED_CLINIC_SOURCE = "true";
   try {
     await root.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);
     for (const folder of (await readdir("prisma/migrations")).filter((s) => /^\d/.test(s)).sort()) {
@@ -93,6 +95,7 @@ test("batch publishing with PostgreSQL", { skip: !process.env.REVIEW_TEST_DATABA
     });
   } finally {
     if (previousHosts === undefined) delete process.env.CLINIC_SOURCE_HOSTS; else process.env.CLINIC_SOURCE_HOSTS = previousHosts;
+    if (previousTrust === undefined) delete process.env.REQUIRE_TRUSTED_CLINIC_SOURCE; else process.env.REQUIRE_TRUSTED_CLINIC_SOURCE = previousTrust;
     await db.$disconnect();
     await root.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
     await root.$disconnect();

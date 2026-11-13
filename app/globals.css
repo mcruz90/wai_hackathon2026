@@ -77,6 +77,7 @@ a{color:var(--accent)}
 .say span{color:var(--muted);font-size:.95rem}
 .phone{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .note{background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:.92rem}
+.warn{color:var(--aging);font-weight:600} .note.warn{border-inline-start:4px solid var(--aging)}
 .ok{color:var(--fresh);font-weight:700}
 .steps{display:flex;gap:6px}
 .steps i{flex:1;height:4px;border-radius:2px;background:var(--line)}
@@ -144,3 +145,9 @@ details.card>summary{cursor:pointer}
 .presets{display:flex;flex-direction:column;gap:6px}
 .btn.preset{text-align:start;justify-content:flex-start;white-space:normal;font-weight:500}
 .say .clinic-own{color:var(--ink);font-size:1.1rem;margin-top:2px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;gap:2px;border:2px solid var(--line);border-radius:12px;padding:10px 12px;text-decoration:none;color:inherit}
+.tile b{font-size:1.6rem;line-height:1.1}
+.tile.hot{border-color:var(--accent)}
+.why-line{display:block;color:var(--aging);font-weight:600}
+details.card>summary{cursor:pointer}

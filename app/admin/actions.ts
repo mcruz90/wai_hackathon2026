@@ -47,8 +47,8 @@ export async function intake(form: FormData) {
   catch (err) { return go("/admin", "error", err instanceof ExtractionError || err instanceof AgentError ? err.message : "The intake agent did not work. Try again."); }
   revalidatePath("/admin");
   go("/admin", "msg", outcome.kind === "listing"
-    ? "The intake agent read the announcement and found no existing listing. Check the new listing in the review queue below."
-    : "The intake agent made a proposal about an existing listing or about not listing this. Check it under Agent proposals below.");
+    ? "The intake agent read the notice and found no existing listing. It is in the inbox now: under Ready to publish if the agent was sure, otherwise under Needs you."
+    : "The intake agent made a proposal about an existing listing, or about not listing this notice. It is under Needs you.");
 }
 
 /** The reviewer authorizes exactly the selected versions; no agent can call this action. */
@@ -138,6 +138,26 @@ export async function proposalReject(form: FormData) { return decideProposal(for
 export async function proposalStillOpen(form: FormData) { return decideProposal(form, "still_open"); }
 export async function proposalFull(form: FormData) { return decideProposal(form, "full"); }
 export async function proposalReviewAsNew(form: FormData) { return decideProposal(form, "review_as_new"); }
+
+/**
+ * A reviewer changes a published listing directly, after talking to the clinic: it is taking patients again
+ * (back live from today, patient "full" reports cleared), or it is full. Recorded as a decision for the audit trail.
+ */
+async function setListing(form: FormData, to: "reopen" | "full") {
+  await requireAdmin();
+  const listing = await prisma.listing.findUnique({ where: { id: str(form, "id") }, include: reviewInclude });
+  if (!listing || listing.status === "pending") return go("/admin", "error", "That listing changed. Reload the page.");
+  if (to === "reopen") await reconfirm(listing.id, new Date().toISOString().slice(0, 10));
+  else await prisma.listing.update({ where: { id: listing.id }, data: { status: "full" } });
+  // A re-check for this clinic is answered by this decision.
+  await prisma.agentProposal.updateMany({ where: { listingId: listing.id, status: "pending", action: "recheck_listing" }, data: { status: "approved", decidedAt: new Date() } });
+  await prisma.reviewDecision.create({ data: { mode: "individual", action: to === "reopen" ? "reopen" : "mark_full", policy: "individual-review-v1",
+    items: { listings: [{ listingId: listing.id, before: reviewSnapshot(listing), after: { status: to === "reopen" ? "live" : "full" } }] } as Prisma.InputJsonObject } });
+  revalidatePath("/admin");
+  go("/admin", "msg", to === "reopen" ? `${listing.clinic} is taking patients again. It shows to patients from today, and earlier "full" reports were cleared.` : `Marked ${listing.clinic} as full. Patients no longer see it.`);
+}
+export async function listingReopen(form: FormData) { return setListing(form, "reopen"); }
+export async function listingMarkFull(form: FormData) { return setListing(form, "full"); }
 
 export async function runFreshness() {
   await requireAdmin();
