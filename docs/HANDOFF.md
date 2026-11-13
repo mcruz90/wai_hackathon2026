@@ -78,6 +78,8 @@ which planner ran ("Cohere (model) chose each step" vs scripted).
 
 ## State of PR #10 (latest first)
 
+0. `8d8242b` Triage sorts 10 pages at a time with short handles (p1, p2, …), and the Cohere loop retries a 422
+   "invalid tool generation" once. Fixes the fallback seen after a real 25-page Tavily search.
 1. `89664bd` Triage agent for discovered pages (+ migration `20261113180000_discovery_triage`).
 2. `2c431b2` `/admin` is now an inbox: Ready to publish / Needs you / Call the clinic.
 3. `c51a7af` A patient report starts the freshness agent right away.
@@ -87,7 +89,7 @@ which planner ran ("Cohere (model) chose each step" vs scripted).
 7. `70e6fe8` Offline mock for discovery search.
 8. `bdeb478`, `82332bd` Read-aloud; Cohere machine translation for other languages and for clinic instructions.
 
-The PR description was last updated before commits 1–3; update it (append, don't rewrite) when you push.
+The PR description covers commits 0–3 (updated from the cloud session); append to it when you push.
 
 ## Verified vs not verified
 
