@@ -42,6 +42,8 @@ export type Strings = {
   gq: string[];
   // ---- read aloud, machine translation for other languages (draft) ----
   speak: string; xlLabel: string; xlPlaceholder: string; xlButton: string; xlNote: string; xlFail: string; xlLink: string;
+  // ---- clinic instructions into the patient's language (draft) ----
+  clinicH: string; clinicNote: string; clinicOwn: string; clinicSpeak: string; clinicFail: string; clinicNums: string;
 };
 
 export const T: Record<Lang, Strings> = {
@@ -112,6 +114,12 @@ export const T: Record<Lang, Strings> = {
     xlNote: "Machine translation into {lang}, not reviewed by a person. The English is what you show or play to the clinic.",
     xlFail: "The translation is not available right now. The English below still works.",
     xlLink: "Another language? Get the phone script and appointment questions machine-translated",
+    clinicH: "When the clinic gives you instructions",
+    clinicNote: "Machine translation, not checked by a person. Always confirm doses and dates with the pharmacist, or ask for a professional interpreter.",
+    clinicOwn: "In your language:",
+    clinicSpeak: "Read aloud in your language",
+    clinicFail: "The translation is not available right now. Ask for an interpreter.",
+    clinicNums: "Warning: the numbers in the translation do not match the English. Check them with the clinic.",
   },
   fr: {
     name: "Français", loc: "fr-CA", htmlLang: "fr", dir: "ltr", own: "français", match: ["French"],
@@ -180,6 +188,12 @@ export const T: Record<Lang, Strings> = {
     xlNote: "Traduction automatique en {lang}, non vérifiée par une personne. C'est l'anglais que vous montrez ou faites écouter à la clinique.",
     xlFail: "La traduction n'est pas disponible pour le moment. L'anglais ci-dessous fonctionne toujours.",
     xlLink: "Une autre langue ? Obtenez une traduction automatique du script d'appel et des questions pour le rendez-vous",
+    clinicH: "Quand la clinique vous donne des instructions",
+    clinicNote: "Traduction automatique, non vérifiée par une personne. Confirmez toujours les doses et les dates avec le pharmacien, ou demandez un interprète professionnel.",
+    clinicOwn: "Dans votre langue :",
+    clinicSpeak: "Lire à voix haute dans votre langue",
+    clinicFail: "La traduction n'est pas disponible pour le moment. Demandez un interprète.",
+    clinicNums: "Attention : les nombres de la traduction ne correspondent pas à l'anglais. Vérifiez-les avec la clinique.",
   },
   zh: {
     name: "中文（普通话）", loc: "zh-CN", htmlLang: "zh", dir: "ltr", own: "普通话", match: ["Mandarin"],
@@ -248,6 +262,12 @@ export const T: Record<Lang, Strings> = {
     xlNote: "机器翻译成{lang}，未经人工审核。给诊所看或播放的是英文。",
     xlFail: "目前无法翻译。下面的英文仍然可以使用。",
     xlLink: "需要其他语言？获取电话脚本和就诊问题的机器翻译",
+    clinicH: "诊所给您医嘱时",
+    clinicNote: "机器翻译，未经人工核对。剂量和日期请务必向药剂师确认，或要求专业口译员。",
+    clinicOwn: "您的语言：",
+    clinicSpeak: "用您的语言朗读",
+    clinicFail: "翻译暂时无法使用。请要求口译员。",
+    clinicNums: "注意：译文中的数字与英文不一致。请向诊所核对。",
   },
   ar: {
     name: "العربية", loc: "ar", htmlLang: "ar", dir: "rtl", own: "العربية", match: ["Arabic"],
@@ -316,6 +336,12 @@ export const T: Record<Lang, Strings> = {
     xlNote: "ترجمة آلية إلى {lang}، لم يراجعها شخص. النص الإنجليزي هو ما تعرضه على العيادة أو تشغّله لها.",
     xlFail: "الترجمة غير متاحة الآن. النص الإنجليزي أدناه ما زال صالحاً.",
     xlLink: "لغة أخرى؟ احصل على ترجمة آلية لنص المكالمة وأسئلة الموعد",
+    clinicH: "عندما تعطيك العيادة تعليمات",
+    clinicNote: "ترجمة آلية لم يراجعها شخص. تأكد دائماً من الجرعات والمواعيد مع الصيدلي، أو اطلب مترجماً محترفاً.",
+    clinicOwn: "بلغتك:",
+    clinicSpeak: "اقرأ بصوت عالٍ بلغتك",
+    clinicFail: "الترجمة غير متاحة الآن. اطلب مترجماً.",
+    clinicNums: "تنبيه: الأرقام في الترجمة لا تطابق النص الإنجليزي. تحقق منها مع العيادة.",
   },
   pa: {
     name: "ਪੰਜਾਬੀ", loc: "pa", htmlLang: "pa", dir: "ltr", own: "ਪੰਜਾਬੀ", match: ["Punjabi"],
@@ -384,6 +410,12 @@ export const T: Record<Lang, Strings> = {
     xlNote: "{lang} ਵਿੱਚ ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ, ਕਿਸੇ ਵਿਅਕਤੀ ਵੱਲੋਂ ਜਾਂਚਿਆ ਨਹੀਂ ਗਿਆ। ਕਲੀਨਿਕ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਹੀ ਦਿਖਾਓ ਜਾਂ ਸੁਣਾਓ।",
     xlFail: "ਇਸ ਵੇਲੇ ਅਨੁਵਾਦ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਦਿੱਤੀ ਅੰਗਰੇਜ਼ੀ ਅਜੇ ਵੀ ਕੰਮ ਕਰਦੀ ਹੈ।",
     xlLink: "ਕੋਈ ਹੋਰ ਭਾਸ਼ਾ? ਕਾਲ ਸਕ੍ਰਿਪਟ ਅਤੇ ਮੁਲਾਕਾਤ ਦੇ ਸਵਾਲਾਂ ਦਾ ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ ਲਓ",
+    clinicH: "ਜਦੋਂ ਕਲੀਨਿਕ ਤੁਹਾਨੂੰ ਹਦਾਇਤਾਂ ਦੇਵੇ",
+    clinicNote: "ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ, ਕਿਸੇ ਵਿਅਕਤੀ ਵੱਲੋਂ ਜਾਂਚਿਆ ਨਹੀਂ ਗਿਆ। ਖੁਰਾਕ ਅਤੇ ਤਾਰੀਖਾਂ ਹਮੇਸ਼ਾ ਫਾਰਮਾਸਿਸਟ ਤੋਂ ਪੱਕੀਆਂ ਕਰੋ, ਜਾਂ ਪੇਸ਼ੇਵਰ ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
+    clinicOwn: "ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ:",
+    clinicSpeak: "ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਉੱਚੀ ਪੜ੍ਹੋ",
+    clinicFail: "ਅਨੁਵਾਦ ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
+    clinicNums: "ਧਿਆਨ ਦਿਓ: ਅਨੁਵਾਦ ਵਿੱਚ ਨੰਬਰ ਅੰਗਰੇਜ਼ੀ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ। ਕਲੀਨਿਕ ਨਾਲ ਜਾਂਚ ਕਰੋ।",
   },
   tl: {
     name: "Tagalog", loc: "fil", htmlLang: "fil", dir: "ltr", own: "Tagalog", match: ["Tagalog"],
@@ -452,6 +484,12 @@ export const T: Record<Lang, Strings> = {
     xlNote: "Salin ng makina sa {lang}, hindi pa nasusuri ng tao. Ang Ingles ang ipapakita o ipaparinig mo sa klinika.",
     xlFail: "Hindi available ang salin sa ngayon. Magagamit pa rin ang Ingles sa ibaba.",
     xlLink: "Ibang wika? Kumuha ng salin ng makina para sa script sa pagtawag at mga tanong sa appointment",
+    clinicH: "Kapag binigyan ka ng klinika ng mga tagubilin",
+    clinicNote: "Machine translation, hindi sinuri ng tao. Laging kumpirmahin ang dosis at mga petsa sa pharmacist, o humingi ng propesyonal na interpreter.",
+    clinicOwn: "Sa iyong wika:",
+    clinicSpeak: "Basahin nang malakas sa iyong wika",
+    clinicFail: "Hindi available ang pagsasalin ngayon. Humingi ng interpreter.",
+    clinicNums: "Babala: hindi tugma ang mga numero sa salin at sa Ingles. Suriin ito sa klinika.",
   },
 };
 
@@ -466,6 +504,31 @@ export const GUIDE: string[][] = [
   ["I take medication regularly. Can you renew it for longer than one month?", "Can my medical records from my previous doctor be sent to you?"],
   ["How do I book my next appointment?", "What should I do if I am sick when the clinic is closed?"],
 ];
+
+/** Example instructions clinic staff can tap to translate (English only; the translation is machine-made). */
+export const CLINIC_PRESETS: string[] = [
+  "Take 1 tablet 2 times a day with food, for 7 days.",
+  "Please go to the lab for a blood test. You do not need to fast.",
+  "Book a follow-up appointment in 2 weeks.",
+  "Your prescription was sent to your pharmacy.",
+  "If the pain gets worse or you have a fever, go to the emergency department.",
+];
+
+/** The language name sent to the translator for each reviewed language: the written form, not the spoken one. */
+export const MT_NAME: Record<Lang, string> = { ...EN_NAME, zh: "Simplified Chinese", pa: "Punjabi (Gurmukhi script)" };
+
+/** BCP-47 tags for read-aloud, for languages a patient may type. Unknown names get no read-aloud. */
+const SPEECH: Record<string, string> = {
+  english: "en-CA", french: "fr-CA", mandarin: "zh-CN", chinese: "zh-CN", "simplified chinese": "zh-CN", cantonese: "zh-HK",
+  arabic: "ar", punjabi: "pa-IN", tagalog: "fil-PH", filipino: "fil-PH", spanish: "es", portuguese: "pt-BR", italian: "it-IT",
+  german: "de-DE", japanese: "ja-JP", korean: "ko-KR", russian: "ru-RU", polish: "pl-PL", turkish: "tr-TR", vietnamese: "vi-VN",
+  dutch: "nl-NL", czech: "cs-CZ", indonesian: "id-ID", ukrainian: "uk-UA", romanian: "ro-RO", greek: "el-GR", hindi: "hi-IN",
+  hebrew: "he-IL", persian: "fa-IR", farsi: "fa-IR", urdu: "ur-PK", bengali: "bn-IN", tamil: "ta-IN", gujarati: "gu-IN",
+  somali: "so-SO", amharic: "am-ET", swahili: "sw-KE", haitian: "ht", "haitian creole": "ht", tigrinya: "ti", nepali: "ne-NP",
+};
+export function speechLangFor(name: string): string | null {
+  return SPEECH[name.replace(/\s*\(.*\)\s*$/, "").trim().toLowerCase()] ?? null;
+}
 
 /** The guide in one language: each group's title, and each question in English with this language underneath. */
 export function guide(lang: Lang): { title: string; items: { en: string; own: string }[] }[] {

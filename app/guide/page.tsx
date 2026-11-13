@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { HtmlLang } from "@/components/bits";
+import ClinicSays from "@/components/ClinicSays";
 import Speak from "@/components/Speak";
-import { backArrow, EN_NAME, englishCallLines, fill, GUIDE, guide, LANGS, T } from "@/lib/i18n";
+import { backArrow, EN_NAME, englishCallLines, fill, GUIDE, guide, LANGS, MT_NAME, speechLangFor, T } from "@/lib/i18n";
 import { parseSearch, searchQuery } from "@/lib/listings";
 import { cleanLanguage, translateLines } from "@/lib/translate";
 
@@ -16,6 +17,9 @@ type Group = { title: string; items: Item[] };
  *
  * ?xl=<language> asks for a language the app has no reviewed translation for: the phone script and the
  * questions are machine-translated (lib/translate.ts) and labelled as such. The English never changes.
+ *
+ * For a patient who does not speak English, a panel lets clinic staff type an instruction in English
+ * (or tap an example) and shows it machine-translated into the patient's language (components/ClinicSays.tsx).
  */
 export default async function GuidePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -27,6 +31,9 @@ export default async function GuidePage({ searchParams }: { searchParams: Promis
   // A language with reviewed translations goes to those instead of machine translation.
   const reviewed = xl ? LANGS.find((l) => EN_NAME[l].toLowerCase() === xl.toLowerCase() || T[l].name.toLowerCase() === xl.toLowerCase()) : undefined;
   if (reviewed) redirect(`/guide?${searchQuery({ ...s, lang: reviewed })}`);
+
+  // The language clinic instructions are translated into. None for an English speaker.
+  const target = xl ?? (s.lang === "en" ? null : MT_NAME[s.lang]);
 
   let groups: Group[] = guide(s.lang);
   let failed = false;
@@ -69,6 +76,7 @@ export default async function GuidePage({ searchParams }: { searchParams: Promis
             </div>
           </section>
         ))}
+        {target ? <ClinicSays language={target} speechLang={speechLangFor(target)} dir={w.dir} w={w} /> : null}
         <form className="card stack" action="/guide" method="get">
           <label className="lbl" htmlFor="xl">{w.xlLabel}</label>
           <input type="text" id="xl" name="xl" maxLength={40} defaultValue={xl ?? ""} placeholder={w.xlPlaceholder} autoComplete="off" />

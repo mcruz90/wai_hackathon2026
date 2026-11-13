@@ -124,3 +124,18 @@ New in all six languages, drafted without a native speaker:
 
 Languages typed into the guide are translated by Cohere at the time of use and are never reviewed. Spot-check the most requested ones (for example Somali, Farsi, Urdu, Tamil, Ukrainian, Spanish) with native speakers before a pilot, and move any that matter into reviewed translations in `lib/i18n.ts`.
 
+
+## Clinic instructions into the patient's language
+
+The guide page has a panel where clinic staff type an instruction in English, or tap an example, and the patient sees it machine-translated into their language. The staff-facing text in that panel is English only. The strings below are new in all six languages, drafted without a native speaker:
+
+| Key | English |
+| --- | --- |
+| `clinicH` | When the clinic gives you instructions |
+| `clinicNote` | Machine translation, not checked by a person. Always confirm doses and dates with the pharmacist, or ask for a professional interpreter. |
+| `clinicOwn` | In your language: |
+| `clinicSpeak` | Read aloud in your language |
+| `clinicFail` | The translation is not available right now. Ask for an interpreter. |
+| `clinicNums` | Warning: the numbers in the translation do not match the English. Check them with the clinic. |
+
+The instruction itself is translated by Cohere at the time of use and is never reviewed. Cohere's translation model (`command-a-translate-08-2025`) is used for the 23 languages it covers; Punjabi, Tagalog and other languages go to `LLM_MODEL`. Before a pilot, check the example instructions (`CLINIC_PRESETS` in `lib/i18n.ts`) in each language with a native speaker, especially doses and times.
