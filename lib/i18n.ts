@@ -40,6 +40,8 @@ export type Strings = {
   gt: [string, string, string, string, string];
   /** Guide questions in this language, in GUIDE order. Empty for English, where the question itself is shown. */
   gq: string[];
+  // ---- read aloud, machine translation for other languages (draft) ----
+  speak: string; xlLabel: string; xlPlaceholder: string; xlButton: string; xlNote: string; xlFail: string; xlLink: string;
 };
 
 export const T: Record<Lang, Strings> = {
@@ -103,6 +105,13 @@ export const T: Record<Lang, Strings> = {
     guideSub: "Show these to the clinic. They are practical questions. For the health conversation itself, ask for a professional interpreter.",
     gt: ["Calling the clinic", "Booking your first appointment", "At your first visit", "Medications and records", "After the visit"],
     gq: ["", "", "", "", "", "", "", "", "", ""],
+    speak: "Read aloud in English",
+    xlLabel: "Another language? Type it, and we will machine-translate the phone script and these questions.",
+    xlPlaceholder: "For example: Somali, Farsi, Ukrainian",
+    xlButton: "Translate",
+    xlNote: "Machine translation into {lang}, not reviewed by a person. The English is what you show or play to the clinic.",
+    xlFail: "The translation is not available right now. The English below still works.",
+    xlLink: "Another language? Get the phone script and appointment questions machine-translated",
   },
   fr: {
     name: "Français", loc: "fr-CA", htmlLang: "fr", dir: "ltr", own: "français", match: ["French"],
@@ -164,6 +173,13 @@ export const T: Record<Lang, Strings> = {
     guideSub: "Montrez l'anglais à la clinique. Le français est en dessous. Ce sont des questions pratiques. Pour parler de votre santé, demandez un interprète professionnel.",
     gt: ["Quand vous appelez la clinique", "Pour prendre votre premier rendez-vous", "À votre première visite", "Médicaments et dossier médical", "Après la visite"],
     gq: ["Acceptez-vous les patients couverts par le Programme fédéral de santé intérimaire (PFSI) ?", "Quelles langues parlent vos médecins et votre personnel ?", "J'aimerais un interprète pour mon rendez-vous. Pouvez-vous en prévoir un ?", "Que dois-je apporter à mon premier rendez-vous ?", "Je suis nouveau en Ontario et c'est mon premier médecin de famille ici.", "Pouvez-vous parler lentement ? Pouvez-vous me l'écrire ?", "Je prends des médicaments régulièrement. Pouvez-vous les renouveler pour plus d'un mois ?", "Mon dossier médical peut-il vous être envoyé par mon ancien médecin ?", "Comment puis-je prendre mon prochain rendez-vous ?", "Que dois-je faire si je suis malade quand la clinique est fermée ?"],
+    speak: "Lire à voix haute en anglais",
+    xlLabel: "Une autre langue ? Écrivez-la et nous traduirons automatiquement le script d'appel et ces questions.",
+    xlPlaceholder: "Par exemple : somali, farsi, ukrainien",
+    xlButton: "Traduire",
+    xlNote: "Traduction automatique en {lang}, non vérifiée par une personne. C'est l'anglais que vous montrez ou faites écouter à la clinique.",
+    xlFail: "La traduction n'est pas disponible pour le moment. L'anglais ci-dessous fonctionne toujours.",
+    xlLink: "Une autre langue ? Obtenez une traduction automatique du script d'appel et des questions pour le rendez-vous",
   },
   zh: {
     name: "中文（普通话）", loc: "zh-CN", htmlLang: "zh", dir: "ltr", own: "普通话", match: ["Mandarin"],
@@ -225,6 +241,13 @@ export const T: Record<Lang, Strings> = {
     guideSub: "把英文给诊所工作人员看。中文在下面。这些是日常事务问题。谈论健康状况时，请要求专业口译员。",
     gt: ["给诊所打电话时", "预约第一次就诊", "第一次就诊时", "药物和病历", "就诊之后"],
     gq: ["你们接受由临时联邦健康计划（IFHP）承保的患者吗？", "你们的医生和工作人员会说哪些语言？", "我希望就诊时有口译员。你们可以安排吗？", "第一次就诊我需要带什么？", "我刚来安大略省，这是我在这里的第一位家庭医生。", "请说慢一点。可以帮我写下来吗？", "我需要长期服药。可以给我开超过一个月的药量吗？", "可以把我以前医生的病历转给你们吗？", "我怎样预约下一次就诊？", "诊所关门时如果我生病了，该怎么办？"],
+    speak: "用英语朗读",
+    xlLabel: "需要其他语言？输入语言名称，我们会用机器翻译电话脚本和这些问题。",
+    xlPlaceholder: "例如：索马里语、波斯语、乌克兰语",
+    xlButton: "翻译",
+    xlNote: "机器翻译成{lang}，未经人工审核。给诊所看或播放的是英文。",
+    xlFail: "目前无法翻译。下面的英文仍然可以使用。",
+    xlLink: "需要其他语言？获取电话脚本和就诊问题的机器翻译",
   },
   ar: {
     name: "العربية", loc: "ar", htmlLang: "ar", dir: "rtl", own: "العربية", match: ["Arabic"],
@@ -286,6 +309,13 @@ export const T: Record<Lang, Strings> = {
     guideSub: "اعرض النص الإنجليزي على موظفي العيادة. الترجمة العربية تحته. هذه أسئلة عملية. للحديث عن صحتك نفسها، اطلب مترجماً محترفاً.",
     gt: ["عند الاتصال بالعيادة", "عند حجز موعدك الأول", "في زيارتك الأولى", "الأدوية والسجلات الطبية", "بعد الزيارة"],
     gq: ["هل تقبلون المرضى المشمولين بالبرنامج الفيدرالي المؤقت للصحة (IFHP)؟", "ما اللغات التي يتحدثها أطباؤكم وموظفوكم؟", "أرغب في وجود مترجم في موعدي. هل يمكنكم ترتيب ذلك؟", "ماذا يجب أن أحضر إلى موعدي الأول؟", "أنا جديد في أونتاريو وهذا أول طبيب عائلة لي هنا.", "من فضلك تحدث ببطء. هل يمكنك كتابة ذلك لي؟", "أتناول دواءً بانتظام. هل يمكنك تجديده لأكثر من شهر واحد؟", "هل يمكن إرسال سجلاتي الطبية من طبيبي السابق إليكم؟", "كيف أحجز موعدي القادم؟", "ماذا أفعل إذا مرضت والعيادة مغلقة؟"],
+    speak: "اقرأ بصوت عالٍ بالإنجليزية",
+    xlLabel: "لغة أخرى؟ اكتبها وسنترجم نص المكالمة وهذه الأسئلة ترجمة آلية.",
+    xlPlaceholder: "مثلاً: الصومالية، الفارسية، الأوكرانية",
+    xlButton: "ترجم",
+    xlNote: "ترجمة آلية إلى {lang}، لم يراجعها شخص. النص الإنجليزي هو ما تعرضه على العيادة أو تشغّله لها.",
+    xlFail: "الترجمة غير متاحة الآن. النص الإنجليزي أدناه ما زال صالحاً.",
+    xlLink: "لغة أخرى؟ احصل على ترجمة آلية لنص المكالمة وأسئلة الموعد",
   },
   pa: {
     name: "ਪੰਜਾਬੀ", loc: "pa", htmlLang: "pa", dir: "ltr", own: "ਪੰਜਾਬੀ", match: ["Punjabi"],
@@ -347,6 +377,13 @@ export const T: Record<Lang, Strings> = {
     guideSub: "ਕਲੀਨਿਕ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਦਿਖਾਓ। ਹੇਠਾਂ ਪੰਜਾਬੀ ਵਿੱਚ ਹੈ। ਇਹ ਵਿਹਾਰਕ ਸਵਾਲ ਹਨ। ਆਪਣੀ ਸਿਹਤ ਬਾਰੇ ਗੱਲਬਾਤ ਲਈ, ਪੇਸ਼ੇਵਰ ਦੁਭਾਸ਼ੀਏ ਦੀ ਮੰਗ ਕਰੋ।",
     gt: ["ਕਲੀਨਿਕ ਨੂੰ ਕਾਲ ਕਰਨ ਵੇਲੇ", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਬੁੱਕ ਕਰਨ ਵੇਲੇ", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਵੇਲੇ", "ਦਵਾਈਆਂ ਅਤੇ ਮੈਡੀਕਲ ਰਿਕਾਰਡ", "ਮੁਲਾਕਾਤ ਤੋਂ ਬਾਅਦ"],
     gq: ["ਕੀ ਤੁਸੀਂ ਅੰਤਰਿਮ ਫੈਡਰਲ ਹੈਲਥ ਪ੍ਰੋਗਰਾਮ (IFHP) ਵਾਲੇ ਮਰੀਜ਼ ਲੈਂਦੇ ਹੋ?", "ਤੁਹਾਡੇ ਡਾਕਟਰ ਅਤੇ ਸਟਾਫ਼ ਕਿਹੜੀਆਂ ਭਾਸ਼ਾਵਾਂ ਬੋਲਦੇ ਹਨ?", "ਮੈਨੂੰ ਆਪਣੀ ਮੁਲਾਕਾਤ ਲਈ ਦੁਭਾਸ਼ੀਆ ਚਾਹੀਦਾ ਹੈ। ਕੀ ਤੁਸੀਂ ਇਸ ਦਾ ਪ੍ਰਬੰਧ ਕਰ ਸਕਦੇ ਹੋ?", "ਪਹਿਲੀ ਮੁਲਾਕਾਤ ਲਈ ਮੈਨੂੰ ਕੀ ਲੈ ਕੇ ਆਉਣਾ ਚਾਹੀਦਾ ਹੈ?", "ਮੈਂ ਓਨਟਾਰੀਓ ਵਿੱਚ ਨਵਾਂ/ਨਵੀਂ ਹਾਂ ਅਤੇ ਇਹ ਇੱਥੇ ਮੇਰਾ ਪਹਿਲਾ ਫੈਮਿਲੀ ਡਾਕਟਰ ਹੈ।", "ਕਿਰਪਾ ਕਰਕੇ ਹੌਲੀ ਬੋਲੋ। ਕੀ ਤੁਸੀਂ ਇਹ ਮੈਨੂੰ ਲਿਖ ਕੇ ਦੇ ਸਕਦੇ ਹੋ?", "ਮੈਂ ਨਿਯਮਿਤ ਤੌਰ 'ਤੇ ਦਵਾਈ ਲੈਂਦਾ/ਲੈਂਦੀ ਹਾਂ। ਕੀ ਤੁਸੀਂ ਇਸਨੂੰ ਇੱਕ ਮਹੀਨੇ ਤੋਂ ਵੱਧ ਲਈ ਦੁਬਾਰਾ ਲਿਖ ਸਕਦੇ ਹੋ?", "ਕੀ ਮੇਰੇ ਪਿਛਲੇ ਡਾਕਟਰ ਤੋਂ ਮੇਰੇ ਮੈਡੀਕਲ ਰਿਕਾਰਡ ਤੁਹਾਨੂੰ ਭੇਜੇ ਜਾ ਸਕਦੇ ਹਨ?", "ਮੈਂ ਆਪਣੀ ਅਗਲੀ ਮੁਲਾਕਾਤ ਕਿਵੇਂ ਬੁੱਕ ਕਰਾਂ?", "ਜੇ ਕਲੀਨਿਕ ਬੰਦ ਹੋਣ ਵੇਲੇ ਮੈਂ ਬੀਮਾਰ ਹੋ ਜਾਵਾਂ ਤਾਂ ਮੈਨੂੰ ਕੀ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ?"],
+    speak: "ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਉੱਚੀ ਪੜ੍ਹੋ",
+    xlLabel: "ਕੋਈ ਹੋਰ ਭਾਸ਼ਾ? ਉਸਦਾ ਨਾਮ ਲਿਖੋ, ਅਸੀਂ ਕਾਲ ਸਕ੍ਰਿਪਟ ਅਤੇ ਇਹ ਸਵਾਲ ਮਸ਼ੀਨ ਨਾਲ ਅਨੁਵਾਦ ਕਰਾਂਗੇ।",
+    xlPlaceholder: "ਜਿਵੇਂ: ਸੋਮਾਲੀ, ਫ਼ਾਰਸੀ, ਯੂਕਰੇਨੀ",
+    xlButton: "ਅਨੁਵਾਦ ਕਰੋ",
+    xlNote: "{lang} ਵਿੱਚ ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ, ਕਿਸੇ ਵਿਅਕਤੀ ਵੱਲੋਂ ਜਾਂਚਿਆ ਨਹੀਂ ਗਿਆ। ਕਲੀਨਿਕ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਹੀ ਦਿਖਾਓ ਜਾਂ ਸੁਣਾਓ।",
+    xlFail: "ਇਸ ਵੇਲੇ ਅਨੁਵਾਦ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਦਿੱਤੀ ਅੰਗਰੇਜ਼ੀ ਅਜੇ ਵੀ ਕੰਮ ਕਰਦੀ ਹੈ।",
+    xlLink: "ਕੋਈ ਹੋਰ ਭਾਸ਼ਾ? ਕਾਲ ਸਕ੍ਰਿਪਟ ਅਤੇ ਮੁਲਾਕਾਤ ਦੇ ਸਵਾਲਾਂ ਦਾ ਮਸ਼ੀਨੀ ਅਨੁਵਾਦ ਲਓ",
   },
   tl: {
     name: "Tagalog", loc: "fil", htmlLang: "fil", dir: "ltr", own: "Tagalog", match: ["Tagalog"],
@@ -408,6 +445,13 @@ export const T: Record<Lang, Strings> = {
     guideSub: "Ipakita ang Ingles sa klinika. Nasa ibaba ang Tagalog. Mga praktikal na tanong ito. Para sa usapan tungkol sa iyong kalusugan, humingi ng propesyonal na interpreter.",
     gt: ["Kapag tumatawag sa klinika", "Kapag nagbu-book ng unang appointment", "Sa iyong unang pagbisita", "Mga gamot at medical record", "Pagkatapos ng pagbisita"],
     gq: ["Tumatanggap ba kayo ng mga pasyenteng sakop ng Interim Federal Health Program (IFHP)?", "Anong mga wika ang sinasalita ng inyong mga doktor at staff?", "Gusto ko sana ng interpreter para sa aking appointment. Maaari ba ninyong ayusin ito?", "Ano ang kailangan kong dalhin sa aking unang appointment?", "Bago ako sa Ontario at ito ang aking unang family doctor dito.", "Pakiusap, magsalita nang dahan-dahan. Maaari ba ninyong isulat iyon para sa akin?", "Regular akong umiinom ng gamot. Maaari ba ninyong i-renew ito nang higit sa isang buwan?", "Maaari bang ipadala sa inyo ang aking medical records mula sa dati kong doktor?", "Paano ko ibu-book ang susunod kong appointment?", "Ano ang dapat kong gawin kung magkasakit ako habang sarado ang klinika?"],
+    speak: "Basahin nang malakas sa Ingles",
+    xlLabel: "Ibang wika? I-type ito at isasalin namin gamit ang makina ang script sa pagtawag at ang mga tanong na ito.",
+    xlPlaceholder: "Halimbawa: Somali, Farsi, Ukrainian",
+    xlButton: "Isalin",
+    xlNote: "Salin ng makina sa {lang}, hindi pa nasusuri ng tao. Ang Ingles ang ipapakita o ipaparinig mo sa klinika.",
+    xlFail: "Hindi available ang salin sa ngayon. Magagamit pa rin ang Ingles sa ibaba.",
+    xlLink: "Ibang wika? Kumuha ng salin ng makina para sa script sa pagtawag at mga tanong sa appointment",
   },
 };
 
@@ -439,14 +483,18 @@ export function asLang(v: string | null | undefined): Lang {
 }
 
 /** The four English lines of the call script. Line 3 is dropped for English speakers. */
-export function callScript(lang: Lang): { en: string; own: string }[] {
-  const L = EN_NAME[lang];
-  const lines = [
+/** The four English call-script lines for a patient who speaks `language` (null for English speakers). */
+export function englishCallLines(language: string | null): (string | null)[] {
+  return [
     "Hello. I am looking for a family doctor.",
     "I saw that your clinic is taking new patients. Is that still true?",
-    lang === "en" ? null : `I speak ${L}. Is there someone who speaks ${L}, or an interpreter?`,
+    language ? `I speak ${language}. Is there someone who speaks ${language}, or an interpreter?` : null,
     "What do I need to bring to register?",
   ];
+}
+
+export function callScript(lang: Lang): { en: string; own: string }[] {
+  const lines = englishCallLines(lang === "en" ? null : EN_NAME[lang]);
   return lines.flatMap((en, i) => (en ? [{ en, own: T[lang].s[i] }] : []));
 }
 

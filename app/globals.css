@@ -62,6 +62,9 @@ a{color:var(--accent)}
 .pill.partial{background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-weight:700}
 .pill.unknown{background:transparent;border:1.5px dashed var(--muted);color:var(--muted)}
 .guide-group{display:flex;flex-direction:column;gap:10px}
+.speak{align-self:flex-start;margin-top:6px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);border-radius:999px;padding:4px 12px;font:inherit;font-size:.86rem;font-weight:700;cursor:pointer;min-height:36px}
+.speak[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.say{display:flex;flex-direction:column}
 .guide-group h2{font-size:1.05rem}
 .meter{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
 .meter i{display:block;height:100%;background:var(--fresh)}

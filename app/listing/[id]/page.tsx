@@ -1,5 +1,6 @@
 import { FreshLine, HtmlLang, SampleBanner, Steps } from "@/components/bits";
 import ListingClient from "@/components/ListingClient";
+import Speak from "@/components/Speak";
 import { prisma } from "@/lib/db";
 import { backArrow, callScript, fill, shortDate, T } from "@/lib/i18n";
 import { liveWhere, originFor, parseSearch, reportedLanguages, searchQuery, toPublic } from "@/lib/listings";
@@ -49,7 +50,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
           <p className="muted small">{w.hint}</p>
           <div className="script">
             {callScript(s.lang).map((line) => (
-              <div className="say" key={line.en}><b lang="en" dir="ltr">{line.en}</b>{line.own ? <span>{line.own}</span> : null}</div>
+              <div className="say" key={line.en}><b lang="en" dir="ltr">{line.en}</b>{line.own ? <span>{line.own}</span> : null}<Speak text={line.en} label={w.speak} /></div>
             ))}
           </div>
           <div>

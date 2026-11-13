@@ -108,3 +108,19 @@ The guide questions are shown to clinic staff, so the English is the part that m
 - The Punjabi first-person lines use both masculine and feminine forms (ਨਵਾਂ/ਨਵੀਂ, ਲੈਂਦਾ/ਲੈਂਦੀ), like the call script.
 - The medication question asks for a longer renewal; it must not read as asking for a different medication or dose.
 
+## Read aloud and other languages
+
+New in all six languages, drafted without a native speaker:
+
+| Key | English |
+| --- | --- |
+| `speak` | Read aloud in English |
+| `xlLabel` | Another language? Type it, and we will machine-translate the phone script and these questions. |
+| `xlPlaceholder` | For example: Somali, Farsi, Ukrainian |
+| `xlButton` | Translate |
+| `xlNote` | Machine translation into {lang}, not reviewed by a person. The English is what you show or play to the clinic. |
+| `xlFail` | The translation is not available right now. The English below still works. |
+| `xlLink` | Another language? Get the phone script and appointment questions machine-translated |
+
+Languages typed into the guide are translated by Cohere at the time of use and are never reviewed. Spot-check the most requested ones (for example Somali, Farsi, Urdu, Tamil, Ukrainian, Spanish) with native speakers before a pilot, and move any that matter into reviewed translations in `lib/i18n.ts`.
+
