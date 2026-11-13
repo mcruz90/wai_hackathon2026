@@ -125,6 +125,17 @@ details.trace ol{margin:6px 0 0;padding-left:20px;display:grid;gap:6px}
 .prio.high{color:var(--bad)} .prio.normal{color:var(--aging)}
 
 .checkline{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.step h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stepnum{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:1rem;flex:none}
+.srclist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.srcrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.srcrow .srcinfo{grid-column:1 / -1}
+.srcinfo{min-width:0}
+.srcform{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.srcform select{width:auto}
+table.data.compact td,table.data.compact th{padding:8px 6px}
+.evidence{border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:720px){.srcrow{grid-template-columns:1fr}}
 .checkline input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
 details.card>summary{cursor:pointer}
 [id^="individual-"]:target{outline:3px solid var(--accent);outline-offset:3px}

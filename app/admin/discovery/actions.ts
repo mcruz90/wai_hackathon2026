@@ -8,14 +8,15 @@ import { sourceKind } from "@/lib/discovery/search";
 import { seedDiscoverySources } from "@/lib/discovery/seeds";
 import { runDiscoveryDemo } from "@/lib/discovery/demo";
 const value = (f: FormData,k: string) => String(f.get(k) ?? "").trim();
-const go = (key: "msg"|"error", text: string): never => redirect(`/admin/discovery?${key}=${encodeURIComponent(text.slice(0,600))}`);
+/** Back to the discovery page with a message. `step` (find, review, check) shows the message inside that step and scrolls to it. */
+const go = (key: "msg"|"error", text: string, step = ""): never => redirect(`/admin/discovery?${key}=${encodeURIComponent(text.slice(0,600))}${step ? `&at=${step}#${step}` : ""}`);
 function refresh() { revalidatePath("/admin/discovery"); revalidatePath("/admin"); }
 
 export async function addSource(form: FormData) {
   await requireAdmin();
   try { await addDiscoverySource(prisma, { url: value(form,"url"), title: value(form,"title") }); }
   catch { return go("error", "Use a valid public HTTPS page. No credentials, IP addresses, local hosts, or custom ports."); }
-  refresh(); go("msg", "Source added to review. Nothing has been fetched or published.");
+  refresh(); go("msg", "Page added to step 2 for approval. Nothing has been fetched or published.", "review");
 }
 export async function approveSource(form: FormData) {
   await requireAdmin();
@@ -28,7 +29,7 @@ export async function approveSource(form: FormData) {
   const updated = await prisma.discoverySource.updateMany({ where: { id: source.id, status: source.status }, data: { status: "active", kind,
     trustedClinic: kind === "clinic" && !source.isSample && value(form,"trustedClinic") === "yes", reviewedAt: new Date(), nextCheckAt: new Date() } });
   if (!updated.count) return go("error", "Source changed. Reload and review it again.");
-  refresh(); go("msg", "Source approved for monitoring. Listing publication still requires human approval.");
+  refresh(); go("msg", "Approved. It now appears in step 3; check it there. Nothing is published without review.", "check");
 }
 async function stopSource(form: FormData, status: "paused" | "rejected") {
   await requireAdmin();
@@ -54,5 +55,29 @@ export async function offlineDemo() {
 export async function addStarterSources() {
   await requireAdmin();
   const added = await seedDiscoverySources(prisma);
-  refresh(); go("msg", `Added ${added} Ontario starter source leads for review. No availability was verified and no pages were fetched.`);
+  refresh(); go("msg", `Added ${added} Ontario starter pages to step 2. Nothing has been fetched yet.`, "review");
 }
+
+/** Step 1: web search only. New pages go to review; nothing is fetched. */
+export async function searchNow() {
+  await requireAdmin();
+  const result = await runDiscoveryJob(prisma, { manual: true, maxQueries: 3, monitor: false });
+  refresh();
+  if (result.searchError) return go("error", `Search failed: ${result.searchError}`, "find");
+  go("msg", result.found ? `Found ${result.found} new page${result.found === 1 ? "" : "s"} to review in step 2.` : "Search ran (or is waiting for tomorrow's budget). No new pages this time.", "review");
+}
+
+/** Step 3: check approved pages only. Changed pages go to the intake agent, which writes proposals for review. */
+export async function checkNow() {
+  await requireAdmin();
+  const r = await runDiscoveryJob(prisma, { manual: true, maxSources: 3, search: false });
+  refresh();
+  if (!r.checked) return go("msg", "No approved pages are due for a check. Approve a page in step 2, or wait until a checked page is due again.", "check");
+  const parts = [`Checked ${r.checked} page${r.checked === 1 ? "" : "s"}`, `${r.proposed} new proposal${r.proposed === 1 ? "" : "s"} for review`];
+  if (r.unchanged) parts.push(`${r.unchanged} unchanged`);
+  if (r.errors) parts.push(`${r.errors} could not be read`);
+  const other = r.checked - r.proposed - r.unchanged - r.errors;
+  if (other) parts.push(`${other} had no new-patient notice (or were directories whose links went to step 2)`);
+  go("msg", `${parts.join(" · ")}.`, "check");
+}
+

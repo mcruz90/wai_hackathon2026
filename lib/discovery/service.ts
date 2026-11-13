@@ -55,12 +55,13 @@ export async function collectSource(db: PrismaClient, source: DiscoverySource, d
   }
 }
 
-export async function runDiscoveryJob(db: PrismaClient, options: { manual?: boolean; maxSources?: number; maxQueries?: number; now?: Date; deps?: DiscoveryDependencies } = {}) {
+/** One discovery run: web search for new pages, then checks of approved pages. `search: false` or `monitor: false` runs only the other half. */
+export async function runDiscoveryJob(db: PrismaClient, options: { manual?: boolean; maxSources?: number; maxQueries?: number; now?: Date; deps?: DiscoveryDependencies; search?: boolean; monitor?: boolean } = {}) {
   if (!options.manual && process.env.DISCOVERY_ENABLED !== "true") return { enabled: false, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
   const now = options.now ?? new Date(), deps = options.deps ?? {};
   const result = { enabled: true, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
   const provider = searchProvider();
-  if (deps.search || provider !== "off") {
+  if (options.search !== false && (deps.search || provider !== "off")) {
     await db.discoverySearchState.upsert({ where: { id: "ontario" }, update: {}, create: { id: "ontario", nextSearchAt: now } });
     const searchLease = new Date(now.getTime()+10*60000);
     const claim = await db.discoverySearchState.updateMany({ where: { id: "ontario", nextSearchAt: { lte: now }, OR: [{ leaseUntil: null }, { leaseUntil: { lt: now } }] }, data: { leaseUntil: searchLease } });
@@ -78,6 +79,7 @@ export async function runDiscoveryJob(db: PrismaClient, options: { manual?: bool
       } finally { await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { leaseUntil: null } }); }
     }
   }
+  if (options.monitor === false) return result;
   const sources = await db.discoverySource.findMany({ where: { status: "active", isSample: false, nextCheckAt: { lte: now } },
     orderBy: { nextCheckAt: "asc" }, take: Math.min(options.maxSources ?? 20,20) });
   // Sequential monitoring bounds load; each page also observes robots.txt and its crawl delay.

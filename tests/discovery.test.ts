@@ -87,3 +87,11 @@ test("mock search returns sample leads on .example hosts without calling Tavily"
     if (before.k !== undefined) process.env.TAVILY_API_KEY = before.k;
   }
 });
+
+test("link titles never carry raw HTML from <noscript> image fallbacks", () => {
+  const html = `<html><body><a href="/new-patients"><noscript><img src="x.jpg" alt=""></noscript>New patients</a><a href="/clinic-info"><img src="y.jpg"><noscript>&lt;img src="y.jpg"&gt;</noscript></a></body></html>`;
+  const page = parsePage(html, "https://clinic-one.example/");
+  const titles = page.links.map((l) => l.title);
+  assert.ok(titles.includes("New patients"));
+  for (const t of titles) assert.ok(!/[<>]/.test(t), t);
+});
