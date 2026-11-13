@@ -16,7 +16,7 @@ const LABELS: Record<string, string> = {
   find_listings_needing_attention: "Looked for listings that may be out of date",
   propose_recheck: "Asked a reviewer to call the clinic",
   list_new_pages: "Looked at the new pages from web search",
-  sort_page: "Sorted a page",
+  sort_pages: "Sorted pages",
   finish: "Finished",
 };
 
@@ -25,7 +25,6 @@ const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : "");
 const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
 const PROVIDER: Record<string, string> = { family_doctor: "family doctor", nurse_practitioner: "nurse practitioner", unknown: "provider type unclear" };
 const ACCEPTING: Record<string, string> = { yes: "says it is taking new patients", no: "says it is not taking new patients", unclear: "does not clearly say it is taking new patients" };
-const SORT: Record<string, string> = { watch_clinic: "Watching as a clinic page", watch_directory: "Watching as a directory (links only)", dismiss: "Dismissed", ask_human: "Sent to you to decide" };
 
 /** One plain sentence for a step. Falls back to the label when the step's data is not in the expected shape. */
 export function describeStep(s: Step): string {
@@ -65,9 +64,16 @@ export function describeStep(s: Step): string {
     case "propose_recheck": return `Asked a reviewer to call the clinic (${input.priority === "high" ? "high priority" : "normal priority"}).${str(input.rationale) ? ` Why: ${str(input.rationale)}` : ""}`;
     case "list_new_pages": {
       const n = Array.isArray(result.pages) ? result.pages.length : 0;
-      return `Looked at ${n} new page${n === 1 ? "" : "s"} from web search (titles and links only; nothing was fetched).`;
+      const more = typeof result.remaining === "number" && result.remaining ? `, ${result.remaining} more waiting` : "";
+      return `Looked at ${n} new page${n === 1 ? "" : "s"}${more} (titles and descriptions only; nothing was fetched).`;
     }
-    case "sort_page": return `${SORT[str(input.decision)] ?? "Sorted"}: ${str(result.title) || str(input.source_id)}.${str(input.reason) ? ` Why: ${str(input.reason)}` : ""}`;
+    case "sort_pages": {
+      const ds = Array.isArray(input.decisions) ? input.decisions.map(asObj) : [];
+      const count = (d: string) => ds.filter((x) => x.decision === d).length;
+      const parts = [["watch_clinic", "watched as clinic pages"], ["watch_directory", "watched as directories"], ["dismiss", "dismissed"], ["ask_human", "sent to you"]]
+        .map(([k, label]) => (count(k) ? `${count(k)} ${label}` : "")).filter(Boolean);
+      return `Sorted ${ds.length} page${ds.length === 1 ? "" : "s"}${parts.length ? `: ${parts.join(", ")}` : ""}. Each page shows its reason below.`;
+    }
     case "finish": return `Finished.${str(input.summary) ? ` ${str(input.summary)}` : ""}`;
     default: return LABELS[s.tool] ?? s.tool;
   }

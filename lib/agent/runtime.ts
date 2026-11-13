@@ -53,7 +53,10 @@ export async function runAgent<Ctx>(opts: {
   ctx: Ctx;
   planner: Planner<Ctx>;
   offline?: boolean;
+  /** Model turns before the run stops (default 8). */
+  maxSteps?: number;
 }): Promise<AgentResult> {
+  const maxSteps = opts.maxSteps ?? MAX_STEPS;
   const steps: Step[] = [];
   let finished = false;
   const byName = new Map(opts.tools.map((t) => [t.name, t]));
@@ -90,7 +93,7 @@ export async function runAgent<Ctx>(opts: {
     const model = process.env.LLM_MODEL || "command-a-plus-05-2026";
     let why = "";
     try {
-      why = await cohereLoop(opts.system, opts.task, opts.tools, call, () => finished, model);
+      why = await cohereLoop(opts.system, opts.task, opts.tools, call, () => finished, model, maxSteps);
     } catch (err) {
       why = err instanceof Error ? err.message : "Cohere failed.";
     }
@@ -115,7 +118,7 @@ export async function runAgent<Ctx>(opts: {
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: opts.task }];
   let note = "";
 
-  for (let turn = 0; turn < MAX_STEPS && !finished; turn++) {
+  for (let turn = 0; turn < maxSteps && !finished; turn++) {
     let res: Anthropic.Beta.BetaMessage;
     try {
       res = await client.beta.messages.create({
@@ -151,7 +154,7 @@ export async function runAgent<Ctx>(opts: {
     }
     messages.push({ role: "user", content: results });
   }
-  if (!finished && !note) note = `Stopped after ${MAX_STEPS} turns without a proposal.`;
+  if (!finished && !note) note = `Stopped after ${maxSteps} turns without a proposal.`;
   return { steps, finished, planner: "claude", model, note };
 }
 
@@ -190,17 +193,16 @@ type CohereToolCall = { id?: string; type?: string; function?: { name?: string; 
 async function cohereLoop<Ctx>(
   system: string, task: string, agentTools: AgentTool<Ctx>[],
   call: (name: string, input: Record<string, unknown>, plan?: string) => Promise<{ content: string; isError: boolean }>,
-  isFinished: () => boolean, model: string,
+  isFinished: () => boolean, model: string, maxSteps = MAX_STEPS,
 ): Promise<string> {
   const apiKey = process.env.LLM_API_KEY;
   if (!apiKey) throw new AgentError("LLM_API_KEY is not set.");
   const tools = agentTools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: toCohereSchema(t.schema) } }));
   const messages: Record<string, unknown>[] = [{ role: "system", content: system }, { role: "user", content: task }];
 
-  for (let turn = 0; turn < MAX_STEPS && !isFinished(); turn++) {
-    let res: Response;
+  const send = async () => {
     try {
-      res = await fetch("https://api.cohere.com/v2/chat", {
+      return await fetch("https://api.cohere.com/v2/chat", {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
         signal: AbortSignal.timeout(60000),
@@ -208,6 +210,16 @@ async function cohereLoop<Ctx>(
       });
     } catch {
       throw new AgentError("Cohere could not be reached.");
+    }
+  };
+  for (let turn = 0; turn < maxSteps && !isFinished(); turn++) {
+    let res = await send();
+    // Cohere sometimes writes a tool call it cannot parse (422 "invalid tool generation"). It is not deterministic,
+    // so the same request is tried once more before the scripted planner takes over.
+    if (res.status === 422) {
+      const text = await res.text().catch(() => "");
+      if (!/invalid tool generation/i.test(text)) throw new AgentError(`Cohere returned an error (422). ${text.slice(0, 200)}`.trim());
+      res = await send();
     }
     if (res.status === 401) throw new AgentError("The LLM API key was rejected.");
     if (res.status === 429) throw new AgentError("Cohere is rate limiting.");
@@ -228,7 +240,7 @@ async function cohereLoop<Ctx>(
       messages.push({ role: "tool", tool_call_id: c.id, content: r.isError ? `Error: ${r.content}` : r.content });
     }
   }
-  return isFinished() ? "Cohere chose each step." : `Stopped after ${MAX_STEPS} turns without a proposal.`;
+  return isFinished() ? "Cohere chose each step." : `Stopped after ${maxSteps} turns without a proposal.`;
 }
 
 /** Shorten a step for display and storage: tool results can carry whole listings. */

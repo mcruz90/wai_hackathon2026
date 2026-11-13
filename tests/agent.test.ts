@@ -45,6 +45,25 @@ test("with LLM_PROVIDER=cohere, Cohere chooses the steps and its plan is kept in
     assert.deepEqual(bodies[1].messages.map((m) => m.role), ["system", "user", "assistant", "tool"]);
   }));
 
+test("an invalid tool generation (422) from Cohere is retried once with the same request", () =>
+  withEnv({ LLM_PROVIDER: "cohere", LLM_API_KEY: "k", AGENT_PLANNER: undefined }, async () => {
+    let calls = 0;
+    const ok = [
+      { tool_calls: [{ id: "c1", type: "function", function: { name: "look", arguments: JSON.stringify({ q: "x" }) } }] },
+      { tool_calls: [{ id: "c2", type: "function", function: { name: "propose", arguments: JSON.stringify({ why: "after retry" }) } }] },
+    ];
+    globalThis.fetch = (async () => {
+      calls++;
+      if (calls === 1) return new Response(JSON.stringify({ message: "invalid request: your request resulted in an invalid tool generation. Try updating the messages or tool definitions." }), { status: 422 });
+      return reply(ok[calls - 2]);
+    }) as unknown as typeof fetch;
+    const ctx: Ctx = { log: [] };
+    const r = await runAgent({ system: "sys", task: "task", tools, ctx, planner: scripted });
+    assert.equal(r.planner, "cohere");
+    assert.equal(calls, 3);
+    assert.deepEqual(ctx.log, ["look:x", "propose:after retry"]);
+  }));
+
 test("if Cohere fails, the scripted planner finishes the run and the trace says so", () =>
   withEnv({ LLM_PROVIDER: "cohere", LLM_API_KEY: "k", AGENT_PLANNER: undefined }, async () => {
     globalThis.fetch = (async () => new Response("bad", { status: 500 })) as unknown as typeof fetch;
