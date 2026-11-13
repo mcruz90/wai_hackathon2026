@@ -2,7 +2,7 @@ import type { PrismaClient, DiscoverySource } from "@prisma/client";
 import { runIntakeAgent } from "../agent/intake";
 import { DAY_MS } from "../config";
 import { canonicalSourceUrl, fetchClinicPage, type PageEvidence } from "./web";
-import { searchOntario, sourceKind, type SearchLead } from "./search";
+import { searchOntario, searchProvider, sourceKind, type SearchLead } from "./search";
 
 export async function addDiscoverySource(db: PrismaClient, input: { url: string; title?: string; foundBy?: string; query?: string; isSample?: boolean }) {
   const url = canonicalSourceUrl(input.url);
@@ -59,7 +59,8 @@ export async function runDiscoveryJob(db: PrismaClient, options: { manual?: bool
   if (!options.manual && process.env.DISCOVERY_ENABLED !== "true") return { enabled: false, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
   const now = options.now ?? new Date(), deps = options.deps ?? {};
   const result = { enabled: true, found: 0, checked: 0, proposed: 0, unchanged: 0, errors: 0, searchError: null as string | null };
-  if (deps.search || process.env.DISCOVERY_SEARCH_PROVIDER === "tavily") {
+  const provider = searchProvider();
+  if (deps.search || provider !== "off") {
     await db.discoverySearchState.upsert({ where: { id: "ontario" }, update: {}, create: { id: "ontario", nextSearchAt: now } });
     const searchLease = new Date(now.getTime()+10*60000);
     const claim = await db.discoverySearchState.updateMany({ where: { id: "ontario", nextSearchAt: { lte: now }, OR: [{ leaseUntil: null }, { leaseUntil: { lt: now } }] }, data: { leaseUntil: searchLease } });
@@ -70,7 +71,7 @@ export async function runDiscoveryJob(db: PrismaClient, options: { manual?: bool
           await addDiscoverySource(db, { ...lead, foundBy: "search" });
           if (!before) result.found++;
         }
-        await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { lastSearchedAt: now, nextSearchAt: new Date(now.getTime()+DAY_MS), lastError: null } });
+        await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { lastSearchedAt: now, nextSearchAt: new Date(now.getTime()+(provider === "mock" && !deps.search ? 0 : DAY_MS)), lastError: null } });
       } catch (error) {
         result.searchError = (error instanceof Error ? error.message : "Search failed.").slice(0,400);
         await db.discoverySearchState.updateMany({ where: { id: "ontario", leaseUntil: searchLease }, data: { nextSearchAt: new Date(now.getTime()+3600000), lastError: result.searchError } });

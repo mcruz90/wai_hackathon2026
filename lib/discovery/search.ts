@@ -2,7 +2,7 @@ import { EnvHttpProxyAgent, fetch as request } from "undici";
 import { canonicalSourceUrl } from "./web";
 
 export const ONTARIO_REGIONS = ["Ontario", "Ottawa Kingston Eastern Ontario", "Toronto GTA", "Hamilton Niagara", "Kitchener Waterloo Guelph", "London Windsor Southwestern Ontario", "Barrie Simcoe Muskoka", "Peterborough Kawartha", "Sudbury North Bay Northeastern Ontario", "Thunder Bay Northwestern Ontario", "Timmins Sault Ste. Marie Northern Ontario"];
-export type SearchLead = { url: string; title: string; query: string };
+export type SearchLead = { url: string; title: string; query: string; isSample?: boolean };
 export function queriesForDay(now: Date, limit = 3): string[] {
   const day = Math.floor(now.getTime()/864e5);
   return Array.from({ length: Math.min(Math.max(1,limit), ONTARIO_REGIONS.length) }, (_, i) => {
@@ -15,8 +15,33 @@ export function sourceKind(url: string): string {
   return /(?:^|\.)(facebook\.com|instagram\.com|x\.com|twitter\.com|tiktok\.com|threads\.net|linkedin\.com|youtube\.com|reddit\.com|redd\.it|bsky\.app|weibo\.com|fb\.watch|m\.me|pinterest\.com)$/.test(host) ? "social" : "unknown";
 }
 /** Web search for new clinic notices. Tavily (free tier: 1,000 basic searches a month) is the only provider; anything else means off. */
+/** The search provider in use: "tavily", "mock" (offline, no API calls) or "off". */
+export function searchProvider(): "tavily" | "mock" | "off" {
+  const p = process.env.DISCOVERY_SEARCH_PROVIDER;
+  return p === "tavily" || p === "mock" ? p : "off";
+}
+
+/**
+ * Offline stand-in for web search, for testing and demos without spending Tavily credits.
+ * Runs the same daily queries and returns invented leads on reserved .example hosts, marked as samples:
+ * they can be reviewed in the workspace like real leads, but are never fetched or monitored.
+ */
+export function mockSearch(now: Date, limit = 3): SearchLead[] {
+  return queriesForDay(now, limit).flatMap((query) => {
+    // Longest match first: every query also contains the word "Ontario".
+    const region = [...ONTARIO_REGIONS].sort((x, y) => y.length - x.length).find((r) => query.includes(r)) ?? "Ontario";
+    const slug = region.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const french = query.includes("nouveaux");
+    return [
+      { url: `https://${slug}-family-health.example/${french ? "nouveaux-patients" : "new-patients"}`, title: `Sample search result: ${region} family health team ${french ? "accepte de nouveaux patients" : "accepting new patients"}`, query, isSample: true },
+      { url: `https://${slug}-np-clinic.example/accepting`, title: `Sample search result: ${region} nurse practitioner clinic`, query, isSample: true },
+    ];
+  });
+}
+
 export async function searchOntario(now: Date, limit = 3): Promise<SearchLead[]> {
-  if (process.env.DISCOVERY_SEARCH_PROVIDER !== "tavily") return [];
+  if (searchProvider() === "mock") return mockSearch(now, limit);
+  if (searchProvider() !== "tavily") return [];
   const key = process.env.TAVILY_API_KEY;
   if (!key) throw new Error("Set TAVILY_API_KEY in server-side environment settings to enable web search.");
   const leads: SearchLead[] = [], dispatcher = new EnvHttpProxyAgent();
